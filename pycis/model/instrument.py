@@ -12,11 +12,8 @@ class Instrument(object):
 
     """
 
-    def __init__(self, camera, optics, interferometer, bandpass_filter=None, interferometer_orientation=0):
+    def __init__(self, camera, optics, interferometer, interferometer_orientation=0):
         """
-        TODO some of the methods of this class take 'spectrum' as an input, but do not use the values of spectrum.
-            Rather, they just use the information from the coordinates. This probably makes the code harder to
-            understand.
 
         :param camera:
         :type camera pycis.model.Camera
@@ -29,8 +26,6 @@ class Instrument(object):
         the list is the first component that the light passes through.
         :type interferometer: list
 
-        :param bandpass_filter: pycis.model.BandpassFilter or string-type filter name (not actually implemented
-        properly yet)
         """
 
         self.camera = camera
@@ -40,8 +35,6 @@ class Instrument(object):
         self.polarisers = self.get_polarisers()
         self.interferometer_orientation = interferometer_orientation
 
-        # TODO properly implement bandpass_filter
-        self.bandpass_filter = bandpass_filter
         self.input_checks()
         self.x_pos, self.y_pos = self.calculate_pixel_position()
 
@@ -52,8 +45,6 @@ class Instrument(object):
         assert isinstance(self.camera, pycis.model.Camera)
         assert isinstance(self.optics, list)
         assert all(isinstance(c, pycis.model.InterferometerComponent) for c in self.interferometer)
-        if self.bandpass_filter is not None:
-            assert isinstance(self.bandpass_filter, pycis.model.BandpassFilter)
 
     def get_crystals(self):
         return [c for c in self.interferometer if isinstance(c, pycis.BirefringentComponent)]

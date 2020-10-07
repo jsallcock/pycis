@@ -1,6 +1,5 @@
 import numpy as np
-import numba
-from numba import vectorize, guvectorize, jit, njit, float64, complex128
+from numba import vectorize, float64, complex128
 import xarray as xr
 import matplotlib.pyplot as plt
 from scipy.constants import c
@@ -9,58 +8,63 @@ import pycis
 
 def calculate_coherence(spectrum, delay, material=None, freq_com=None):
     """
-    calculate the (temporal) coherence of a given intensity spectrum, at a given interferometer delay.
+    calculate the (temporal) coherence of an intensity spectrum for given interferometer delay(s)
 
-    In general, coherence is complex. In the absence of dispersion, coherence is the Fourier transform of the
-    frequency spectrum. Since the spectrum is real, coherence is an even function of interferometer delay.
+    In general, coherence is a complex quantity. In the absence of dispersion, it is the Fourier transform of the
+    frequency spectrum. Since the spectrum is always real, coherence is an even function of delay. Generally, instrument
+    dispersion breaks the simple Fourier transform relationship, but a first-order (linear) approx. for dispersion
+    maintains it in a slightly modified form. I call this the 'group delay' approximation here.
 
-    The presence of instrument dispersion breaks the Fourier transform relationship of the spectrum and the coherence,
-    but the `group delay approximation' is a first-order approx for dispersion that maintains a Fourier transform
-    relationship between the two.
+    :param spectrum: Intensity spectrum. An xr.DataArray object whose dimension 'wavelength' has coordinates
+    with units ( m ) or else whose dim. 'frequency' has coords. with units ( Hz ). Intensity spectrum units are then
+    ( arb. / m ) or (arb. / Hz ) respectively.
 
-    :param spectrum: area-normalised spectrum, arbitrary (spectral) units
-    :type spectrum: xr.DataArray with dim 'wavelength' in ( m ) or else dim 'frequency' in ( Hz )
+    :param delay: Interferometer delay in units ( radians ). Can be a float or an xr.DataArray. If delay is a float or
+    is a DataArray without a 'wavelength' or a 'frequency' dimension, then the group delay approx. is used. In this
+    case, it is assumed that the delay value(s) correspond to the centre-of-mass (COM) frequency of the given spectrum
+    and the coherence is calculated for each delay value. If delay has either a 'wavelength' dim. or a
+    'frequency' dim. -- with coordinates that match the corresponding dim. of spectrum -- then the full dispersive
+    integral is evaluated.
 
-    :param delay: interferometer delay [ rad ]. If delay does not have a 'wavelength' dim or a 'frequency' dim then it
-    is assumed that the delay value(s) correspond to the centre-of-mass (COM) frequency of spectrum and the DOC is
-    calculated for each delay using the group delay approximation. If, however, delay has either a 'wavelength' dim or a
-    'frequency' dim, then the full dispersive integral is evaluated instead.
-    :type delay: xr.DataArray
+    :param material: string specifying the interferometer crystal material. See pycis.model.dispersion for valid inputs.
+    This is not needed in the full dispersive treatment as the dispersion info has already been provided in the delay
+    argument. To do a none-dispersive calculation, you should leave material=None and use a delay argument that will
+    trigger the group delay approx.
 
-    :param material: if material is specified, dispersion will be accounted for to first order about the weighted mean
-    frequency
-    :type material: str
+    :param freq_com: centre of mass frequency of spectrum, if it has already been calculated.
 
-    :param freq_com: centre of mass frequency of spectrum, if it has already been calculated
-    :type freq_com: xr.DataArray
-
-    :return: coherence
+    :return: coherence (temporal). Units are those of the spectrum argument, but integrated over the spectral dimension
+    e.g. if spectrum has units ( W / m^2 / m ) then coherence has units ( W / m^2 ).
     """
 
     # if necessary, convert spectrum's wavelength (m) dim + coordinate to frequency (Hz)
     if 'wavelength' in spectrum.dims:
-        print('1')
         spectrum = spectrum.rename({'wavelength': 'frequency'})
         spectrum['frequency'] = c / spectrum['frequency']
-        spectrum = spectrum * c / spectrum['frequency'] ** 2
+        spectrum = spectrum * c / spectrum['frequency'] ** 2  # to maintain correct intensity units
 
     # calculate centre of mass (c.o.m.) frequency if not supplied
     if freq_com is None:
         freq_com = (spectrum * spectrum['frequency']).integrate(dim='frequency') / \
                    spectrum.integrate(dim='frequency')
 
-    if 'frequency' in delay.dims or 'wavelength' in delay.dims:
-        # do the full dispersive calculation
+    # determine calculation mode
+    if hasattr(delay, 'dims'):
+        if 'frequency' in delay.dims or 'wavelength' in delay.dims:
+            mode = 'full_dispersive'
+        else:
+            mode = 'group_delay'
+    else:
+        mode = 'group_delay'
 
-        # if necessary, convert spectrum's wavelength (m) dim + coordinate to frequency (Hz)
+    if mode == 'full_dispersive':
+        # if necessary, convert delay's wavelength dim + coordinate to frequency
         if 'wavelength' in delay.dims:
             delay = delay.rename({'wavelength': 'frequency'})
             delay['frequency'] = c / delay['frequency']
-
         integrand = spectrum * complexp_ufunc(delay)
 
-    else:
-        # assume that the delay values given correspond to the c.o.m. frequency
+    elif mode == 'group_delay':
         if material is not None:
             kappa_0 = pycis.calculate_kappa(c / freq_com, material=material, )
         else:
@@ -68,6 +72,8 @@ def calculate_coherence(spectrum, delay, material=None, freq_com=None):
 
         freq_shift_norm = (spectrum['frequency'] - freq_com) / freq_com
         integrand = spectrum * complexp_ufunc(delay * (1 + kappa_0 * freq_shift_norm))
+    else:
+        raise NotImplementedError
 
     integrand = integrand.sortby(integrand.frequency)  # ensure that integration limits are from -ve to +ve frequency
     return integrand.integrate(dim='frequency')
@@ -82,11 +88,16 @@ def complexp_ufunc(x):
     return xr.apply_ufunc(complexp, x, dask='allowed', )
 
 
-def test_plot():
+def test_gaussian_lineshape():
     """
     numerical / analytical test of calculate_coherence() using a modelled Gaussian spectral lineshape
 
+    It would be nice to turn this into a unit test.
+
+    misc. abbreviations:
     doc = degree of coherence
+    wl = wavelength
+    biref = birefringence
 
     :return:
     """
@@ -165,5 +176,6 @@ def test_plot():
     plt.show()
 
 
+
 if __name__ == '__main__':
-    test_plot()
+    test_gaussian_lineshape()

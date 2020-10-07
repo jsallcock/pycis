@@ -6,8 +6,8 @@ import time
 import os
 
 bit_depth = 12
-sensor_format = (1000, 1000)
-pixel_size = 6.5e-6
+sensor_format = (1250, 1000)
+pixel_size = 6.5e-6 * 2
 qe = 0.35
 epercount = 0.46  # [e / count]
 cam_noise = 2.5
