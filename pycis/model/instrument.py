@@ -198,8 +198,8 @@ class Instrument(object):
         """
 
         # calculate the ray angles through the interferometer
-        if hasattr(wavelength, 'dims'):
-            if 'x' in wavelength.dims and 'y' in wavelength.dims:
+        if hasattr(wavelength, 'coords'):
+            if 'x' in wavelength.coords.keys() and 'y' in wavelength.coords.keys():
                 inc_angle = self.calculate_inc_angle(wavelength.x, wavelength.y)
                 azim_angle = self.calculate_azim_angle(wavelength.x, wavelength.y, self.crystals[0])
         else:
