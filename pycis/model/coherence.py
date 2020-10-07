@@ -11,9 +11,11 @@ def calculate_coherence(spectrum, delay, material=None, freq_com=None):
     calculate the (temporal) coherence of an intensity spectrum for given interferometer delay(s)
 
     In general, coherence is a complex quantity. In the absence of dispersion, it is the Fourier transform of the
-    frequency spectrum. Since the spectrum is always real, coherence is an even function of delay. Generally, instrument
-    dispersion breaks the simple Fourier transform relationship, but a first-order (linear) approx. for dispersion
-    maintains it in a slightly modified form. I call this the 'group delay' approximation here.
+    frequency spectrum. Generally, instrument dispersion breaks the simple Fourier transform relationship, but a
+    first-order (linear) approx. for dispersion maintains it in a slightly modified form. I call this the 'group delay'
+    approximation here.
+
+    See test_with_gaussian_lineshape() below for examples of how to use.
 
     :param spectrum: Intensity spectrum. An xr.DataArray object whose dimension 'wavelength' has coordinates
     with units ( m ) or else whose dim. 'frequency' has coords. with units ( Hz ). Intensity spectrum units are then
@@ -88,7 +90,7 @@ def complexp_ufunc(x):
     return xr.apply_ufunc(complexp, x, dask='allowed', )
 
 
-def test_gaussian_lineshape():
+def test_with_gaussian_lineshape():
     """
     numerical / analytical test of calculate_coherence() using a modelled Gaussian spectral lineshape
 
@@ -176,6 +178,5 @@ def test_gaussian_lineshape():
     plt.show()
 
 
-
 if __name__ == '__main__':
-    test_gaussian_lineshape()
+    test_with_gaussian_lineshape()

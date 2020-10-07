@@ -49,16 +49,17 @@ default_sources = {'calcite': 'ghosh',
                    'YVO': 'shi'}
 
 
-def calculate_dispersion(wl, material, source=None, ):
+def calculate_dispersion(wavelength, material, source=None, ):
     """
-
-    :param wl: wavelength [ m ]
-    :param material: valid: 'a-BBO', 'b-BBO', 'calcite', 'YVO'
-    :param source: shorthand citation for author
+    Calculates the birefringence and refractive indices of a material as a function of wavelength.
+    
+    :param wavelength: wavelength(s) with units ( m ), can be float, np.array or xr.DataArray.
+    :param material: string specifying the material. See above dict for valid inputs.
+    :param source: string specifying source of dispersion info. See above dict for valid inputs.
     :return:
     """
 
-    wl_mic = wl * 1e6
+    wl_mic = wavelength * 1e6
     if source is None:
         source = default_sources[material]
 
@@ -119,8 +120,7 @@ def calculate_kappa(wl, material, source=None, ):
 
 def _sellmeier_eqn(wl_mic, sellmeier_coefs, form):
     """
-
-    :param wl_mic: wavelength /s [ microns ]
+    :param wl_mic: wavelength(s) with units ( microns )
     :param sellmeier_coefs: list of coefficients
     :param form:
     :return:
