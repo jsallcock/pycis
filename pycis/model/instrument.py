@@ -2,8 +2,8 @@ import numpy as np
 import xarray as xr
 from numba import vectorize, f8
 from scipy.constants import c
-import pycis
-from pycis.model import mueller_product
+from pycis.model import mueller_product, LinearPolariser, calculate_coherence, PolarisedCamera, BirefringentComponent, \
+    InterferometerComponent, Camera, calculate_rot_matrix
 
 
 class Instrument(object):
@@ -36,62 +36,21 @@ class Instrument(object):
         self.interferometer_orientation = interferometer_orientation
 
         self.input_checks()
-        self.x_pos, self.y_pos = self.calculate_pixel_position()
+        self.x_pos, self.y_pos = self.camera.calculate_pixel_position()
 
         # assign instrument 'type'
         self.instrument_type = self.check_instrument_type()
 
     def input_checks(self):
-        assert isinstance(self.camera, pycis.model.Camera)
+        assert isinstance(self.camera, Camera)
         assert isinstance(self.optics, list)
-        assert all(isinstance(c, pycis.model.InterferometerComponent) for c in self.interferometer)
+        assert all(isinstance(c, InterferometerComponent) for c in self.interferometer)
 
     def get_crystals(self):
-        return [c for c in self.interferometer if isinstance(c, pycis.BirefringentComponent)]
+        return [co for co in self.interferometer if isinstance(co, BirefringentComponent)]
 
     def get_polarisers(self):
-        return [c for c in self.interferometer if isinstance(c, pycis.LinearPolariser)]
-
-    def calculate_pixel_position(self, x_pixel=None, y_pixel=None, crop=None, downsample=1):
-        """
-        Calculate pixel positions (in m) on the camera's sensor plane (the x-y plane).
-
-        The origin of the x-y coordinate system is the centre of the sensor. Pixel positions correspond to the pixel
-        centres. If x_pixel and y_pixel are specified then only returns the position of that pixel. crop and downsample
-        are essentially legacy kwargs from my thesis work.
-
-        :param x_pixel:
-        :param y_pixel:
-        :param crop: (y1, y2, x1, x2)
-        :param downsample:
-        :return: x_pos, y_pos, both instances of xr.DataArray
-        """
-
-        sensor_format = np.array(self.camera.sensor_format)
-        centre_pos = self.camera.pixel_size * sensor_format / 2  # relative to x=0, y=0 pixel
-
-        if crop is None:
-            crop = (0, sensor_format[0], 0, sensor_format[1])
-
-        x_coord = np.arange(crop[0], crop[1])[::downsample]
-        y_coord = np.arange(crop[2], crop[3])[::downsample]
-        x = (x_coord + 0.5) * self.camera.pixel_size - centre_pos[0]
-        y = (y_coord + 0.5) * self.camera.pixel_size - centre_pos[1]
-        x = xr.DataArray(x, dims=('x', ), coords=(x, ), )
-        y = xr.DataArray(y, dims=('y',), coords=(y,), )
-
-        # add pixel numbers as non-dimension coordinates -- just for explicit indexing and plotting
-        x_pixel_coord = xr.DataArray(np.arange(sensor_format[0], ), dims=('x', ), coords=(x, ), )
-        y_pixel_coord = xr.DataArray(np.arange(sensor_format[1], ), dims=('y', ), coords=(y, ), )
-        x = x.assign_coords({'x_pixel': ('x', x_pixel_coord), }, )
-        y = y.assign_coords({'y_pixel': ('y', y_pixel_coord), }, )
-
-        if x_pixel is not None:
-            x = x.isel(x=x_pixel)
-        if y_pixel is not None:
-            y = y.isel(y=y_pixel)
-
-        return x, y
+        return [co for co in self.interferometer if isinstance(co, LinearPolariser)]
 
     def calculate_inc_angle(self, x, y):
         """
@@ -134,7 +93,7 @@ class Instrument(object):
             component_matrix = component.calculate_matrix(spectrum.wavelength, inc_angle, azim_angle)
             total_matrix = mueller_product(component_matrix, total_matrix)
 
-        rot_matrix = pycis.calculate_rot_matrix(self.interferometer_orientation)
+        rot_matrix = calculate_rot_matrix(self.interferometer_orientation)
         return mueller_product(rot_matrix, total_matrix)
 
     def capture_image(self, spectrum, ):
@@ -159,10 +118,8 @@ class Instrument(object):
 
             delay = self.calculate_ideal_delay(c / freq_com)
 
-            coherence = xr.where(total_intensity > 0,
-                                 pycis.calculate_coherence(spec_freq, delay, material=self.crystals[0].material,
-                                                           freq_com=freq_com),
-                                 0)
+            coherence = calculate_coherence(spec_freq, delay, material=self.crystals[0].material, freq_com=freq_com)
+            coherence = xr.where(total_intensity > 0, coherence, 0)
             spectrum = 1 / 4 * (total_intensity + np.real(coherence))
 
         elif self.instrument_type == 'general':
@@ -171,8 +128,8 @@ class Instrument(object):
                 a0 = xr.zeros_like(spectrum)
                 spectrum = xr.combine_nested([spectrum, a0, a0, a0], concat_dim=('stokes',))
 
-            mueller_mat = self.calculate_matrix(spectrum)
-            spectrum = mueller_product(mueller_mat, spectrum)
+            mueller_matrix_total = self.calculate_matrix(spectrum)
+            spectrum = mueller_product(mueller_matrix_total, spectrum)
 
         image = self.camera.capture_image(spectrum)
         return image
@@ -194,7 +151,7 @@ class Instrument(object):
                 inc_angle = self.calculate_inc_angle(wavelength.x, wavelength.y)
                 azim_angle = self.calculate_azim_angle(wavelength.x, wavelength.y, self.crystals[0])
         else:
-            x, y, =  self.calculate_pixel_position()
+            x, y, =  self.camera.calculate_pixel_position()
             inc_angle = self.calculate_inc_angle(x, y, )
             azim_angle = self.calculate_azim_angle(x, y, self.crystals[0])
 
@@ -212,15 +169,6 @@ class Instrument(object):
             contrast *= crystal.contrast
 
         return contrast
-
-    def calculate_ideal_transmission(self):
-        """ transmission is decreased due to polarisers, calculate this factor analytically for the special case of
-        ideal interferometer"""
-
-        pol_1, pol_2 = self.polarisers
-        tx = (pol_1.tx_1 ** 2 + pol_1.tx_2 ** 2) * (pol_2.tx_1 ** 2 + pol_2.tx_2 ** 2)
-
-        return tx
 
     def check_instrument_type(self):
         """
@@ -240,8 +188,8 @@ class Instrument(object):
         # interferometer calculation -- avoiding the full Mueller matrix treatment
 
         # are there two polarisers, at the front and back of the interferometer?
-        if len(self.polarisers) == 2 and (isinstance(self.interferometer[0], pycis.LinearPolariser) and
-                                          isinstance(self.interferometer[-1], pycis.LinearPolariser)):
+        if len(self.polarisers) == 2 and (isinstance(self.interferometer[0], LinearPolariser) and
+                                          isinstance(self.interferometer[-1], LinearPolariser)):
 
             # ...are they alligned?
             pol_1_orientation = self.interferometer[0].orientation
@@ -260,7 +208,7 @@ class Instrument(object):
                     if abs(pol_1_orientation - crystal_1_orientation) == np.pi / 4:
 
                         # ...and is the camera a standard camera?
-                        if not isinstance(self.camera, pycis.PolCamera):
+                        if not isinstance(self.camera, PolarisedCamera):
                             return 'two_beam'
 
         return 'general'

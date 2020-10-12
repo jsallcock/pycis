@@ -1,5 +1,7 @@
 import numpy as np
+import xarray as xr
 import matplotlib.pyplot as plt
+from pycis.model import LinearPolariser, mueller_product
 
 
 class Camera(object):
@@ -27,15 +29,53 @@ class Camera(object):
         self.cam_noise = cam_noise
         self.bit_depth = bit_depth
 
-    def capture_image(self, spec, display=False):
+    def calculate_pixel_position(self, x_pixel=None, y_pixel=None, crop=None, downsample=1):
+        """
+        Calculate pixel positions (in m) on the camera's sensor plane (the x-y plane).
+
+        The origin of the x-y coordinate system is the centre of the sensor. Pixel positions correspond to the pixel
+        centres. If x_pixel and y_pixel are specified then only returns the position of that pixel. crop and downsample
+        are essentially legacy kwargs from my thesis work.
+
+        :param x_pixel:
+        :param y_pixel:
+        :param crop: (y1, y2, x1, x2)
+        :param downsample:
+        :return: x_pos, y_pos, both instances of xr.DataArray
+        """
+
+        centre_pos = self.pixel_size * np.array(self.sensor_format) / 2  # relative to x=0, y=0 pixel
+
+        if crop is None:
+            crop = (0, self.sensor_format[0], 0, self.sensor_format[1])
+
+        x_coord = np.arange(crop[0], crop[1])[::downsample]
+        y_coord = np.arange(crop[2], crop[3])[::downsample]
+        x = (x_coord + 0.5) * self.pixel_size - centre_pos[0]
+        y = (y_coord + 0.5) * self.pixel_size - centre_pos[1]
+        x = xr.DataArray(x, dims=('x', ), coords=(x, ), )
+        y = xr.DataArray(y, dims=('y',), coords=(y,), )
+
+        # add pixel numbers as non-dimension coordinates -- just for explicit indexing and plotting
+        x_pixel_coord = xr.DataArray(np.arange(self.sensor_format[0], ), dims=('x', ), coords=(x, ), )
+        y_pixel_coord = xr.DataArray(np.arange(self.sensor_format[1], ), dims=('y', ), coords=(y, ), )
+        x = x.assign_coords({'x_pixel': ('x', x_pixel_coord), }, )
+        y = y.assign_coords({'y_pixel': ('y', y_pixel_coord), }, )
+
+        if x_pixel is not None:
+            x = x.isel(x=x_pixel)
+        if y_pixel is not None:
+            y = y.isel(y=y_pixel)
+
+        return x, y
+
+    def capture_image(self, spec, ):
         """
 
         capture image of scene
 
         :param spec: (xr.DataArray) input spectrum with dimensions 'wavelength', 'x', 'y' and (optionally) 'stokes'. If
         no stokes dim then it is assumed that light is unpolarised (i.e. the spec supplied is the S_0 Stokes parameter)
-        :param display: (bool) whether to display
-        :param color: (bool) true for color display, else monochrome
         :return:
         """
 
@@ -57,44 +97,13 @@ class Camera(object):
 
         return signal
 
-    def capture_stack(self, photon_fluence, num_stack, display=False):
-        """ Quickly capture of a stack of image frames, returning the total signal. """
 
-        # older implementation loops over Camera.capture() method and is far, far slower:
-        # pool = mp.Pool(processes=2)
-        # total_signal = sum(pool.map(self.capture, [photon_fluence] * num_stack))
+class PolarisedCamera(Camera):
+    """
+    Camera with a pixelated polariser array on its sensor e.g. FLIR Blackfly S, Photron Chrysta
+    """
 
-        stacked_photon_fluence = num_stack * photon_fluence
-
-        electron_fluence = photon_fluence * self.qe
-        stacked_electron_fluence = stacked_photon_fluence * self.qe
-
-        electron_noise_std = np.sqrt(electron_fluence + self.cam_noise ** 2)
-        stacked_electron_noise_std = np.sqrt(num_stack * (electron_noise_std))
-
-        stacked_electron_fluence += np.random.normal(0, stacked_electron_noise_std, self.sensor_dim)
-
-        # apply gain
-        # signal = electron_fluence / self.epercount
-        stacked_signal = stacked_electron_fluence / self.epercount
-
-        # digitise at bitrate of sensor
-        # signal = np.digitize(signal, np.arange(2 ** self.bit_depth))
-        stacked_signal = np.digitize(stacked_signal, np.arange(num_stack * 2 ** self.bit_depth))
-
-        if display:
-            plt.figure()
-            plt.imshow(stacked_signal, 'gray')
-            plt.colorbar()
-            plt.show()
-
-        return stacked_signal
-
-
-class PolCamera(Camera):
-    """ Polarisation camera, eg. Photron Chrysta """
-
-    def __init__(self, bit_depth, sensor_format, pix_size, qe, epercount, cam_noise):
+    def __init__(self, bit_depth, sensor_format, pixel_size, qe, epercount, cam_noise):
         """
 
         :param format:
@@ -102,49 +111,33 @@ class PolCamera(Camera):
 
         """
 
-        assert sensor_dim[0] % 2 == 0
-        assert sensor_dim[1] % 2 == 0
+        assert sensor_format[0] % 2 == 0
+        assert sensor_format[1] % 2 == 0
 
-        super().__init__(bit_depth, sensor_dim, pix_size, qe, epercount, cam_noise)
+        super().__init__(bit_depth, sensor_format, pixel_size, qe, epercount, cam_noise)
 
-        # define Mueller matrices for the 4 polariser orientations
-        self.mm_0deg = 0.5 * np.array([[1, 1, 0, 0],
-                                      [1, 1, 0, 0],
-                                      [0, 0, 0, 0],
-                                      [0, 0, 0, 0]])
+        # define Mueller matrix
+        args = [None, ] * 3  # ok this is grim
+        matrix_0deg = LinearPolariser(0).calculate_matrix(*args)
+        matrix_45deg = LinearPolariser(np.pi / 4).calculate_matrix(*args)
+        matrix_90deg = LinearPolariser(np.pi / 2).calculate_matrix(*args)
+        matrix_135deg = LinearPolariser(3 * np.pi / 4).calculate_matrix(*args)
 
-        self.mm_45deg = 0.5 * np.array([[1, 0, 1, 0],
-                                       [0, 0, 0, 0],
-                                       [1, 0, 1, 0],
-                                       [0, 0, 0, 0]])
+        x, y, = self.calculate_pixel_position()
+        pix_idxs_x = xr.DataArray(np.arange(0, self.sensor_format[0], 2), dims=('x',), )
+        pix_idxs_y = xr.DataArray(np.arange(0, self.sensor_format[1], 2), dims=('y', ), )
 
-        self.mm_90deg = 0.5 * np.array([[1, -1, 0, 0],
-                                       [-1, 1, 0, 0],
-                                       [0, 0, 0, 0],
-                                       [0, 0, 0, 0]])
-
-        self.mm_m45deg = 0.5 * np.array([[1, 0, -1, 0],
-                                        [0, 0, 0, 0],
-                                        [-1, 0, 1, 0],
-                                        [0, 0, 0, 0]])
-
-        # pad to generate pixel array of Mueller matrices
-
-        # there is probably a better way of doing this...
-        pix_idxs_y = np.arange(0, sensor_dim[0], 2)
-        pix_idxs_x = np.arange(0, sensor_dim[1], 2)
-        pix_idxs_y, pix_idxs_x = np.meshgrid(pix_idxs_y, pix_idxs_x)
-
-        mueller_matrix = np.zeros([4, 4, self.sensor_dim[0], self.sensor_dim[1]])
-
-        mueller_matrix[:, :, pix_idxs_y + 1, pix_idxs_x + 1] = self.mm_45deg[:, :, np.newaxis, np.newaxis]
-        mueller_matrix[:, :, pix_idxs_y, pix_idxs_x + 1] = self.mm_90deg[:, :, np.newaxis, np.newaxis]
-        mueller_matrix[:, :, pix_idxs_y + 1, pix_idxs_x] = self.mm_0deg[:, :, np.newaxis, np.newaxis]
-        mueller_matrix[:, :, pix_idxs_y, pix_idxs_x] = self.mm_m45deg[:, :, np.newaxis, np.newaxis]
+        mueller_matrix = np.zeros([self.sensor_format[0], self.sensor_format[1], 4, 4, ])
+        dims = ('x', 'y', 'mueller_v', 'mueller_h', )
+        mueller_matrix = xr.DataArray(mueller_matrix, dims=dims, ).assign_coords({'x': x, 'y': y, }, )
+        mueller_matrix[pix_idxs_x, pix_idxs_y, ...] = matrix_0deg
+        mueller_matrix[pix_idxs_x + 1, pix_idxs_y, ..., ] = matrix_45deg
+        mueller_matrix[pix_idxs_x + 1, pix_idxs_y + 1, ..., ] = matrix_90deg
+        mueller_matrix[pix_idxs_x, pix_idxs_y + 1, ..., ] = matrix_135deg
 
         self.mueller_matrix = mueller_matrix
 
-    def capture_image(self, intensity, clean=False, display=False):
+    def capture_image(self, spec, ):
         """
 
         :param intensity:
@@ -153,92 +146,59 @@ class PolCamera(Camera):
         :return:
         """
 
-        assert isinstance(intensity, np.ndarray)
-        assert intensity.shape[0] == 4
-        assert intensity.shape[1] == self.sensor_dim[0]
-        assert intensity.shape[2] == self.sensor_dim[1]
+        assert 'stokes' in spec.dims
+        spec = mueller_product(self.mueller_matrix, spec, )
+        spec = spec.isel(stokes=0, drop=True)
 
-        # matrix multiplication (mueller matrix axes are the first two axes)
-        subscripts = 'ij...,j...->i...'
-        stokes_vector_out = np.einsum(subscripts, self.mueller_matrix, intensity)
+        if 'wavelength' in spec.dims:
+            if len(spec.wavelength) >= 2:
+                signal = spec.integrate(dim='wavelength')
+        else:
+            signal = spec
 
-        intensity = stokes_vector_out[0]
-
-        np.random.seed()
-
-        # account for quantum efficiency
-        electron_fluence = intensity * self.qe
-
-        if not clean:
-            # add shot noise
-            shot_noise = np.random.poisson(electron_fluence, size=self.sensor_dim) - electron_fluence
-            electron_fluence += shot_noise
-
-            # add camera noise
-            electron_fluence += np.random.normal(0, self.cam_noise, size=self.sensor_dim)
-
-        # apply gain
-        signal = electron_fluence / self.epercount
-
-        # digitise at bitrate of sensor
-        signal = np.digitize(signal, np.arange(0, 2 ** self.bit_depth))
-
-        if display:
-            fig, ax = plt.subplots()
-            im = ax.imshow(signal, 'gray')
-            cbar = fig.colorbar(im, ax=ax)
-            plt.show()
+        signal = signal * self.qe
+        # np.random.seed()
+        # signal.values = np.random.poisson(signal.values)
+        # signal.values = signal.values + np.random.normal(0, self.cam_noise, signal.values.shape)
+        signal = signal / self.epercount
+        # signal.values = np.digitize(signal.values, np.arange(0, 2 ** self.bit_depth))
 
         return signal
 
+
+## LEGACY METHOD ##
+# def capture_stack(self, photon_fluence, num_stack, display=False):
+#     """ Quickly capture of a stack of image frames, returning the total signal. """
+#
+#     # older implementation loops over Camera.capture() method and is far, far slower:
+#     # pool = mp.Pool(processes=2)
+#     # total_signal = sum(pool.map(self.capture, [photon_fluence] * num_stack))
+#
+#     stacked_photon_fluence = num_stack * photon_fluence
+#
+#     electron_fluence = photon_fluence * self.qe
+#     stacked_electron_fluence = stacked_photon_fluence * self.qe
+#
+#     electron_noise_std = np.sqrt(electron_fluence + self.cam_noise ** 2)
+#     stacked_electron_noise_std = np.sqrt(num_stack * (electron_noise_std))
+#
+#     stacked_electron_fluence += np.random.normal(0, stacked_electron_noise_std, self.sensor_dim)
+#
+#     # apply gain
+#     # signal = electron_fluence / self.epercount
+#     stacked_signal = stacked_electron_fluence / self.epercount
+#
+#     # digitise at bitrate of sensor
+#     # signal = np.digitize(signal, np.arange(2 ** self.bit_depth))
+#     stacked_signal = np.digitize(stacked_signal, np.arange(num_stack * 2 ** self.bit_depth))
+#
+#     if display:
+#         plt.figure()
+#         plt.imshow(stacked_signal, 'gray')
+#         plt.colorbar()
+#         plt.show()
+#
+#     return stacked_signal
+
 if __name__ == '__main__':
-
-    # name = 'fibre'  # a single pixel 'fibre' view for quick phase comparisons
-    # bit_depth = 12
-    # sensor_dim = [1, 1]
-    # pix_size = 20e-6
-    # QE = 0.45
-    # epercount = 23.3
-    # cam_noise = 37
-
-    # name = 'test_cam'  # a 50 x 50 pixel, noiseless test camera for speedy synthetic image generation
-    # bit_depth = 12
-    # sensor_dim = [50, 50]
-    # pix_size = 20e-6
-    # QE = 0.45
-    # epercount = 23.3
-    # cam_noise = 0
-
-    # name = 'photron_SA4_clean'
-    # bit_depth = 12
-    # sensor_dim = [1024, 1024]
-    # pix_size = 20e-6
-    # QE = 0.45
-    # epercount = 23.3
-    # cam_noise = 0
-
-    name = 'photron_SA4'
-    bit_depth = 12
-    sensor_format = [256, 216]
-    pixel_size = 20e-6
-    qe = 0.3
-    epercount = 11.6
-    cam_noise = 41.2
-
-    # name = 'pco.edge 5.5'
-    # bit_depth = 16
-    # sensor_dim = [2560, 2160]
-    # pix_size = 6.5e-6
-    # QE = 0.35
-    # epercount = 0.46  # [e / count]
-    # cam_noise = 3 * 2.5 / epercount  # [e]
-
-    # name = 'pco.edge 5.5 CLEAN'
-    # bit_depth = 16
-    # sensor_dim = [2560, 2160]
-    # pix_size = 6.5e-6
-    # QE = 0.35
-    # epercount = 0.46  # [e / count]
-    # cam_noise = 0  # [e]
-
-    camera = PolCamera(bit_depth, sensor_dim, pixel_size, qe, epercount, cam_noise)
+    polcam = PolarisedCamera(12, (2500, 2000), 3.45e-6, 0.45, 1, 1, )

@@ -77,7 +77,7 @@ class InterferometerComponent:
         mat_i = mueller_product(mat, calculate_rot_matrix(self.orientation))
         return mueller_product(calculate_rot_matrix(-self.orientation), mat_i)
 
-    def calculate_matrix(self, wl, inc_angle, azim_angle):
+    def calculate_matrix(self, wavelength, inc_angle, azim_angle, ):
         raise NotImplementedError
 
 
@@ -101,11 +101,11 @@ class LinearPolariser(InterferometerComponent):
         self.tx_1 = tx_1
         self.tx_2 = tx_2
 
-    def calculate_matrix(self, wl, inc_angle, azim_angle):
+    def calculate_matrix(self, wavelength, inc_angle, azim_angle, ):
         """
         Mueller matrix for ideal linear polariser
 
-        :param wl: pass
+        :param wavelength: pass
         :param inc_angle: pass
         :param azim_angle: pass
         :return:
@@ -146,22 +146,22 @@ class BirefringentComponent(InterferometerComponent):
         self.source = source
         self.contrast = contrast
 
-    def calculate_matrix(self, wl, inc_angle, azim_angle):
+    def calculate_matrix(self, wavelength, inc_angle, azim_angle):
         """
         general Mueller matrix for a linear retarder
         
-        :param wl: [ m ]
+        :param wavelength: [ m ]
         :param inc_angle: [ rad ] 
         :param azim_angle: [ rad ]
         :return: 
         """
 
-        phase = self.calculate_delay(wl, inc_angle, azim_angle)
+        delay = self.calculate_delay(wavelength, inc_angle, azim_angle)
 
-        a1 = xr.ones_like(phase)
-        a0 = xr.zeros_like(phase)
-        c_cphase = self.contrast * np.cos(phase)
-        c_sphase = self.contrast * np.sin(phase)
+        a1 = xr.ones_like(delay)
+        a0 = xr.zeros_like(delay)
+        c_cphase = self.contrast * np.cos(delay)
+        c_sphase = self.contrast * np.sin(delay)
 
         mat = [[a1, a0, a0, a0],
                [a0, a1, a0, a0],
@@ -242,7 +242,7 @@ class SavartPlate(BirefringentComponent):
         super().__init__(orientation, thickness, material=material, source=source, contrast=contrast, )
         self.mode = mode
 
-    def calculate_delay(self, wl, inc_angle, azim_angle, n_e=None, n_o=None):
+    def calculate_delay(self, wavelength, inc_angle, azim_angle, n_e=None, n_o=None):
         """
         calculate phase delay (in rad) due to Savart plate.
 
@@ -251,8 +251,8 @@ class SavartPlate(BirefringentComponent):
         in wide-field-of-view polarization interference imaging spectrometer”. In: Optics Communications 273.1 (2007), 
         pp. 67–73. issn: 00304018. doi: 10.1016/j.optcom.2006.12.034.
 
-        :param wl: wavelength [ m ]
-        :type wl: float or array-like
+        :param wavelength: wavelength [ m ]
+        :type wavelength: float or array-like
 
         :param inc_angle: ray incidence angle [ rad ]
         :type inc_angle: float or array-like
@@ -274,7 +274,7 @@ class SavartPlate(BirefringentComponent):
 
             # if refractive indices have not been manually set, calculate them using Sellmeier eqn.
             if n_e is None and n_o is None:
-                biref, n_e, n_o = calculate_dispersion(wl, self.material, source=self.source)
+                biref, n_e, n_o = calculate_dispersion(wavelength, self.material, source=self.source)
 
             a = 1 / n_e
             b = 1 / n_o
@@ -291,7 +291,7 @@ class SavartPlate(BirefringentComponent):
                      (c_azim_angle ** 2 - s_azim_angle ** 2) * s_inc_angle ** 2
 
             # minus sign here makes the OPD calculation consistent with Veiras' definition
-            phase = 2 * np.pi * - (self.thickness / (2 * wl)) * (term_1 + term_2)
+            phase = 2 * np.pi * - (self.thickness / (2 * wavelength)) * (term_1 + term_2)
 
         elif self.mode == 'veiras':
             # explicitly model plate as the combination of two uniaxial crystals
@@ -306,8 +306,8 @@ class SavartPlate(BirefringentComponent):
             crystal_1 = UniaxialCrystal(or1, t, cut_angle=-np.pi / 4, material=self.material)
             crystal_2 = UniaxialCrystal(or2, t, cut_angle=np.pi / 4, material=self.material)
 
-            phase = crystal_1.calculate_delay(wl, inc_angle, azim_angle1, n_e=n_e, n_o=n_o) - \
-                    crystal_2.calculate_delay(wl, inc_angle, azim_angle2, n_e=n_e, n_o=n_o)
+            phase = crystal_1.calculate_delay(wavelength, inc_angle, azim_angle1, n_e=n_e, n_o=n_o) - \
+                    crystal_2.calculate_delay(wavelength, inc_angle, azim_angle2, n_e=n_e, n_o=n_o)
 
         else:
             raise Exception('invalid SavartPlate.mode')
@@ -315,27 +315,27 @@ class SavartPlate(BirefringentComponent):
         return phase
 
 
-class QuarterWaveplate(BirefringentComponent):
+class IdealWaveplate(BirefringentComponent):
     """
-    Ideal quarter waveplate
+    Ideal waveplate imparting a single delay regardless of wavelength or ray angle
 
     """
 
-    def __init__(self, orientation, clr_aperture=None):
+    def __init__(self, orientation, delay, ):
         """
 
         :param orientation:
         """
 
         thickness = 1.  # this value is arbitrary
+        super().__init__(orientation, thickness, )
+        self.ideal_delay = delay
 
-        super().__init__(orientation, thickness, clr_aperture=clr_aperture)
-
-    def calculate_delay(self, wl, inc_angle, azim_angle, n_e=None, n_o=None):
+    def calculate_delay(self, wavelength, inc_angle, azim_angle, n_e=None, n_o=None):
         """
         calculate phase delay due to ideal quarter waveplate
 
-        :param wl:
+        :param wavelength:
         :param inc_angle:
         :param azim_angle:
         :param n_e:
@@ -343,78 +343,27 @@ class QuarterWaveplate(BirefringentComponent):
         :return: phase [ rad ]
         """
 
-        if is_scalar(wl):
-            if is_scalar(inc_angle) and is_scalar(azim_angle):
-                ones_shape = 1
-
-            else:
-                assert isinstance(inc_angle, np.ndarray) and isinstance(azim_angle, np.ndarray)
-                assert inc_angle.shape == azim_angle.shape
-
-                ones_shape = np.ones_like(inc_angle)
-
-        elif isinstance(wl, np.ndarray) and isinstance(inc_angle, np.ndarray) and isinstance(azim_angle, np.ndarray):
-
-            assert wl.ndim == 1
-            assert inc_angle.shape == azim_angle.shape
-
-            ones_shape = np.ones([wl.shape[0], inc_angle.shape[0], inc_angle.shape[1]])
-
-        else:
-            raise Exception('unable to interpret inputs')
-
-        return np.pi / 2 * ones_shape
+        return xr.zeros_like(inc_angle) + self.ideal_delay
 
 
-class HalfWaveplate(BirefringentComponent):
+class QuarterWaveplate(IdealWaveplate):
     """
-    Ideal half waveplate
+    Ideal quarter-wave plate
 
     """
+    def __init__(self, orientation, ):
+        delay = np.pi / 2
+        super().__init__(orientation, delay, )
 
-    def __init__(self, orientation, clr_aperture=None):
-        """
 
-        :param orientation:
-        """
+class HalfWaveplate(IdealWaveplate):
+    """
+    Ideal half-wave plate
 
-        thickness = 1.  # this value is arbitrary
-
-        super().__init__(orientation, thickness, clr_aperture=clr_aperture)
-
-    def calculate_delay(self, wl, inc_angle, azim_angle, n_e=None, n_o=None):
-        """
-        calculate phase delay due to ideal half waveplate
-
-        :param wl:
-        :param inc_angle:
-        :param azim_angle:
-        :param n_e:
-        :param n_o:
-        :return: phase [ rad ]
-        """
-
-        if is_scalar(wl):
-            if is_scalar(inc_angle) and is_scalar(azim_angle):
-                ones_shape = 1
-
-            else:
-                assert isinstance(inc_angle, np.ndarray) and isinstance(azim_angle, np.ndarray)
-                assert inc_angle.shape == azim_angle.shape
-
-                ones_shape = np.ones_like(inc_angle)
-
-        elif isinstance(wl, np.ndarray) and isinstance(inc_angle, np.ndarray) and isinstance(azim_angle, np.ndarray):
-
-            assert wl.ndim == 1
-            assert inc_angle.shape == azim_angle.shape
-
-            ones_shape = np.ones(wl.shape[0], inc_angle.shape[0], inc_angle.shape[1])
-
-        else:
-            raise Exception('unable to interpret inputs')
-
-        return np.pi * ones_shape
+    """
+    def __init__(self, orientation, ):
+        delay = np.pi
+        super().__init__(orientation, delay, )
 
 
 @vectorize([f8(f8, f8, f8, f8, f8, f8, f8), ], nopython=True, fastmath=True, cache=True, )
