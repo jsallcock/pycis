@@ -2,8 +2,8 @@ import numpy as np
 import xarray as xr
 from numba import vectorize, f8
 from scipy.constants import c
-from pycis.model import mueller_product, LinearPolariser, calculate_coherence, PolarisedCamera, BirefringentComponent, \
-    InterferometerComponent, Camera, calculate_rot_matrix
+from pycis.model import mueller_product, LinearPolariser, calculate_coherence, BirefringentComponent, \
+    InterferometerComponent, Camera, calculate_rot_matrix, QuarterWaveplate, UniaxialCrystal
 
 
 class Instrument(object):
@@ -36,7 +36,6 @@ class Instrument(object):
         self.interferometer_orientation = interferometer_orientation
 
         self.input_checks()
-        self.x_pos, self.y_pos = self.camera.calculate_pixel_position()
 
         # assign instrument 'type'
         self.instrument_type = self.check_instrument_type()
@@ -108,7 +107,7 @@ class Instrument(object):
 
         """
 
-        if self.instrument_type == 'two_beam' and 'stokes' not in spectrum.dims:
+        if self.instrument_type == 'single_delay_linear' and 'stokes' not in spectrum.dims:
             # analytical calculation to save time
             total_intensity = spectrum.integrate(dim='wavelength', )
             spec_freq = spectrum.rename({'wavelength': 'frequency'})
@@ -121,6 +120,23 @@ class Instrument(object):
             coherence = calculate_coherence(spec_freq, delay, material=self.crystals[0].material, freq_com=freq_com)
             coherence = xr.where(total_intensity > 0, coherence, 0)
             spectrum = 1 / 4 * (total_intensity + np.real(coherence))
+            apply_polarisers = False
+
+        elif self.instrument_type == 'single_delay_polarised' and 'stokes' not in spectrum.dims:
+            total_intensity = spectrum.integrate(dim='wavelength', )
+            spec_freq = spectrum.rename({'wavelength': 'frequency'})
+            spec_freq['frequency'] = c / spec_freq['frequency']
+            spec_freq = spec_freq * c / spec_freq['frequency'] ** 2
+            freq_com = (spec_freq * spec_freq['frequency']).integrate(dim='frequency') / total_intensity
+
+            delay = self.calculate_ideal_delay(c / freq_com)
+
+            phase_mask = self.camera.calculate_pixelated_phase_mask()
+
+            coherence = calculate_coherence(spec_freq, delay, material=self.crystals[0].material, freq_com=freq_com)
+            coherence = xr.where(total_intensity > 0, coherence, 0)
+            spectrum = 1 / 4 * (total_intensity + np.real(coherence * np.exp(1j * phase_mask)))
+            apply_polarisers = False
 
         elif self.instrument_type == 'general':
             # full Mueller matrix calculation
@@ -130,8 +146,11 @@ class Instrument(object):
 
             mueller_matrix_total = self.calculate_matrix(spectrum)
             spectrum = mueller_product(mueller_matrix_total, spectrum)
+            apply_polarisers = None
+        else:
+            raise NotImplementedError
 
-        image = self.camera.capture_image(spectrum)
+        image = self.camera.capture_image(spectrum, apply_polarisers=apply_polarisers)
         return image
 
     def calculate_ideal_delay(self, wavelength, ):
@@ -145,6 +164,11 @@ class Instrument(object):
         :return:
         """
 
+        assert self.instrument_type in ['single_delay_linear',
+                                        'single_delay_polarised',
+                                        'multi_delay_polarised',
+                                        ]
+
         # calculate the ray angles through the interferometer
         if hasattr(wavelength, 'coords'):
             if 'x' in wavelength.coords.keys() and 'y' in wavelength.coords.keys():
@@ -155,10 +179,21 @@ class Instrument(object):
             inc_angle = self.calculate_inc_angle(x, y, )
             azim_angle = self.calculate_azim_angle(x, y, self.crystals[0])
 
-        # calculate phase delay contribution due to each crystal
-        delay = 0
-        for crystal in self.crystals:
-            delay += crystal.calculate_delay(wavelength, inc_angle, azim_angle, )
+        if self.instrument_type in ['single_delay_linear', 'single_delay_polarised']:
+            # calculate phase delay contribution due to each crystal
+            delay = 0
+            for crystal in self.crystals:
+                delay += crystal.calculate_delay(wavelength, inc_angle, azim_angle, )
+
+        elif self.instrument_type == 'multi_delay_polarised':
+            delay_1 = self.crystals[0].calculate_delay(wavelength, inc_angle, azim_angle, )
+            delay_2 = self.crystals[1].calculate_delay(wavelength, inc_angle, azim_angle, )
+            delay_sum = delay_1 + delay_2
+            delay_diff = abs(delay_1 - delay_2)
+
+            return delay_1, delay_2, delay_sum, delay_diff
+        else:
+            raise NotImplementedError
 
         return delay
 
@@ -172,46 +207,64 @@ class Instrument(object):
 
     def check_instrument_type(self):
         """
-        instrument_type determines best way to calculate the interference pattern
+        For certain instrument layouts there are analytical shortcuts for calculating the interferogram, skipping the
+        full Mueller matrix treatment.
 
         in the case of a perfectly aligned coherence imaging diagnostic in a simple 'two-beam' configuration, skip the
         Mueller matrix calculation to the final result.
 
-        :return: type (str)
+        :return: itype (str)
         """
 
-        orientations = []
-        for crystal in self.crystals:
-            orientations.append(crystal.orientation)
+        itype = None
 
-        # if all crystal orientations are the same and are at 45 degrees to the polarisers, perform a simplified 2-beam
-        # interferometer calculation -- avoiding the full Mueller matrix treatment
+        if self.camera.polarised:
+
+            # single-delay polarised
+            if len(self.interferometer) == 3:
+                types = [LinearPolariser, UniaxialCrystal, QuarterWaveplate, ]
+                orientations = [0, np.pi / 4, np.pi / 2, ]
+
+                conditions = []
+                for idx, (typ, orientation) in enumerate(zip(types, orientations)):
+                    interferometer_component = self.interferometer[idx]
+                    conditions.append(isinstance(interferometer_component, typ))
+                    conditions.append(interferometer_component.orientation == orientation)
+
+                if all(conditions):
+                    itype = 'single_delay_polarised'
+
+            # multi-delay polarised
+            # TODO add option for a Savart system instead of a displacer system
+            elif len(self.interferometer) == 5:
+                types = [LinearPolariser, UniaxialCrystal, LinearPolariser, UniaxialCrystal, QuarterWaveplate, ]
+                orientations = [0, np.pi / 4, 0, np.pi / 4, np.pi / 2, ]
+
+                conditions = []
+                for idx, (typ, orientation) in enumerate(zip(types, orientations)):
+                    interferometer_component = self.interferometer[idx]
+                    conditions.append(isinstance(interferometer_component, typ))
+                    conditions.append(interferometer_component.orientation == orientation)
+
+                if all(conditions):
+                    itype = 'multi_delay_polarised'
 
         # are there two polarisers, at the front and back of the interferometer?
-        if len(self.polarisers) == 2 and (isinstance(self.interferometer[0], LinearPolariser) and
-                                          isinstance(self.interferometer[-1], LinearPolariser)):
+        elif len(self.polarisers) == 2 and (isinstance(self.interferometer[0], LinearPolariser) and
+                                            isinstance(self.interferometer[-1], LinearPolariser)):
 
-            # ...are they alligned?
             pol_1_orientation = self.interferometer[0].orientation
             pol_2_orientation = self.interferometer[-1].orientation
 
-            if pol_1_orientation == pol_2_orientation:
+            conditions = [pol_1_orientation == pol_2_orientation, ] + \
+                         [abs(crys.orientation - pol_1_orientation) == np.pi / 4 for crys in self.crystals]
+            if all(conditions):
+                itype = 'single_delay_linear'
 
-                # ...are all crystals alligned?
-                crystal_1_orientation = self.crystals[0].orientation
-                crystal_1_material = self.crystals[0].material
+        if itype is None:
+            itype = 'general'
 
-                if all(c.orientation == crystal_1_orientation for c in self.crystals) and \
-                        all(c.material == crystal_1_material for c in self.crystals):
-
-                    # ...at 45 degrees to the polarisers?
-                    if abs(pol_1_orientation - crystal_1_orientation) == np.pi / 4:
-
-                        # ...and is the camera a standard camera?
-                        if not isinstance(self.camera, PolarisedCamera):
-                            return 'two_beam'
-
-        return 'general'
+        return itype
 
     def calculate_ideal_phase_offset(self, wl, n_e=None, n_o=None):
         """

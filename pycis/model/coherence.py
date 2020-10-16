@@ -10,10 +10,9 @@ def calculate_coherence(spectrum, delay, material=None, freq_com=None):
     """
     calculate the (temporal) coherence of an intensity spectrum for given interferometer delay(s)
 
-    In general, coherence is a complex quantity. In the absence of dispersion, it is the Fourier transform of the
-    frequency spectrum. Generally, instrument dispersion breaks the simple Fourier transform relationship, but a
-    first-order (linear) approx. for dispersion maintains it in a slightly modified form. I call this the 'group delay'
-    approximation here.
+    Coherence is the Fourier transform of the frequency spectrum. Generally, instrument dispersion breaks the simple
+    Fourier transform relationship, but a first-order (linear) approx. for dispersion maintains it in a slightly
+    modified form. I call this the 'group delay' approximation here.
 
     See test_with_gaussian_lineshape() below for examples of how to use.
 
