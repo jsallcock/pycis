@@ -3,7 +3,7 @@ import xarray as xr
 from numba import vectorize, f8
 from scipy.constants import c
 from pycis.model import mueller_product, LinearPolariser, calculate_coherence, BirefringentComponent, \
-    InterferometerComponent, Camera, calculate_rot_matrix, QuarterWaveplate, UniaxialCrystal
+    InterferometerComponent, Camera, QuarterWaveplate, UniaxialCrystal
 
 
 class Instrument(object):
@@ -12,7 +12,7 @@ class Instrument(object):
 
     """
 
-    def __init__(self, camera, optics, interferometer, interferometer_orientation=0):
+    def __init__(self, camera, optics, interferometer, ):
         """
 
         :param camera:
@@ -31,13 +31,10 @@ class Instrument(object):
         self.camera = camera
         self.optics = optics
         self.interferometer = interferometer
+
         self.crystals = self.get_crystals()
         self.polarisers = self.get_polarisers()
-        self.interferometer_orientation = interferometer_orientation
-
         self.input_checks()
-
-        # assign instrument 'type'
         self.instrument_type = self.check_instrument_type()
 
     def input_checks(self):
@@ -72,8 +69,7 @@ class Instrument(object):
         :return: azimuthal angles [ rad ]
 
         """
-        return xr.apply_ufunc(_calculate_azim_angles, x, y, crystal.orientation, self.interferometer_orientation,
-                              dask='allowed, ')
+        return xr.apply_ufunc(_calculate_azim_angles, x, y, crystal.orientation, dask='allowed, ')
 
     def calculate_matrix(self, spectrum):
         """
@@ -92,8 +88,7 @@ class Instrument(object):
             component_matrix = component.calculate_matrix(spectrum.wavelength, inc_angle, azim_angle)
             total_matrix = mueller_product(component_matrix, total_matrix)
 
-        rot_matrix = calculate_rot_matrix(self.interferometer_orientation)
-        return mueller_product(rot_matrix, total_matrix)
+        return total_matrix
 
     def capture_image(self, spectrum, ):
         """
@@ -110,12 +105,13 @@ class Instrument(object):
         if self.instrument_type == 'single_delay_linear' and 'stokes' not in spectrum.dims:
             # analytical calculation to save time
             total_intensity = spectrum.integrate(dim='wavelength', )
+
             spec_freq = spectrum.rename({'wavelength': 'frequency'})
             spec_freq['frequency'] = c / spec_freq['frequency']
             spec_freq = spec_freq * c / spec_freq['frequency'] ** 2
             freq_com = (spec_freq * spec_freq['frequency']).integrate(dim='frequency') / total_intensity
 
-            delay = self.calculate_ideal_delay(c / freq_com)
+            delay = self.calculate_delay(c / freq_com)
 
             coherence = calculate_coherence(spec_freq, delay, material=self.crystals[0].material, freq_com=freq_com)
             coherence = xr.where(total_intensity > 0, coherence, 0)
@@ -129,7 +125,7 @@ class Instrument(object):
             spec_freq = spec_freq * c / spec_freq['frequency'] ** 2
             freq_com = (spec_freq * spec_freq['frequency']).integrate(dim='frequency') / total_intensity
 
-            delay = self.calculate_ideal_delay(c / freq_com)
+            delay = self.calculate_delay(c / freq_com)
 
             phase_mask = self.camera.calculate_pixelated_phase_mask()
 
@@ -153,7 +149,7 @@ class Instrument(object):
         image = self.camera.capture_image(spectrum, apply_polarisers=apply_polarisers)
         return image
 
-    def calculate_ideal_delay(self, wavelength, ):
+    def calculate_delay(self, wavelength, ):
         """
         calculate the interferometer phase delay (in rad) at the given wavelength(s)
 
@@ -191,27 +187,22 @@ class Instrument(object):
             delay_sum = delay_1 + delay_2
             delay_diff = abs(delay_1 - delay_2)
 
-            return delay_1, delay_2, delay_sum, delay_diff
+            delay = delay_1, delay_2, delay_sum, delay_diff
         else:
             raise NotImplementedError
 
         return delay
-
-    def calculate_ideal_contrast(self):
-
-        contrast = 1
-        for crystal in self.crystals:
-            contrast *= crystal.contrast
-
-        return contrast
 
     def check_instrument_type(self):
         """
         For certain instrument layouts there are analytical shortcuts for calculating the interferogram, skipping the
         full Mueller matrix treatment.
 
-        in the case of a perfectly aligned coherence imaging diagnostic in a simple 'two-beam' configuration, skip the
-        Mueller matrix calculation to the final result.
+        current instrument types:
+        - 'general': Full Mueller calculation
+        - 'single_delay_linear'
+        - 'single_delay_polarised'
+        - 'multi_delay_polarised'
 
         :return: itype (str)
         """
@@ -266,27 +257,12 @@ class Instrument(object):
 
         return itype
 
-    def calculate_ideal_phase_offset(self, wl, n_e=None, n_o=None):
-        """
-        :param wl:
-        :param n_e:
-        :param n_o:
-        :return: phase_offset [ rad ]
-        """
-
-        phase_offset = 0
-        for crystal in self.crystals:
-            phase_offset += crystal.calculate_delay(wl, 0., 0., n_e=n_e, n_o=n_o)
-
-        return -phase_offset
-
 
 @vectorize([f8(f8, f8, f8, ), ], nopython=True, fastmath=True, cache=True, )
 def _calculate_inc_angles(x, y, f_3):
     return np.arctan2((x ** 2 + y ** 2) ** 0.5, f_3, )
 
 
-@vectorize([f8(f8, f8, f8, f8), ], nopython=True, fastmath=True, cache=True, )
-def _calculate_azim_angles(x, y, crystal_orientation, interferometer_orientation, ):
-    orientation = crystal_orientation + interferometer_orientation
-    return np.arctan2(y, x) + np.pi - orientation
+@vectorize([f8(f8, f8, f8, ), ], nopython=True, fastmath=True, cache=True, )
+def _calculate_azim_angles(x, y, crystal_orientation, ):
+    return np.arctan2(y, x) + np.pi - crystal_orientation
