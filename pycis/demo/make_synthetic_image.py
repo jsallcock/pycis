@@ -18,9 +18,10 @@ optics = [17e-3, 105e-3, 150e-3, ]
 
 pol = LinearPolariser(0, )
 contrast = 0.5
+dp = UniaxialCrystal(np.pi / 4, 5e-3, np.pi / 4, contrast=contrast, )
 wp = UniaxialCrystal(np.pi / 4, 5e-3, 0, contrast=contrast, )
 qwp = QuarterWaveplate(np.pi / 2, )
-interferometer_1 = [pol, wp, qwp, ]
+interferometer_1 = [pol, dp, pol, wp, qwp, ]
 instrument_1 = Instrument(camera_pol, optics, interferometer_1)
 instrument_2 = Instrument(camera_pol, optics, interferometer_1, force_mueller=True)
 print(instrument_1.instrument_type)

@@ -151,11 +151,15 @@ class Instrument(object):
                 coherence_sum = calculate_coherence(spec_freq, delay_sum, material=self.crystals[0].material, freq_com=freq_com)
                 coherence_diff = calculate_coherence(spec_freq, delay_diff, material=self.crystals[0].material, freq_com=freq_com)
 
+                contrast_1 = self.crystals[0].contrast
+                contrast_2 = self.crystals[0].contrast
+                contrast_sum = contrast_diff = contrast_1 * contrast_2
+
                 image = 1 / 8 * (total_intensity +
-                                 np.real(coherence_1) +
-                                 np.real(coherence_2 * np.exp(1j * phase_mask)) +
-                                 1 / 2 * np.real(coherence_sum * np.exp(1j * phase_mask)) +
-                                 1 / 2 * np.real(coherence_diff * np.exp(1j * phase_mask))
+                                 contrast_1 * np.real(coherence_1) +
+                                 contrast_2 * np.real(coherence_2 * np.exp(1j * phase_mask)) +
+                                 1 / 2 * contrast_sum * np.real(coherence_sum * np.exp(1j * phase_mask)) +
+                                 1 / 2 * contrast_diff * np.real(coherence_diff * np.exp(1j * phase_mask))
                                  )
             else:
                 raise NotImplementedError
