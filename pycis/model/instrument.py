@@ -11,19 +11,18 @@ class Instrument(object):
     coherence imaging instrument
 
     """
-
-    def __init__(self, camera, optics, interferometer, ):
+    def __init__(self, camera, optics, interferometer, force_mueller=False):
         """
 
         :param camera:
         :type camera pycis.model.Camera
 
-        :param optics: the focal lengths of the three lenses used in the standard CI configuration (see e.g. my thesis
+        :param optics: the focal lengths (in m) of the three lenses used in the standard CI configuration (see e.g. my thesis
         or Scott Silburn's): [f_1, f_2, f_3] where f_1 is the objective lens.
         :type optics: list of floats
 
-        :param interferometer: a list of instances of pycis.model.InterferometerComponent. The first component in
-        the list is the first component that the light passes through.
+        :param interferometer: a list of instances of pycis.model.InterferometerComponent. The first list entry is the
+        first component that the light passes through.
         :type interferometer: list
 
         """
@@ -31,6 +30,7 @@ class Instrument(object):
         self.camera = camera
         self.optics = optics
         self.interferometer = interferometer
+        self.force_mueller = force_mueller
 
         self.crystals = self.get_crystals()
         self.polarisers = self.get_polarisers()
@@ -40,7 +40,7 @@ class Instrument(object):
     def input_checks(self):
         assert isinstance(self.camera, Camera)
         assert isinstance(self.optics, list)
-        assert all(isinstance(c, InterferometerComponent) for c in self.interferometer)
+        assert all(isinstance(co, InterferometerComponent) for co in self.interferometer)
 
     def get_crystals(self):
         return [co for co in self.interferometer if isinstance(co, BirefringentComponent)]
@@ -71,7 +71,7 @@ class Instrument(object):
         """
         return xr.apply_ufunc(_calculate_azim_angles, x, y, crystal.orientation, dask='allowed, ')
 
-    def calculate_matrix(self, spectrum):
+    def calculate_mueller_matrix(self, spectrum):
         """
         calculate the total Mueller matrix for the interferometer
 
@@ -85,7 +85,7 @@ class Instrument(object):
 
         for component in self.interferometer:
             azim_angle = self.calculate_azim_angle(spectrum.x, spectrum.y, component)
-            component_matrix = component.calculate_matrix(spectrum.wavelength, inc_angle, azim_angle)
+            component_matrix = component.calculate_mueller_matrix(spectrum.wavelength, inc_angle, azim_angle)
             total_matrix = mueller_product(component_matrix, total_matrix)
 
         return total_matrix
@@ -94,70 +94,85 @@ class Instrument(object):
         """
         capture image of scene
 
-        :param spectrum: (xr.DataArray) photon fluence spectrum with units of ph / m [hitting the pixel area during exposure
-         time] and with dimensions 'wavelength', 'x', 'y' and (optionally) 'stokes'. If no stokes dim then it is assumed
+        :param spectrum: (xr.DataArray) photon fluence spectrum with units of ph / m [hitting the pixel area during
+        exposure time] and with dimensions 'wavelength', 'x', 'y' and (optionally) 'stokes'. If no stokes dim then it is assumed
         that light is unpolarised (i.e. the spec supplied is the S_0 Stokes parameter only)
-        :param color: (bool) true for color display, else monochrome
+
         :return:
 
         """
 
-        if self.instrument_type == 'single_delay_linear' and 'stokes' not in spectrum.dims:
-            # analytical calculation to save time
-            total_intensity = spectrum.integrate(dim='wavelength', )
+        if self.instrument_type == 'mueller':
+            # do the full Mueller matrix calculation
 
-            spec_freq = spectrum.rename({'wavelength': 'frequency'})
-            spec_freq['frequency'] = c / spec_freq['frequency']
-            spec_freq = spec_freq * c / spec_freq['frequency'] ** 2
-            freq_com = (spec_freq * spec_freq['frequency']).integrate(dim='frequency') / total_intensity
-
-            delay = self.calculate_delay(c / freq_com)
-
-            coherence = calculate_coherence(spec_freq, delay, material=self.crystals[0].material, freq_com=freq_com)
-            coherence = xr.where(total_intensity > 0, coherence, 0)
-            spectrum = 1 / 4 * (total_intensity + np.real(coherence))
-            apply_polarisers = False
-
-        elif self.instrument_type == 'single_delay_polarised' and 'stokes' not in spectrum.dims:
-            total_intensity = spectrum.integrate(dim='wavelength', )
-            spec_freq = spectrum.rename({'wavelength': 'frequency'})
-            spec_freq['frequency'] = c / spec_freq['frequency']
-            spec_freq = spec_freq * c / spec_freq['frequency'] ** 2
-            freq_com = (spec_freq * spec_freq['frequency']).integrate(dim='frequency') / total_intensity
-
-            delay = self.calculate_delay(c / freq_com)
-
-            phase_mask = self.camera.calculate_pixelated_phase_mask()
-
-            coherence = calculate_coherence(spec_freq, delay, material=self.crystals[0].material, freq_com=freq_com)
-            coherence = xr.where(total_intensity > 0, coherence, 0)
-            spectrum = 1 / 4 * (total_intensity + np.real(coherence * np.exp(1j * phase_mask)))
-            apply_polarisers = False
-
-        elif self.instrument_type == 'general':
-            # full Mueller matrix calculation
             if 'stokes' not in spectrum.dims:
                 a0 = xr.zeros_like(spectrum)
                 spectrum = xr.combine_nested([spectrum, a0, a0, a0], concat_dim=('stokes',))
 
-            mueller_matrix_total = self.calculate_matrix(spectrum)
-            spectrum = mueller_product(mueller_matrix_total, spectrum)
+            mueller_matrix_total = self.calculate_mueller_matrix(spectrum)
+            image = mueller_product(mueller_matrix_total, spectrum)
             apply_polarisers = None
-        else:
-            raise NotImplementedError
 
-        image = self.camera.capture_image(spectrum, apply_polarisers=apply_polarisers)
+        else:
+            total_intensity = spectrum.integrate(dim='wavelength', )
+
+            spec_freq = spectrum.rename({'wavelength': 'frequency'})
+            spec_freq['frequency'] = c / spec_freq['frequency']
+            spec_freq = spec_freq * c / spec_freq['frequency'] ** 2
+            spec_freq = spec_freq.sortby(spec_freq.frequency)  # ensure that integration limits are from -ve to +ve frequency
+            freq_com = (spec_freq * spec_freq['frequency']).integrate(dim='frequency') / total_intensity
+
+            delay = self.calculate_delay(c / freq_com)
+            apply_polarisers = False
+
+            if self.instrument_type == 'single_delay_linear' and 'stokes' not in spectrum.dims:
+
+                coherence = calculate_coherence(spec_freq, delay, material=self.crystals[0].material, freq_com=freq_com)
+                coherence = xr.where(total_intensity > 0, coherence, 0)
+                contrast = np.array([crystal.contrast for crystal in self.crystals]).prod()
+                image = 1 / 4 * (total_intensity + contrast * np.real(coherence))
+
+            elif self.instrument_type == 'single_delay_polarised' and 'stokes' not in spectrum.dims:
+
+                phase_mask = self.camera.calculate_pixelated_phase_mask()
+                coherence = calculate_coherence(spec_freq, delay, material=self.crystals[0].material, freq_com=freq_com)
+                coherence = xr.where(total_intensity > 0, coherence, 0)
+                image = 1 / 4 * (total_intensity + self.crystals[0].contrast * np.real(coherence * np.exp(1j * phase_mask)))
+
+            elif self.instrument_type == 'multi_delay_polarised' and 'stokes' not in spectrum.dims:
+
+                phase_mask = self.camera.calculate_pixelated_phase_mask()
+
+                delay_1, delay_2, delay_sum, delay_diff = delay
+
+                # TODO not sure how to handle this if the two crystal materials are different
+                coherence_1 = calculate_coherence(spec_freq, delay_1, material=self.crystals[0].material, freq_com=freq_com)
+                coherence_2 = calculate_coherence(spec_freq, delay_2, material=self.crystals[1].material, freq_com=freq_com)
+                coherence_sum = calculate_coherence(spec_freq, delay_sum, material=self.crystals[0].material, freq_com=freq_com)
+                coherence_diff = calculate_coherence(spec_freq, delay_diff, material=self.crystals[0].material, freq_com=freq_com)
+
+                image = 1 / 8 * (total_intensity +
+                                 np.real(coherence_1) +
+                                 np.real(coherence_2 * np.exp(1j * phase_mask)) +
+                                 1 / 2 * np.real(coherence_sum * np.exp(1j * phase_mask)) +
+                                 1 / 2 * np.real(coherence_diff * np.exp(1j * phase_mask))
+                                 )
+            else:
+                raise NotImplementedError
+
+        # image = xr.where(image <= 0, 0, image, )
+        image = self.camera.capture_image(image, apply_polarisers=apply_polarisers)
         return image
 
     def calculate_delay(self, wavelength, ):
         """
-        calculate the interferometer phase delay (in rad) at the given wavelength(s)
+        calculate the interferometer delay(s) at the given wavelength(s)
 
-        assumes all crystal's phase contributions combine constructively -- method used only when instrument.type =
-        'two-beam'. kwargs included for fitting purposes.
+        At the moment this method only works for instrument types other than 'mueller'. I'm not sure it would be
+        possible to write a general function.
 
-        :param wavelength: can be scalar or xr.DataArray with dimensions including 'x' and 'y'
-        :return:
+        :param wavelength: in units (m), can be a float or an xr.DataArray with dimensions including 'x' and 'y'
+        :return: delay in units (rad)
         """
 
         assert self.instrument_type in ['single_delay_linear',
@@ -171,15 +186,17 @@ class Instrument(object):
                 inc_angle = self.calculate_inc_angle(wavelength.x, wavelength.y)
                 azim_angle = self.calculate_azim_angle(wavelength.x, wavelength.y, self.crystals[0])
         else:
-            x, y, =  self.camera.calculate_pixel_position()
-            inc_angle = self.calculate_inc_angle(x, y, )
-            azim_angle = self.calculate_azim_angle(x, y, self.crystals[0])
+            inc_angle = self.calculate_inc_angle(self.camera.x, self.camera.y, )
+            azim_angle = self.calculate_azim_angle(self.camera.x, self.camera.y, self.crystals[0])
 
-        if self.instrument_type in ['single_delay_linear', 'single_delay_polarised']:
-            # calculate phase delay contribution due to each crystal
+        if self.instrument_type == 'single_delay_linear':
+            # add delay contribution due to each crystal
             delay = 0
             for crystal in self.crystals:
                 delay += crystal.calculate_delay(wavelength, inc_angle, azim_angle, )
+
+        elif self.instrument_type == 'single_delay_polarised':
+            delay = self.crystals[0].calculate_delay(wavelength, inc_angle, azim_angle, )
 
         elif self.instrument_type == 'multi_delay_polarised':
             delay_1 = self.crystals[0].calculate_delay(wavelength, inc_angle, azim_angle, )
@@ -199,7 +216,7 @@ class Instrument(object):
         full Mueller matrix treatment.
 
         current instrument types:
-        - 'general': Full Mueller calculation
+        - 'mueller': Full Mueller calculation
         - 'single_delay_linear'
         - 'single_delay_polarised'
         - 'multi_delay_polarised'
@@ -252,8 +269,8 @@ class Instrument(object):
             if all(conditions):
                 itype = 'single_delay_linear'
 
-        if itype is None:
-            itype = 'general'
+        if itype is None or self.force_mueller:
+            itype = 'mueller'
 
         return itype
 

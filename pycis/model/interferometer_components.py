@@ -77,7 +77,7 @@ class InterferometerComponent:
         mat_i = mueller_product(mat, calculate_rot_matrix(self.orientation))
         return mueller_product(calculate_rot_matrix(-self.orientation), mat_i)
 
-    def calculate_matrix(self, wavelength, inc_angle, azim_angle, ):
+    def calculate_mueller_matrix(self, wavelength, inc_angle, azim_angle, ):
         raise NotImplementedError
 
 
@@ -101,7 +101,7 @@ class LinearPolariser(InterferometerComponent):
         self.tx_1 = tx_1
         self.tx_2 = tx_2
 
-    def calculate_matrix(self, wavelength, inc_angle, azim_angle, ):
+    def calculate_mueller_matrix(self, wavelength, inc_angle, azim_angle, ):
         """
         Mueller matrix for ideal linear polariser
 
@@ -146,7 +146,7 @@ class BirefringentComponent(InterferometerComponent):
         self.source = source
         self.contrast = contrast
 
-    def calculate_matrix(self, wavelength, inc_angle, azim_angle):
+    def calculate_mueller_matrix(self, wavelength, inc_angle, azim_angle):
         """
         general Mueller matrix for a linear retarder
         

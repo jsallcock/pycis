@@ -127,20 +127,20 @@ class Camera(object):
         :return:
         """
 
-        args = [None, ] * 3  # ok this is grim
-        matrix_0deg = LinearPolariser(0).calculate_matrix(*args)
-        matrix_45deg = LinearPolariser(np.pi / 4).calculate_matrix(*args)
-        matrix_90deg = LinearPolariser(np.pi / 2).calculate_matrix(*args)
-        matrix_135deg = LinearPolariser(3 * np.pi / 4).calculate_matrix(*args)
+        args = [None, ] * 3  # ok this is pretty grim
+        matrix_0deg = LinearPolariser(0).calculate_mueller_matrix(*args)
+        matrix_45deg = LinearPolariser(np.pi / 4).calculate_mueller_matrix(*args)
+        matrix_90deg = LinearPolariser(np.pi / 2).calculate_mueller_matrix(*args)
+        matrix_135deg = LinearPolariser(3 * np.pi / 4).calculate_mueller_matrix(*args)
 
-        pix_idxs_x = xr.DataArray(np.arange(0, self.sensor_format[0], 2), dims=('x',), )
+        pix_idxs_x = xr.DataArray(np.arange(0, self.sensor_format[0], 2), dims=('x', ), )
         pix_idxs_y = xr.DataArray(np.arange(0, self.sensor_format[1], 2), dims=('y', ), )
 
         mueller_matrix = np.zeros([self.sensor_format[0], self.sensor_format[1], 4, 4, ])
         dims = ('x', 'y', 'mueller_v', 'mueller_h', )
         mueller_matrix = xr.DataArray(mueller_matrix, dims=dims, ).assign_coords({'x': self.x, 'y': self.y, }, )
 
-        mueller_matrix[pix_idxs_x, pix_idxs_y, ...] = matrix_0deg
+        mueller_matrix[pix_idxs_x, pix_idxs_y, ..., ] = matrix_0deg
         mueller_matrix[pix_idxs_x + 1, pix_idxs_y, ..., ] = matrix_45deg
         mueller_matrix[pix_idxs_x + 1, pix_idxs_y + 1, ..., ] = matrix_90deg
         mueller_matrix[pix_idxs_x, pix_idxs_y + 1, ..., ] = matrix_135deg
@@ -153,8 +153,8 @@ class Camera(object):
         :return:
         """
 
-        pix_idxs_x = xr.DataArray(np.arange(0, self.sensor_format[0], 2), dims=('x',), )
-        pix_idxs_y = xr.DataArray(np.arange(0, self.sensor_format[1], 2), dims=('y',), )
+        pix_idxs_x = xr.DataArray(np.arange(0, self.sensor_format[0], 2), dims=('x', ), )
+        pix_idxs_y = xr.DataArray(np.arange(0, self.sensor_format[1], 2), dims=('y', ), )
         phase_mask = np.zeros(self.sensor_format, )
         dims = ('x', 'y',)
         phase_mask = xr.DataArray(phase_mask, dims=dims, ).assign_coords({'x': self.x, 'y': self.y, }, )
