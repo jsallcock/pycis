@@ -200,11 +200,15 @@ class Instrument(object):
                 delay += crystal.calculate_delay(wavelength, inc_angle, azim_angle, )
 
         elif self.instrument_type == 'single_delay_polarised':
-            delay = self.crystals[0].calculate_delay(wavelength, inc_angle, azim_angle, )
+            # generalise to arbitrary interferometer orientations
+            orientation_delay = -2 * self.polarisers[0].orientation
+            delay = self.crystals[0].calculate_delay(wavelength, inc_angle, azim_angle, ) + orientation_delay
 
         elif self.instrument_type == 'multi_delay_polarised':
+            # generalise to arbitrary interferometer orientations
+            orientation_delay = -2 * self.polarisers[0].orientation
             delay_1 = self.crystals[0].calculate_delay(wavelength, inc_angle, azim_angle, )
-            delay_2 = self.crystals[1].calculate_delay(wavelength, inc_angle, azim_angle, )
+            delay_2 = self.crystals[1].calculate_delay(wavelength, inc_angle, azim_angle, ) + orientation_delay
             delay_sum = delay_1 + delay_2
             delay_diff = abs(delay_1 - delay_2)
 
@@ -234,29 +238,32 @@ class Instrument(object):
 
             # single-delay polarised
             if len(self.interferometer) == 3:
+
+                # check for correct component types and relative orientations
                 types = [LinearPolariser, UniaxialCrystal, QuarterWaveplate, ]
-                orientations = [0, np.pi / 4, np.pi / 2, ]
+                relative_orientations = [0, np.pi / 4, np.pi / 2, ]
 
                 conditions = []
-                for idx, (typ, orientation) in enumerate(zip(types, orientations)):
-                    interferometer_component = self.interferometer[idx]
-                    conditions.append(isinstance(interferometer_component, typ))
-                    conditions.append(interferometer_component.orientation == orientation)
+                for idx, (typ, rel_or) in enumerate(zip(types, relative_orientations)):
+                    component = self.interferometer[idx]
+                    conditions.append(isinstance(component, typ))
+                    conditions.append(component.orientation - self.polarisers[0].orientation == rel_or)
 
                 if all(conditions):
                     itype = 'single_delay_polarised'
 
             # multi-delay polarised
-            # TODO add option for a Savart system instead of a displacer system
             elif len(self.interferometer) == 5:
+
+                # check for correct component types and relative orientations
                 types = [LinearPolariser, UniaxialCrystal, LinearPolariser, UniaxialCrystal, QuarterWaveplate, ]
-                orientations = [0, np.pi / 4, 0, np.pi / 4, np.pi / 2, ]
+                relative_orientations = [0, np.pi / 4, 0, np.pi / 4, np.pi / 2, ]
 
                 conditions = []
-                for idx, (typ, orientation) in enumerate(zip(types, orientations)):
-                    interferometer_component = self.interferometer[idx]
-                    conditions.append(isinstance(interferometer_component, typ))
-                    conditions.append(interferometer_component.orientation == orientation)
+                for idx, (typ, rel_or) in enumerate(zip(types, relative_orientations)):
+                    component = self.interferometer[idx]
+                    conditions.append(isinstance(component, typ))
+                    conditions.append(component.orientation - self.polarisers[0].orientation == rel_or)
 
                 if all(conditions):
                     itype = 'multi_delay_polarised'

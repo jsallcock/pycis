@@ -5,6 +5,10 @@ from pycis import Camera, LinearPolariser, UniaxialCrystal, QuarterWaveplate, In
 import time
 import os
 
+"""
+currently using this script for quick tests
+"""
+
 bit_depth = 12
 sensor_format = (50, 50, )
 pixel_size = 6.5e-6 * 20
@@ -15,12 +19,13 @@ camera = Camera(bit_depth, sensor_format, pixel_size, qe, epercount, cam_noise, 
 camera_pol = Camera(bit_depth, sensor_format, pixel_size, qe, epercount, cam_noise, polarised=True)
 
 optics = [17e-3, 105e-3, 150e-3, ]
+orint = 0.2342464574
 
-pol = LinearPolariser(0, )
+pol = LinearPolariser(0 + orint, )
 contrast = 0.5
-dp = UniaxialCrystal(np.pi / 4, 5e-3, np.pi / 4, contrast=contrast, )
-wp = UniaxialCrystal(np.pi / 4, 5e-3, 0, contrast=contrast, )
-qwp = QuarterWaveplate(np.pi / 2, )
+dp = UniaxialCrystal(np.pi / 4 + orint, 5e-3, np.pi / 4, contrast=contrast, )
+wp = UniaxialCrystal(np.pi / 4 + orint, 5e-3, 0, contrast=contrast, )
+qwp = QuarterWaveplate(np.pi / 2 + orint, )
 interferometer_1 = [pol, dp, pol, wp, qwp, ]
 instrument_1 = Instrument(camera_pol, optics, interferometer_1)
 instrument_2 = Instrument(camera_pol, optics, interferometer_1, force_mueller=True)
