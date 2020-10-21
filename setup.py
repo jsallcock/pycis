@@ -1,8 +1,4 @@
 import setuptools
-import numpy as np
-import os.path
-
-
 
 setuptools.setup(
     name='pycis',
