@@ -289,7 +289,7 @@ class Instrument(object):
 
         if self.instrument_type == 'single_delay_linear':
             # add contribution due to each crystal
-            spatial_freq_x, spatial_freq_y = 0
+            spatial_freq_x, spatial_freq_y = 0, 0
             for crystal in self.crystals:
 
                 sp_f_x, sp_f_y = crystal.calculate_fringe_frequency(wavelength, self.optics[2], )
