@@ -32,21 +32,82 @@ class Instrument(object):
         self.interferometer = interferometer
         self.force_mueller = force_mueller
 
-        self.crystals = self.get_crystals()
-        self.polarisers = self.get_polarisers()
         self.input_checks()
-        self.instrument_type = self.check_instrument_type()
+        self.crystals = [co for co in self.interferometer if isinstance(co, BirefringentComponent)]
+        self.polarisers = [co for co in self.interferometer if isinstance(co, LinearPolariser)]
+        self.instrument_type = self.get_instrument_type()
 
     def input_checks(self):
         assert isinstance(self.camera, Camera)
         assert isinstance(self.optics, list)
         assert all(isinstance(co, InterferometerComponent) for co in self.interferometer)
 
-    def get_crystals(self):
-        return [co for co in self.interferometer if isinstance(co, BirefringentComponent)]
+    def get_instrument_type(self):
+        """
+        For certain instrument layouts there are analytical shortcuts for calculating the interferogram, skipping the
+        full Mueller matrix treatment.
 
-    def get_polarisers(self):
-        return [co for co in self.interferometer if isinstance(co, LinearPolariser)]
+        current instrument types:
+        - 'mueller': Full Mueller calculation
+        - 'single_delay_linear'
+        - 'single_delay_polarised'
+        - 'multi_delay_polarised'
+
+        :return: itype (str)
+        """
+
+        itype = None
+
+        if self.camera.polarised:
+
+            # single-delay polarised
+            if len(self.interferometer) == 3:
+
+                # check for correct component types and relative orientations
+                types = [LinearPolariser, UniaxialCrystal, QuarterWaveplate, ]
+                relative_orientations = [0, np.pi / 4, np.pi / 2, ]
+
+                conditions_met = []
+                for idx, (typ, rel_or) in enumerate(zip(types, relative_orientations)):
+                    component = self.interferometer[idx]
+                    conditions_met.append(isinstance(component, typ))
+                    conditions_met.append(isclose(component.orientation - self.polarisers[0].orientation, rel_or))
+
+                if all(conditions_met):
+                    itype = 'single_delay_polarised'
+
+            # multi-delay polarised
+            elif len(self.interferometer) == 5:
+
+                # check for correct component types and relative orientations
+                types = [LinearPolariser, UniaxialCrystal, LinearPolariser, UniaxialCrystal, QuarterWaveplate, ]
+                relative_orientations = [0, np.pi / 4, 0, np.pi / 4, np.pi / 2, ]
+
+                conditions_met = []
+                for idx, (typ, rel_or) in enumerate(zip(types, relative_orientations)):
+                    component = self.interferometer[idx]
+                    conditions_met.append(isinstance(component, typ))
+                    conditions_met.append(isclose(component.orientation - self.polarisers[0].orientation, rel_or))
+
+                if all(conditions_met):
+                    itype = 'multi_delay_polarised'
+
+        # are there two polarisers, at the front and back of the interferometer?
+        elif len(self.polarisers) == 2 and (isinstance(self.interferometer[0], LinearPolariser) and
+                                            isinstance(self.interferometer[-1], LinearPolariser)):
+
+            pol_1_orientation = self.interferometer[0].orientation
+            pol_2_orientation = self.interferometer[-1].orientation
+
+            conditions_met = [pol_1_orientation == pol_2_orientation, ] + \
+                             [isclose(crys.orientation - pol_1_orientation, np.pi / 4) for crys in self.crystals]
+            if all(conditions_met):
+                itype = 'single_delay_linear'
+
+        if itype is None or self.force_mueller:
+            itype = 'mueller'
+
+        return itype
 
     def calculate_inc_angle(self, x, y):
         """
@@ -57,7 +118,7 @@ class Instrument(object):
         :return: incidence angles [ rad ]
 
         """
-        return xr.apply_ufunc(_calculate_inc_angles, x, y, self.optics[2], dask='allowed')
+        return xr.apply_ufunc(_calculate_inc_angle, x, y, self.optics[2], dask='allowed')
 
     def calculate_azim_angle(self, x, y, crystal):
         """
@@ -69,7 +130,7 @@ class Instrument(object):
         :return: azimuthal angles [ rad ]
 
         """
-        return xr.apply_ufunc(_calculate_azim_angles, x, y, crystal.orientation, dask='allowed, ')
+        return xr.apply_ufunc(_calculate_azim_angle, x, y, crystal.orientation, dask='allowed, ')
 
     def calculate_mueller_matrix(self, spectrum):
         """
@@ -218,79 +279,21 @@ class Instrument(object):
 
         return delay
 
-    def check_instrument_type(self):
+    def calculate_fringe_period(self, crystal, wavelength):
         """
-        For certain instrument layouts there are analytical shortcuts for calculating the interferogram, skipping the
-        full Mueller matrix treatment.
+        calculates the period of the interference fringes at the sensor plane and at the given wavelength
 
-        current instrument types:
-        - 'mueller': Full Mueller calculation
-        - 'single_delay_linear'
-        - 'single_delay_polarised'
-        - 'multi_delay_polarised'
-
-        :return: itype (str)
+        :return:
         """
 
-        itype = None
-
-        if self.camera.polarised:
-
-            # single-delay polarised
-            if len(self.interferometer) == 3:
-
-                # check for correct component types and relative orientations
-                types = [LinearPolariser, UniaxialCrystal, QuarterWaveplate, ]
-                relative_orientations = [0, np.pi / 4, np.pi / 2, ]
-
-                conditions = []
-                for idx, (typ, rel_or) in enumerate(zip(types, relative_orientations)):
-                    component = self.interferometer[idx]
-                    conditions.append(isinstance(component, typ))
-                    conditions.append(isclose(component.orientation - self.polarisers[0].orientation, rel_or))
-
-                if all(conditions):
-                    itype = 'single_delay_polarised'
-
-            # multi-delay polarised
-            elif len(self.interferometer) == 5:
-
-                # check for correct component types and relative orientations
-                types = [LinearPolariser, UniaxialCrystal, LinearPolariser, UniaxialCrystal, QuarterWaveplate, ]
-                relative_orientations = [0, np.pi / 4, 0, np.pi / 4, np.pi / 2, ]
-
-                conditions = []
-                for idx, (typ, rel_or) in enumerate(zip(types, relative_orientations)):
-                    component = self.interferometer[idx]
-                    conditions.append(isinstance(component, typ))
-                    conditions.append(isclose(component.orientation - self.polarisers[0].orientation, rel_or))
-
-                if all(conditions):
-                    itype = 'multi_delay_polarised'
-
-        # are there two polarisers, at the front and back of the interferometer?
-        elif len(self.polarisers) == 2 and (isinstance(self.interferometer[0], LinearPolariser) and
-                                            isinstance(self.interferometer[-1], LinearPolariser)):
-
-            pol_1_orientation = self.interferometer[0].orientation
-            pol_2_orientation = self.interferometer[-1].orientation
-
-            conditions = [pol_1_orientation == pol_2_orientation, ] + \
-                         [abs(crys.orientation - pol_1_orientation) == np.pi / 4 for crys in self.crystals]
-            if all(conditions):
-                itype = 'single_delay_linear'
-
-        if itype is None or self.force_mueller:
-            itype = 'mueller'
-
-        return itype
+        raise NotImplementedError
 
 
 @vectorize([f8(f8, f8, f8, ), ], nopython=True, fastmath=True, cache=True, )
-def _calculate_inc_angles(x, y, f_3):
+def _calculate_inc_angle(x, y, f_3):
     return np.arctan2((x ** 2 + y ** 2) ** 0.5, f_3, )
 
 
 @vectorize([f8(f8, f8, f8, ), ], nopython=True, fastmath=True, cache=True, )
-def _calculate_azim_angles(x, y, crystal_orientation, ):
+def _calculate_azim_angle(x, y, crystal_orientation, ):
     return np.arctan2(y, x) + np.pi - crystal_orientation
