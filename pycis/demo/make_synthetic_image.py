@@ -19,20 +19,17 @@ camera = Camera(bit_depth, sensor_format, pixel_size, qe, epercount, cam_noise, 
 camera_pol = Camera(bit_depth, sensor_format, pixel_size, qe, epercount, cam_noise, polarised=True)
 
 optics = [17e-3, 105e-3, 150e-3, ]
-l = 5e-3
 
-pol_sp = LinearPolariser(0, )
-sp = SavartPlate(np.pi / 4, l, )
+or_int = 35.2323534663 * np.pi / 180
+pol = LinearPolariser(0 + or_int, )
+wp = UniaxialCrystal(np.pi / 4 + or_int, 5e-3, 0, )
+dp = UniaxialCrystal(np.pi / 4 + or_int, 5e-3, np.pi / 4)
+qwp = QuarterWaveplate(np.pi / 2 + or_int, )
 
-pol_dp = LinearPolariser(np.pi / 4)
-dp = UniaxialCrystal(np.pi / 2, l, np.pi / 4, )
+interferometer = [pol, dp, pol, wp, qwp, ]
 
-interferometer_dp = [pol_dp, dp, pol_dp, ]
-interferometer_sp = [pol_sp, sp, pol_sp, ]
-instrument_dp = Instrument(camera, optics, interferometer_dp, )
-instrument_sp = Instrument(camera, optics, interferometer_sp, )
-print(instrument_dp.instrument_type)
-print(instrument_sp.instrument_type)
+instrument = Instrument(camera_pol, optics, interferometer, )
+print(instrument.instrument_type)
 
 wavelength = np.linspace(460e-9, 460.05e-9, 5)
 wavelength = xr.DataArray(wavelength, dims=('wavelength', ), coords=(wavelength, ), )
@@ -44,10 +41,8 @@ spec *= 5e3
 # spec = spec.chunk({'x': 100, 'y': 100, })
 
 s = time.time()
-igram_dp = instrument_dp.capture_image(spec, )
-igram_sp = instrument_sp.capture_image(spec, )
-igram_dp = igram_dp.load()
-igram_sp = igram_sp.load()
+igram = instrument.capture_image(spec, )
+igram = igram.load()
 e = time.time()
 print(e - s, 'sec')
 
