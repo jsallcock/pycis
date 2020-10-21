@@ -14,17 +14,16 @@ class Instrument(object):
     def __init__(self, camera, optics, interferometer, force_mueller=False):
         """
 
-        :param camera:
-        :type camera pycis.model.Camera
+        :param camera: instance of pycis.model.Camera
 
-        :param optics: the focal lengths (in m) of the three lenses used in the standard CI configuration (see e.g. my thesis
-        or Scott Silburn's): [f_1, f_2, f_3] where f_1 is the objective lens.
-        :type optics: list of floats
+        :param optics: list of floats, the focal lengths (in m) of the three lenses used in the standard CI
+        configuration (see e.g. my thesis or Scott Silburn's): [f_1, f_2, f_3] where f_1 is the objective lens.
 
-        :param interferometer: a list of instances of pycis.model.InterferometerComponent. The first list entry is the
-        first component that the light passes through.
-        :type interferometer: list
+        :param interferometer:  list of instances of pycis.model.InterferometerComponent, where the first list entry is
+         the first component that the light passes through.
 
+        :param force_mueller: bool, forces the full Mueller matrix calculation of the interferogram, even when
+        an analytical shortcut is available.
         """
 
         self.camera = camera

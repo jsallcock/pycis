@@ -1,7 +1,6 @@
 import numpy as np
 import xarray as xr
 from numba import vectorize, f8
-from pycis.tools import is_scalar
 from pycis.model import calculate_dispersion
 
 """
