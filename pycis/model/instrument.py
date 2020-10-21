@@ -1,3 +1,4 @@
+from math import isclose
 import numpy as np
 import xarray as xr
 from numba import vectorize, f8
@@ -246,7 +247,7 @@ class Instrument(object):
                 for idx, (typ, rel_or) in enumerate(zip(types, relative_orientations)):
                     component = self.interferometer[idx]
                     conditions.append(isinstance(component, typ))
-                    conditions.append(component.orientation - self.polarisers[0].orientation == rel_or)
+                    conditions.append(isclose(component.orientation - self.polarisers[0].orientation, rel_or))
 
                 if all(conditions):
                     itype = 'single_delay_polarised'
@@ -262,7 +263,7 @@ class Instrument(object):
                 for idx, (typ, rel_or) in enumerate(zip(types, relative_orientations)):
                     component = self.interferometer[idx]
                     conditions.append(isinstance(component, typ))
-                    conditions.append(component.orientation - self.polarisers[0].orientation == rel_or)
+                    conditions.append(isclose(component.orientation - self.polarisers[0].orientation, rel_or))
 
                 if all(conditions):
                     itype = 'multi_delay_polarised'
