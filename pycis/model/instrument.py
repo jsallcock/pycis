@@ -71,7 +71,7 @@ class Instrument(object):
                 for idx, (typ, rel_or) in enumerate(zip(types, relative_orientations)):
                     component = self.interferometer[idx]
                     conditions_met.append(isinstance(component, typ))
-                    conditions_met.append(component.orientation - self.polarisers[0].orientation == rel_or)
+                    conditions_met.append(isclose(component.orientation - self.polarisers[0].orientation, rel_or))
 
                 if all(conditions_met):
                     itype = 'single_delay_polarised'
@@ -87,7 +87,7 @@ class Instrument(object):
                 for idx, (typ, rel_or) in enumerate(zip(types, relative_orientations)):
                     component = self.interferometer[idx]
                     conditions_met.append(isinstance(component, typ))
-                    conditions_met.append(component.orientation - self.polarisers[0].orientation == rel_or)
+                    conditions_met.append(isclose(component.orientation - self.polarisers[0].orientation, rel_or))
 
                 if all(conditions_met):
                     itype = 'multi_delay_polarised'
@@ -100,7 +100,7 @@ class Instrument(object):
             pol_2_orientation = self.interferometer[-1].orientation
 
             conditions_met = [pol_1_orientation == pol_2_orientation, ] + \
-                         [abs(crys.orientation - pol_1_orientation) == np.pi / 4 for crys in self.crystals]
+                             [isclose(crys.orientation - pol_1_orientation, np.pi / 4) for crys in self.crystals]
             if all(conditions_met):
                 itype = 'single_delay_linear'
 
@@ -286,58 +286,7 @@ class Instrument(object):
         :return:
         """
 
-        itype = None
-
-        if self.camera.polarised:
-
-            # single-delay polarised
-            if len(self.interferometer) == 3:
-
-                # check for correct component types and relative orientations
-                types = [LinearPolariser, UniaxialCrystal, QuarterWaveplate, ]
-                relative_orientations = [0, np.pi / 4, np.pi / 2, ]
-
-                conditions = []
-                for idx, (typ, rel_or) in enumerate(zip(types, relative_orientations)):
-                    component = self.interferometer[idx]
-                    conditions.append(isinstance(component, typ))
-                    conditions.append(isclose(component.orientation - self.polarisers[0].orientation, rel_or))
-
-                if all(conditions):
-                    itype = 'single_delay_polarised'
-
-            # multi-delay polarised
-            elif len(self.interferometer) == 5:
-
-                # check for correct component types and relative orientations
-                types = [LinearPolariser, UniaxialCrystal, LinearPolariser, UniaxialCrystal, QuarterWaveplate, ]
-                relative_orientations = [0, np.pi / 4, 0, np.pi / 4, np.pi / 2, ]
-
-                conditions = []
-                for idx, (typ, rel_or) in enumerate(zip(types, relative_orientations)):
-                    component = self.interferometer[idx]
-                    conditions.append(isinstance(component, typ))
-                    conditions.append(isclose(component.orientation - self.polarisers[0].orientation, rel_or))
-
-                if all(conditions):
-                    itype = 'multi_delay_polarised'
-
-        # are there two polarisers, at the front and back of the interferometer?
-        elif len(self.polarisers) == 2 and (isinstance(self.interferometer[0], LinearPolariser) and
-                                            isinstance(self.interferometer[-1], LinearPolariser)):
-
-            pol_1_orientation = self.interferometer[0].orientation
-            pol_2_orientation = self.interferometer[-1].orientation
-
-            conditions = [pol_1_orientation == pol_2_orientation, ] + \
-                         [abs(crys.orientation - pol_1_orientation) == np.pi / 4 for crys in self.crystals]
-            if all(conditions):
-                itype = 'single_delay_linear'
-
-        if itype is None or self.force_mueller:
-            itype = 'mueller'
-
-        return itype
+        raise NotImplementedError
 
 
 @vectorize([f8(f8, f8, f8, ), ], nopython=True, fastmath=True, cache=True, )
