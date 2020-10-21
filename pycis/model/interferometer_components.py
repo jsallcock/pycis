@@ -224,6 +224,27 @@ class UniaxialCrystal(BirefringentComponent):
         args = [wavelength, inc_angle, azim_angle, n_e, n_o, self.cut_angle, self.thickness, ]
         return xr.apply_ufunc(_calculate_delay_uniaxial_crystal, *args, dask='allowed', )
 
+    def calculate_fringe_frequency(self, focal_length, wavelength, ):
+        """
+        calculate the approx. spatial frequency of the fringe pattern for a given lens focal length and light wavelength
+
+        calculated by first order approximation of the Veiras formula.
+
+        :param focal_length: in m
+        :param wavelength: in m
+        :return:
+        """
+        biref, n_e, n_o = calculate_dispersion(wavelength, self.material, source=self.source)
+
+        factor = (n_o ** 2 - n_e ** 2) * np.sin(self.cut_angle) * np.cos(self.cut_angle) / \
+                 (n_e ** 2 * np.sin(self.cut_angle) ** 2 + n_o ** 2 * np.cos(self.cut_angle) ** 2)
+        spatial_freq = self.thickness / (wavelength * focal_length) * factor
+
+        spatial_freq_x = spatial_freq * np.cos(self.orientation)
+        spatial_freq_y = spatial_freq * np.sin(self.orientation)
+
+        return spatial_freq_x, spatial_freq_y
+
 
 class SavartPlate(BirefringentComponent):
     """
