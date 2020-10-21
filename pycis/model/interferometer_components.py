@@ -224,15 +224,15 @@ class UniaxialCrystal(BirefringentComponent):
         args = [wavelength, inc_angle, azim_angle, n_e, n_o, self.cut_angle, self.thickness, ]
         return xr.apply_ufunc(_calculate_delay_uniaxial_crystal, *args, dask='allowed', )
 
-    def calculate_fringe_frequency(self, focal_length, wavelength, ):
+    def calculate_fringe_frequency(self, wavelength, focal_length,):
         """
         calculate the approx. spatial frequency of the fringe pattern for a given lens focal length and light wavelength
 
-        calculated by first order approximation of the Veiras formula.
+        Calculated by first order approximation of the Veiras formula.
 
         :param focal_length: in m
         :param wavelength: in m
-        :return:
+        :return: spatial frequency x, spatial frequency y in (m ** -1)
         """
         biref, n_e, n_o = calculate_dispersion(wavelength, self.material, source=self.source)
 
@@ -333,6 +333,9 @@ class SavartPlate(BirefringentComponent):
             raise Exception('invalid SavartPlate.mode')
 
         return phase
+
+    def calculate_fringe_frequency(self, wavelength, focal_length, ):
+        raise NotImplementedError
 
 
 class IdealWaveplate(BirefringentComponent):

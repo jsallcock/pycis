@@ -240,10 +240,7 @@ class Instrument(object):
         :return: delay in units (rad)
         """
 
-        assert self.instrument_type in ['single_delay_linear',
-                                        'single_delay_polarised',
-                                        'multi_delay_polarised',
-                                        ]
+        assert self.instrument_type != 'mueller'
 
         # calculate the ray angles through the interferometer
         if hasattr(wavelength, 'coords'):
@@ -279,14 +276,40 @@ class Instrument(object):
 
         return delay
 
-    def calculate_fringe_period(self, crystal, wavelength):
+    def calculate_fringe_frequency(self, wavelength):
         """
-        calculates the period of the interference fringes at the sensor plane and at the given wavelength
+        calculates the (rough) interference fringe period at the sensor plane and at the given wavelength
+
+        only makes sense for instrument types with a phase shear (e.g. 'single_delay_linear' and
+        'multi_delay_polarised')
 
         :return:
         """
+        assert self.instrument_type != 'mueller'
 
-        raise NotImplementedError
+        if self.instrument_type == 'single_delay_linear':
+            # add contribution due to each crystal
+            spatial_freq_x, spatial_freq_y = 0
+            for crystal in self.crystals:
+
+                sp_f_x, sp_f_y = crystal.calculate_fringe_frequency(wavelength, self.optics[2], )
+                spatial_freq_x += sp_f_x
+                spatial_freq_y += sp_f_y
+
+        elif self.instrument_type == 'multi_delay_polarised':
+            crystal = self.crystals[0]
+            spatial_freq_x, spatial_freq_y = crystal.calculate_fringe_frequency(wavelength, self.optics[2], )
+
+            # TODO and also the sum and difference terms!
+
+        else:
+            raise NotImplementedError
+
+
+        return spatial_freq_x, spatial_freq_y
+
+
+
 
 
 @vectorize([f8(f8, f8, f8, ), ], nopython=True, fastmath=True, cache=True, )

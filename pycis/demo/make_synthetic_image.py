@@ -21,8 +21,7 @@ camera = Camera(bit_depth, sensor_format, pixel_size, qe, epercount, cam_noise, 
 optics = [17e-3, 105e-3, 150e-3, ]
 
 # define the interferometer
-# angle = 35.2323534663 * np.pi / 180  # an arbitrary rotation angle to be added to all components
-angle = 10  # an arbitrary rotation angle to be added to all components
+angle = 35.2323534663 * np.pi / 180  # an arbitrary rotation angle to be added to all components
 polariser = LinearPolariser(0 + angle, )
 
 thickness = 8e-3
