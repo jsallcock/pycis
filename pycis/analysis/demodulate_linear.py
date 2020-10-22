@@ -50,9 +50,9 @@ def demodulate_linear(image, fringe_freq, ):
     fft_carrier = fft * window
 
     if np.pi / 4 <= fringe_freq_angle <= np.pi / 2:
-        fft_carrier = xr.where(freq_y < 0, 0, 2 * fft_carrier)
+        fft_carrier = fft_carrier.where(freq_y < 0, 0) * 2
     else:
-        fft_carrier = xr.where(freq_x < 0, 0, 2 * fft_carrier)
+        fft_carrier = fft_carrier.where(freq_x < 0, 0) * 2
 
     dc = xr.DataArray(ifft2(ifftshift(fft_dc.data)), coords=image.coords, dims=image.dims).real
     carrier = xr.DataArray(ifft2(ifftshift(fft_carrier.data)), coords=image.coords, dims=image.dims)
