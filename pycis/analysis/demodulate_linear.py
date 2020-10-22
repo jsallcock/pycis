@@ -1,9 +1,6 @@
 import numpy as np
-from numpy.fft import fft2, ifft2, fftshift, ifftshift
-from scipy.signal import hilbert2
+from numpy.fft import fft2, ifft2, fftshift, ifftshift, fftfreq
 import xarray as xr
-import xrft
-from scipy.ndimage import gaussian_filter
 import matplotlib.pyplot as plt
 
 
@@ -17,17 +14,18 @@ def demodulate_linear(image, fringe_freq, ):
     :return:
     """
 
-    # ugh this is a disgusting workaround to stay consistent with numpy's phase conventions, as the xrft package still
-    # has a little way to go
-    _fft = xrft.dft(image, shift=True)
-    fft = xr.DataArray(fftshift(fft2(image.data)), coords=_fft.coords, dims=_fft.dims)
-    fx, fy = fft.freq_x, fft.freq_y
+    freq_x = fftshift(fftfreq(len(image.x), np.diff(image.x)[0]))
+    freq_x = xr.DataArray(freq_x, dims=('freq_x',), coords={'freq_x': freq_x})
+    freq_y = fftshift(fftfreq(len(image.y), np.diff(image.y)[0]))
+    freq_y = xr.DataArray(freq_y, dims=('freq_y',), coords={'freq_y': freq_y})
+
+    fft = xr.DataArray(fftshift(fft2(image.data)), coords=(freq_x, freq_y), )
 
     # make window for isolating carrier frequency
     fringe_freq_abs = np.sqrt(fringe_freq[0] ** 2 + fringe_freq[1] ** 2)
     fringe_freq_angle = np.arctan2(fringe_freq[1], fringe_freq[0])
 
-    coord_proj = np.cos(fringe_freq_angle) * fx + np.sin(fringe_freq_angle) * fy
+    coord_proj = np.cos(fringe_freq_angle) * freq_x + np.sin(fringe_freq_angle) * freq_y
     condition_1 = coord_proj < fringe_freq_abs - fringe_freq_abs / 1.5
     condition_2 = coord_proj > fringe_freq_abs + fringe_freq_abs / 1.5
     window = xr.ufuncs.logical_not(condition_1 + condition_2).astype(float)
@@ -52,9 +50,9 @@ def demodulate_linear(image, fringe_freq, ):
     fft_carrier = fft * window
 
     if np.pi / 4 <= fringe_freq_angle <= np.pi / 2:
-        fft_carrier = xr.where(fy < 0, 0, 2 * fft_carrier)
+        fft_carrier = xr.where(freq_y < 0, 0, 2 * fft_carrier)
     else:
-        fft_carrier = xr.where(fx < 0, 0, 2 * fft_carrier)
+        fft_carrier = xr.where(freq_x < 0, 0, 2 * fft_carrier)
 
     dc = xr.DataArray(ifft2(ifftshift(fft_dc.data)), coords=image.coords, dims=image.dims).real
     carrier = xr.DataArray(ifft2(ifftshift(fft_carrier.data)), coords=image.coords, dims=image.dims)
