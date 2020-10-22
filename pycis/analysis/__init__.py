@@ -10,6 +10,6 @@ from .wrap_unwrap import *
 from .mask import *
 from .window import *
 from .end_region_mask import *
-from .pixelated_phase_mask import *
+from .demodulate_polarised import *
 
 

@@ -2,7 +2,7 @@ import numpy as np
 import xarray as xr
 
 
-def demodulate_ppm(image):
+def demodulate_polarised(image):
     """
 
     :param image:
