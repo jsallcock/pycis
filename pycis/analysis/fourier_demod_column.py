@@ -49,7 +49,7 @@ def fourier_demod_column(col, nfringes=None, apodise=False, display=False):
 
     # generate window function
     fft_length = int(col_length / 2)
-    window = pycis.demod.window(fft_length, nfringes)
+    window = pycis.analysis.window(fft_length, nfringes)
 
     # isolate DC
     fft_dc = np.multiply(fft_col, 1 - window)

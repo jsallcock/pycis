@@ -1,3 +1,4 @@
+from .demodulate_linear import *
 from .despeckle import despeckle
 from .display import *
 from .fourier_demod_2d import fourier_demod_2d

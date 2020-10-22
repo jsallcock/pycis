@@ -1,7 +1,7 @@
 import traceback
 
 try:
-    from .demod import *
+    from .analysis import *
 except ImportError:
     print(traceback.format_exc())
 

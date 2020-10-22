@@ -11,10 +11,10 @@ raw_img_path = os.path.join(pycis.paths.demos_path, 'raw_image.tif')
 raw_img = plt.imread(raw_img_path)
 raw_col = raw_img[:, 676]
 
-# demodulate single column:
+# analysis single column:
 # dc_col, phase_col, contrast_col = pycis.uncertainty.fd_column(raw_col, display=True)
 
-# demodulate entire image:
+# analysis entire image:
 dc_img, phase_img, contrast_img = pycis.fourier_demod_2d(raw_img, despeckle=True, display=True)
 
 

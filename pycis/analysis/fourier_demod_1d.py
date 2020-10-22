@@ -46,14 +46,14 @@ def fourier_demod_1d(img, nfringes=None, column_range=None, despeckle=False, til
 
     # remove neutron speckles
     if despeckle:
-        pp_img = pycis.demod.despeckle(pp_img)
+        pp_img = pycis.analysis.despeckle(pp_img)
 
     # column-wise demodulation over specified range
     if display:
         print('-- demodulating...')
 
     pool = mp.Pool(processes=4)
-    fd_column_results = pool.map(partial(pycis.demod.fourier_demod_column, nfringes=nfringes), list(pp_img[:, column_range[0]:column_range[1]].T))
+    fd_column_results = pool.map(partial(pycis.analysis.fourier_demod_column, nfringes=nfringes), list(pp_img[:, column_range[0]:column_range[1]].T))
     dc, phase, contrast = zip(*fd_column_results)
     pool.close()
 
@@ -76,7 +76,7 @@ def fourier_demod_1d(img, nfringes=None, column_range=None, despeckle=False, til
         print('-- fd_image_1d: time elapsed: {:.2f}s'.format(time.time() - start_time))
         print('-- fd_image_1d: creating display images...')
 
-        pycis.demod.display(img, dc, phase, contrast)
+        pycis.analysis.display(img, dc, phase, contrast)
         # display_fig.masking(plasma_frame, mask_frame, devim_frame, tolim_frame)
         plt.show()
 

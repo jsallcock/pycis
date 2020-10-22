@@ -12,7 +12,7 @@ def polcam_demod(im, pixel_order=np.array([[0,45],[135,90]]), despeckle=False, c
 
     Parameters:
 
-        im (np.ndarray)         : Array containing the image to demodulate.
+        im (np.ndarray)         : Array containing the image to analysis.
 
         pixel_order (2x2 array) : Array specifying the layout of the polarisers on the \
                                   pixel array. This should be a 2x2 array representing the \

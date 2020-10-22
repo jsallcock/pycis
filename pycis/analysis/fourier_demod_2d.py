@@ -44,7 +44,7 @@ def fourier_demod_2d(img, despeckle=False, mask=False, uncertainty_out=False, ca
 
     # pre-processing (pp): remove neutron speckles
     if despeckle:
-        pp_img = pycis.demod.despeckle(pp_img)
+        pp_img = pycis.analysis.despeckle(pp_img)
 
     # since the input image is real, its FT is Hermitian -- all info contained in +ve frequencies -- use rfft2()
     fft_img = np.fft.rfft2(pp_img, axes=(1, 0))
@@ -55,7 +55,7 @@ def fourier_demod_2d(img, despeckle=False, mask=False, uncertainty_out=False, ca
 
     # generate window function
     fft_length = fft_img.shape[0]
-    window_1d = pycis.demod.window(fft_length, nfringes, width_factor=width_factor, fn='tukey', alpha=alpha)
+    window_1d = pycis.analysis.window(fft_length, nfringes, width_factor=width_factor, fn='tukey', alpha=alpha)
     window_carrier = np.transpose(np.tile(window_1d, (fft_img.shape[1], 1)))
     window_dc = 1 - copy.deepcopy(window_carrier)
 
@@ -95,14 +95,14 @@ def fourier_demod_2d(img, despeckle=False, mask=False, uncertainty_out=False, ca
         window_carrier += notch_window
         window_carrier[window_carrier > 1] = 1
 
-        window_1d_na = pycis.demod.window(fft_length, nfringes, width_factor=2.3, fn='tukey', alpha=0.3)
+        window_1d_na = pycis.analysis.window(fft_length, nfringes, width_factor=2.3, fn='tukey', alpha=0.3)
         window_2d_na = np.transpose(np.tile(window_1d_na, (fft_img.shape[1], 1)))
         window_carrier *= window_2d_na
 
     if mask:
         # end region masking
-        pp_img_erm_dc = pycis.demod.end_region_mask(pp_img, alpha=0.15, mean_subtract=True)
-        pp_img_erm_phase = pycis.demod.end_region_mask(pp_img, alpha=(3 / nfringes), mean_subtract=True)
+        pp_img_erm_dc = pycis.analysis.end_region_mask(pp_img, alpha=0.15, mean_subtract=True)
+        pp_img_erm_phase = pycis.analysis.end_region_mask(pp_img, alpha=(3 / nfringes), mean_subtract=True)
 
         fft_img_erm_dc = np.fft.rfft2(pp_img_erm_dc, axes=(1, 0))
         fft_img_erm_phase = np.fft.rfft2(pp_img_erm_phase, axes=(1, 0))
@@ -232,7 +232,7 @@ def fourier_demod_2d(img, despeckle=False, mask=False, uncertainty_out=False, ca
 
         plt.tight_layout()
 
-        pycis.demod.display(img, dc, phase, contrast)
+        pycis.analysis.display(img, dc, phase, contrast)
 
         if uncertainty_out:
 

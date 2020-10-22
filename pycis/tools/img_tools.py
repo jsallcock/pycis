@@ -13,7 +13,7 @@ default_roi_dim = (50, 50)
 
 # manually set demodulation function
 def demod_function(img, display=False):
-    return pycis.demod.fourier_demod_2d(img, display=display)
+    return pycis.analysis.fourier_demod_2d(img, display=display)
 
 
 def downsample(img, f):
@@ -382,9 +382,9 @@ def get_phase_roi_mean(path, rot90=0, roi_dim=default_roi_dim, overwrite=False):
     else:
         phase_img_stack = get_phase_img_stack(path, rot90=rot90, overwrite=overwrite)
 
-        phase_img_stack = pycis.demod.unwrap(phase_img_stack)
+        phase_img_stack = pycis.analysis.unwrap(phase_img_stack)
 
-        phase_roi_stack_mean = pycis.demod.wrap(np.mean(pycis.tools.get_roi(phase_img_stack, roi_dim=roi_dim)), units='rad')
+        phase_roi_stack_mean = pycis.analysis.wrap(np.mean(pycis.tools.get_roi(phase_img_stack, roi_dim=roi_dim)), units='rad')
 
         # save
         np.save(phase_roi_stack_mean_path, phase_roi_stack_mean)
@@ -436,7 +436,7 @@ def get_phase_roi_mean(path, rot90=0, roi_dim=default_roi_dim, overwrite=False):
 #             if rot90 != 0:
 #                 img = np.rot90(img, k=rot90)
 #
-#             intensity, phase, contrast = pycis.demod.fourier_demod_2d(img)
+#             intensity, phase, contrast = pycis.analysis.fourier_demod_2d(img)
 #
 #             phase_pixel.append(phase[pix_y, pix_x])
 #
@@ -489,7 +489,7 @@ def get_contrast_pixel_stack_std(path, fmt='tif', img_lim=30, overwrite=False):
             print(imgpath)
             img = np.array(Image.open(imgpath), dtype=np.float64)
 
-            intensity, phase, contrast = pycis.demod.fourier_demod_2d(img)
+            intensity, phase, contrast = pycis.analysis.fourier_demod_2d(img)
 
             contrast_pixel.append(contrast[pix_y, pix_x])
 
@@ -542,10 +542,10 @@ def get_phase_roi_std_err(path, rot90=0, fmt='tif', roi_dim=default_roi_dim, img
             if rot90 != 0:
                 img = np.rot90(img, k=rot90)
 
-            intensity, phase, contrast = pycis.demod.fourier_demod_2d(img)
-            phase = pycis.demod.unwrap(phase)
+            intensity, phase, contrast = pycis.analysis.fourier_demod_2d(img)
+            phase = pycis.analysis.unwrap(phase)
 
-            phase_roi_mean.append(pycis.demod.wrap(np.mean(pycis.tools.get_roi(phase, roi_dim=roi_dim))))
+            phase_roi_mean.append(pycis.analysis.wrap(np.mean(pycis.tools.get_roi(phase, roi_dim=roi_dim))))
 
         phase_roi_mean = np.array(phase_roi_mean)
 
@@ -594,10 +594,10 @@ def get_contrast_roi_std(path, fmt='tif', roi_dim=default_roi_dim, img_lim=25, o
             print(imgpath)
             img = np.array(Image.open(imgpath), dtype=np.float64)
 
-            intensity, phase, contrast = pycis.demod.fourier_demod_2d(img)
+            intensity, phase, contrast = pycis.analysis.fourier_demod_2d(img)
             # phase = pycis.uncertainty.unwrap(phase)
 
-            contrast_roi_mean.append(pycis.demod.wrap(np.mean(pycis.tools.get_roi(phase, roi_dim=roi_dim))))
+            contrast_roi_mean.append(pycis.analysis.wrap(np.mean(pycis.tools.get_roi(phase, roi_dim=roi_dim))))
 
         contrast_roi_mean = np.array(contrast_roi_mean)
 
@@ -619,7 +619,7 @@ def offset_shape(phase, roi_dim=default_roi_dim):
     :return: 
     """
 
-    phase = pycis.demod.unwrap(phase)
+    phase = pycis.analysis.unwrap(phase)
 
     offset = np.mean(pycis.tools.get_roi(phase, roi_dim=roi_dim))
     shape = phase - offset

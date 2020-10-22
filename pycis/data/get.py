@@ -135,7 +135,7 @@ class CISImage():
 
         elif type == 'raw':
             if ax is not None:
-                im = ax.imshow(pycis.demod.despeckle(self.raw_data), cmap='gray')
+                im = ax.imshow(pycis.analysis.despeckle(self.raw_data), cmap='gray')
                 # cbar = plt.colorbar(im, ax=ax, label='Raw (DL)')
             else:
                 plt.imshow(self.raw_data, cmap='gray')
@@ -185,7 +185,7 @@ class CISImage():
     def _demodulate(self):
 
         # Do the demodulation!
-        self.I0, self.phi, self.xi = pycis.demod.fourier_demod_2d(self.raw_data, despeckle=True)
+        self.I0, self.phi, self.xi = pycis.analysis.fourier_demod_2d(self.raw_data, despeckle=True)
                                                           #tilt_angle=0)  # self.fringe_tilt)
 
         # Subtract calib phase and wrap in to [-pi,pi]
