@@ -10,9 +10,9 @@ def calculate_coherence(spectrum, delay, material=None, freq_com=None):
     """
     calculate the (temporal) coherence of an intensity spectrum for given interferometer delay(s)
 
-    Coherence is the Fourier transform of the frequency spectrum. Generally, instrument dispersion breaks the simple
-    Fourier transform relationship, but a first-order (linear) approx. for dispersion maintains it in a slightly
-    modified form. I call this the 'group delay' approximation here.
+    Coherence is the Fourier transform of the frequency spectrum. Generally, instrument dispersion breaks this
+    relationship, but a first-order (linear) approx. for dispersion maintains it in a modified form (the 'group delay'
+    approximation).
 
     See test_with_gaussian_lineshape() below for examples of how to use.
 
@@ -117,7 +117,7 @@ def test_with_gaussian_lineshape():
 
     # calculate delays at wl_0 for the given waveplate thicknesses
     biref_0 = pycis.calculate_dispersion(wl_0, material, )[0]
-    delay_0 = 2 * np.pi * thickness * biref_0 / wl_0  # (rad)
+    delay_0 = abs(2 * np.pi * thickness * biref_0 / wl_0)  # (rad)
     delay_0 = xr.DataArray(delay_0, dims=('delay_0',), coords=(delay_0,), attrs={'units': 'rad'})
     print(delay_0)
 
@@ -146,7 +146,7 @@ def test_with_gaussian_lineshape():
     # NUMERICAL 2 (n2) -- tests full dispersion integral
     thickness = xr.DataArray(thickness, dims=('delay_0', ), coords=(delay_0, ))
     biref = pycis.calculate_dispersion(c / freq, material)[0]
-    delay = 2 * np.pi * biref * thickness / (c / freq)
+    delay = abs(2 * np.pi * biref * thickness / (c / freq))
 
     s = time.time()
     doc_n2 = calculate_coherence(spectrum, delay, material=material)

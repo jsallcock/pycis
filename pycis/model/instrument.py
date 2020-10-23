@@ -3,13 +3,13 @@ import numpy as np
 import xarray as xr
 from numba import vectorize, f8
 from scipy.constants import c
-from pycis.model import mueller_product, LinearPolariser, calculate_coherence, BirefringentComponent, \
-    InterferometerComponent, Camera, QuarterWaveplate, UniaxialCrystal
+from pycis.model import mueller_product, LinearPolariser, calculate_coherence, LinearRetarder, \
+    Component, Camera, QuarterWaveplate, UniaxialCrystal
 
 
 class Instrument(object):
     """
-    coherence imaging instrument
+    Coherence imaging instrument
 
     """
     def __init__(self, camera, optics, interferometer, force_mueller=False):
@@ -33,14 +33,14 @@ class Instrument(object):
         self.force_mueller = force_mueller
 
         self.input_checks()
-        self.crystals = [co for co in self.interferometer if isinstance(co, BirefringentComponent)]
+        self.crystals = [co for co in self.interferometer if isinstance(co, LinearRetarder)]
         self.polarisers = [co for co in self.interferometer if isinstance(co, LinearPolariser)]
         self.instrument_type = self.get_instrument_type()
 
     def input_checks(self):
         assert isinstance(self.camera, Camera)
         assert isinstance(self.optics, list)
-        assert all(isinstance(co, InterferometerComponent) for co in self.interferometer)
+        assert all(isinstance(co, Component) for co in self.interferometer)
 
     def get_instrument_type(self):
         """
@@ -132,25 +132,6 @@ class Instrument(object):
         """
         return xr.apply_ufunc(_calculate_azim_angle, x, y, crystal.orientation, dask='allowed, ')
 
-    def calculate_mueller_matrix(self, spectrum):
-        """
-        calculate the total Mueller matrix for the interferometer
-
-        :param spectrum: (xr.DataArray) see spectrum argument for instrument.capture
-        :return: Mueller matrix
-
-        """
-
-        inc_angle = self.calculate_inc_angle(spectrum.x, spectrum.y)
-        total_matrix = xr.DataArray(np.identity(4), dims=('mueller_v', 'mueller_h'), )
-
-        for component in self.interferometer:
-            azim_angle = self.calculate_azim_angle(spectrum.x, spectrum.y, component)
-            component_matrix = component.calculate_mueller_matrix(spectrum.wavelength, inc_angle, azim_angle)
-            total_matrix = mueller_product(component_matrix, total_matrix)
-
-        return total_matrix
-
     def capture_image(self, spectrum, ):
         """
         capture image of scene
@@ -229,6 +210,25 @@ class Instrument(object):
         image = self.camera.capture_image(image, apply_polarisers=apply_polarisers)
         return image
 
+    def calculate_mueller_matrix(self, spectrum):
+        """
+        calculate the total Mueller matrix for the interferometer
+
+        :param spectrum: (xr.DataArray) see spectrum argument for instrument.capture
+        :return: Mueller matrix
+
+        """
+
+        inc_angle = self.calculate_inc_angle(spectrum.x, spectrum.y)
+        total_matrix = xr.DataArray(np.identity(4), dims=('mueller_v', 'mueller_h'), )
+
+        for component in self.interferometer:
+            azim_angle = self.calculate_azim_angle(spectrum.x, spectrum.y, component)
+            component_matrix = component.calculate_mueller_matrix(spectrum.wavelength, inc_angle, azim_angle)
+            total_matrix = mueller_product(component_matrix, total_matrix)
+
+        return total_matrix
+
     def calculate_delay(self, wavelength, ):
         """
         calculate the interferometer delay(s) at the given wavelength(s)
@@ -300,16 +300,13 @@ class Instrument(object):
             crystal = self.crystals[0]
             spatial_freq_x, spatial_freq_y = crystal.calculate_fringe_frequency(wavelength, self.optics[2], )
 
-            # TODO and also the sum and difference terms!
+            # TODO and also the sum and difference terms?
 
         else:
             raise NotImplementedError
 
 
         return spatial_freq_x, spatial_freq_y
-
-
-
 
 
 @vectorize([f8(f8, f8, f8, ), ], nopython=True, fastmath=True, cache=True, )

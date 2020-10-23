@@ -1,4 +1,3 @@
-from .demodulate_linear import *
 from .despeckle import despeckle
 from .display import *
 from .fourier_demod_2d import fourier_demod_2d
@@ -10,6 +9,7 @@ from .wrap_unwrap import *
 from .mask import *
 from .window import *
 from .end_region_mask import *
+from .demodulate_linear import *
 from .demodulate_polarised import *
 
 

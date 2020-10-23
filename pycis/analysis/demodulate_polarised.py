@@ -1,8 +1,11 @@
 import numpy as np
+from numpy.fft import fft2, ifft2, fftshift, ifftshift, fftfreq
 import xarray as xr
 
+from pycis.analysis import make_window, fft2_im
 
-def demodulate_polarised(image):
+
+def demodulate_single_delay_polarised(image):
     """
 
     :param image:
@@ -27,3 +30,25 @@ def demodulate_polarised(image):
     contrast = 1 / i0 * np.sqrt(8 * np.power(image - i0 / 4, 2, ).sum(dim='m'))
 
     return i0, phase, contrast
+
+
+def demodulate_multi_delay_polarised(image, fringe_freq, ):
+
+    fft = fft2_im(image)
+    window = make_window(fft, fringe_freq)
+
+    fft_dc = fft * (1 - window)
+    fft_carrier = fft * window
+
+    fringe_freq_angle = np.arctan2(fringe_freq[1], fringe_freq[0])
+    if np.pi / 4 <= fringe_freq_angle <= np.pi / 2:
+        fft_carrier = fft_carrier.where(fft.freq_y < 0, 0) * 2
+    else:
+        fft_carrier = fft_carrier.where(fft.freq_x < 0, 0) * 2
+
+    dc = xr.DataArray(ifft2(ifftshift(fft_dc.data)), coords=image.coords, dims=image.dims).real
+    carrier = xr.DataArray(ifft2(ifftshift(fft_carrier.data)), coords=image.coords, dims=image.dims)
+
+    phase = -xr.ufuncs.angle(carrier)  # negative sign to match with modelling conventions
+    contrast = np.abs(carrier) / dc
+    return 5, phase, contrast

@@ -50,7 +50,7 @@ def calculate_rot_matrix(angle):
     return xr.DataArray(rot_mat, dims=('mueller_v', 'mueller_h'), )
 
 
-class InterferometerComponent:
+class Component:
     """
     base class for CI interferometer component
 
@@ -64,28 +64,27 @@ class InterferometerComponent:
 
         self.orientation = orientation
 
-    def orient(self, mat):
+    def orient(self, matrix):
         """
         orient component
         
-        :param mat: (xr.DataArray) Mueller matrix
+        :param matrix: (xr.DataArray) Mueller matrix
         :return:
 
         """
 
-        mat_i = mueller_product(mat, calculate_rot_matrix(self.orientation))
-        return mueller_product(calculate_rot_matrix(-self.orientation), mat_i)
+        matrix_i = mueller_product(matrix, calculate_rot_matrix(self.orientation))
+        return mueller_product(calculate_rot_matrix(-self.orientation), matrix_i)
 
-    def calculate_mueller_matrix(self, wavelength, inc_angle, azim_angle, ):
+    def calculate_mueller_matrix(self, *args, **kwargs):
         raise NotImplementedError
 
 
-class LinearPolariser(InterferometerComponent):
+class LinearPolariser(Component):
     """
     linear polariser
 
     """
-
     def __init__(self, orientation, tx_1=1, tx_2=0, ):
         """
         :param orientation: [ rad ] 0 aligns transmission axis to x-axis
@@ -100,16 +99,11 @@ class LinearPolariser(InterferometerComponent):
         self.tx_1 = tx_1
         self.tx_2 = tx_2
 
-    def calculate_mueller_matrix(self, wavelength, inc_angle, azim_angle, ):
+    def calculate_mueller_matrix(self, *args, **kwargs):
         """
         Mueller matrix for ideal linear polariser
 
-        :param wavelength: pass
-        :param inc_angle: pass
-        :param azim_angle: pass
-        :return:
         """
-
         mat = 0.5 * np.array([[self.tx_2 ** 2 + self.tx_1 ** 2, self.tx_1 ** 2 - self.tx_2 ** 2, 0, 0],
                               [self.tx_1 ** 2 - self.tx_2 ** 2, self.tx_2 ** 2 + self.tx_1 ** 2, 0, 0],
                               [0, 0, 2 * self.tx_2 * self.tx_1, 0],
@@ -117,13 +111,12 @@ class LinearPolariser(InterferometerComponent):
         return self.orient(xr.DataArray(mat, dims=('mueller_v', 'mueller_h'), ))
 
 
-class BirefringentComponent(InterferometerComponent):
+class LinearRetarder(Component):
     """
-    base class for CIS crystal components
+    Base class for a general linear retarder
 
     """
-
-    def __init__(self, orientation, thickness, material='a-BBO', source=None, contrast=1, ):
+    def __init__(self, orientation, thickness, material='a-BBO', material_source=None, contrast=1, ):
         """
         :param thickness: [ m ]
         :type thickness: float
@@ -131,8 +124,8 @@ class BirefringentComponent(InterferometerComponent):
         :param material: string denoting crystal material
         :type material: str
 
-        :param source: string denoting source of Sellmeier coefficients describing dispersion in the crystal. If
-        blank, the default material source specified in pycis.model.dispersion
+        :param material_source: string denoting source of Sellmeier coefficients describing dispersion in the crystal.
+        If blank, the default material source specified in pycis.model.dispersion
         :type material: str
 
         :param contrast: arbitrary contrast degradation factor for crystal, uniform contrast only for now.
@@ -142,20 +135,16 @@ class BirefringentComponent(InterferometerComponent):
 
         self.thickness = thickness
         self.material = material
-        self.source = source
+        self.source = material_source
         self.contrast = contrast
 
-    def calculate_mueller_matrix(self, wavelength, inc_angle, azim_angle):
+    def calculate_mueller_matrix(self, *args, **kwargs):
         """
         general Mueller matrix for a linear retarder
-        
-        :param wavelength: [ m ]
-        :param inc_angle: [ rad ] 
-        :param azim_angle: [ rad ]
-        :return: 
+
         """
 
-        delay = self.calculate_delay(wavelength, inc_angle, azim_angle)
+        delay = self.calculate_delay(*args, **kwargs)
 
         a1 = xr.ones_like(delay)
         a0 = xr.zeros_like(delay)
@@ -170,25 +159,34 @@ class BirefringentComponent(InterferometerComponent):
 
         return self.orient(mat)
 
-    def calculate_delay(self, wl, inc_angle, azim_angle, n_e=None, n_o=None):
+    def calculate_delay(self, *args, **kwargs):
+        """
+        Interferometer delay in radians
+
+        """
+        raise NotImplementedError
+
+    def calculate_fringe_frequency(self, *args, **kwargs):
+        """
+        Spatial frequency of the fringe pattern at the sensor plane in units m^-1
+
+        """
         raise NotImplementedError
 
 
-class UniaxialCrystal(BirefringentComponent):
+class UniaxialCrystal(LinearRetarder):
     """
-    Uniaxial crystal
+    Uniaxial birefringent crystal
 
     """
-
-    def __init__(self, orientation, thickness, cut_angle, material='a-BBO', source=None, contrast=1, ):
+    def __init__(self, orientation, thickness, cut_angle, material='a-BBO', material_source=None, contrast=1, ):
         """
         
         :param cut_angle: [ rad ] angle between optic axis and crystal front face
         :type cut_angle: float
 
         """
-
-        super().__init__(orientation, thickness, material=material, contrast=contrast, )
+        super().__init__(orientation, thickness, material=material, material_source=material_source, contrast=contrast, )
         self.cut_angle = cut_angle
 
     def calculate_delay(self, wavelength, inc_angle, azim_angle, n_e=None, n_o=None):
@@ -224,7 +222,7 @@ class UniaxialCrystal(BirefringentComponent):
         args = [wavelength, inc_angle, azim_angle, n_e, n_o, self.cut_angle, self.thickness, ]
         return xr.apply_ufunc(_calculate_delay_uniaxial_crystal, *args, dask='allowed', )
 
-    def calculate_fringe_frequency(self, wavelength, focal_length,):
+    def calculate_fringe_frequency(self, wavelength, focal_length, ):
         """
         calculate the approx. spatial frequency of the fringe pattern for a given lens focal length and light wavelength
 
@@ -238,28 +236,26 @@ class UniaxialCrystal(BirefringentComponent):
 
         factor = (n_o ** 2 - n_e ** 2) * np.sin(self.cut_angle) * np.cos(self.cut_angle) / \
                  (n_e ** 2 * np.sin(self.cut_angle) ** 2 + n_o ** 2 * np.cos(self.cut_angle) ** 2)
-        spatial_freq = self.thickness / (wavelength * focal_length) * factor
+        freq = self.thickness / (wavelength * focal_length) * factor
 
-        spatial_freq_x = spatial_freq * np.cos(self.orientation)
-        spatial_freq_y = spatial_freq * np.sin(self.orientation)
+        freq_x = freq * np.cos(self.orientation)
+        freq_y = freq * np.sin(self.orientation)
 
-        return spatial_freq_x, spatial_freq_y
+        return freq_x, freq_y
 
 
-class SavartPlate(BirefringentComponent):
+class SavartPlate(LinearRetarder):
     """
     Savart plate
 
     """
-
-    def __init__(self, orientation, thickness, material='a-BBO', source=None, mode='francon', contrast=1,
-                 clr_aperture=None):
+    def __init__(self, orientation, thickness, material='a-BBO', material_source=None, contrast=1, mode='francon', ):
         """
         :param mode: source for the equation for phase delay: 'francon' (approx.) or 'veiras' (exact)
         :type mode: string
 
         """
-        super().__init__(orientation, thickness, material=material, source=source, contrast=contrast, )
+        super().__init__(orientation, thickness, material=material, material_source=material_source, contrast=contrast, )
         self.mode = mode
 
     def calculate_delay(self, wavelength, inc_angle, azim_angle, n_e=None, n_o=None):
@@ -311,7 +307,7 @@ class SavartPlate(BirefringentComponent):
                      (c_azim_angle ** 2 - s_azim_angle ** 2) * s_inc_angle ** 2
 
             # minus sign here makes the OPD calculation consistent with Veiras' definition
-            phase = 2 * np.pi * - (self.thickness / (2 * wavelength)) * (term_1 + term_2)
+            delay = 2 * np.pi * - (self.thickness / (2 * wavelength)) * (term_1 + term_2)
 
         elif self.mode == 'veiras':
             # explicitly model plate as the combination of two uniaxial crystals
@@ -326,47 +322,35 @@ class SavartPlate(BirefringentComponent):
             crystal_1 = UniaxialCrystal(or1, t, cut_angle=-np.pi / 4, material=self.material)
             crystal_2 = UniaxialCrystal(or2, t, cut_angle=np.pi / 4, material=self.material)
 
-            phase = crystal_1.calculate_delay(wavelength, inc_angle, azim_angle1, n_e=n_e, n_o=n_o) - \
+            delay = crystal_1.calculate_delay(wavelength, inc_angle, azim_angle1, n_e=n_e, n_o=n_o) - \
                     crystal_2.calculate_delay(wavelength, inc_angle, azim_angle2, n_e=n_e, n_o=n_o)
 
         else:
             raise Exception('invalid SavartPlate.mode')
 
-        return phase
+        return delay
 
-    def calculate_fringe_frequency(self, wavelength, focal_length, ):
+    def calculate_fringe_frequency(self, *args, **kwargs):
+        # TODO
         raise NotImplementedError
 
 
-class IdealWaveplate(BirefringentComponent):
+class IdealWaveplate(LinearRetarder):
     """
-    Ideal waveplate imparting a single delay regardless of wavelength or ray angle
+    Idealised waveplate imparting a single delay regardless of crystal thickness, wavelength or ray path
 
     """
-
-    def __init__(self, orientation, delay, ):
-        """
-
-        :param orientation:
-        """
-
-        thickness = 1.  # this value is arbitrary
+    def __init__(self, orientation, ideal_delay, ):
+        thickness = 1.  # this value is arbitrary since delay is set
         super().__init__(orientation, thickness, )
-        self.ideal_delay = delay
+        self.ideal_delay = ideal_delay
 
-    def calculate_delay(self, wavelength, inc_angle, azim_angle, n_e=None, n_o=None):
-        """
-        calculate phase delay due to ideal quarter waveplate
+    def calculate_delay(self, *args, **kwargs):
+        return xr.DataArray(self.ideal_delay)
 
-        :param wavelength:
-        :param inc_angle:
-        :param azim_angle:
-        :param n_e:
-        :param n_o:
-        :return: phase [ rad ]
-        """
-
-        return xr.zeros_like(inc_angle) + self.ideal_delay
+    def calculate_fringe_frequency(self, *args, **kwargs):
+        # no phase change across sensor plane
+        return 0, 0
 
 
 class QuarterWaveplate(IdealWaveplate):
@@ -375,8 +359,8 @@ class QuarterWaveplate(IdealWaveplate):
 
     """
     def __init__(self, orientation, ):
-        delay = np.pi / 2
-        super().__init__(orientation, delay, )
+        ideal_delay = np.pi / 2
+        super().__init__(orientation, ideal_delay, )
 
 
 class HalfWaveplate(IdealWaveplate):
@@ -385,8 +369,8 @@ class HalfWaveplate(IdealWaveplate):
 
     """
     def __init__(self, orientation, ):
-        delay = np.pi
-        super().__init__(orientation, delay, )
+        ideal_delay = np.pi
+        super().__init__(orientation, ideal_delay, )
 
 
 @vectorize([f8(f8, f8, f8, f8, f8, f8, f8), ], nopython=True, fastmath=True, cache=True, )

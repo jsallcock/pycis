@@ -1,6 +1,8 @@
 # pycis
 
-Analysis and modelling for the Coherence Imaging Spectroscopy (CIS) plasma diagnostic. [Docs are a work in progress](https://jsallcock.github.io/pycis/).
+Analysis and modelling tools for the Coherence Imaging Spectroscopy (CIS) plasma diagnostic technique. The core Mueller matrix model makes it simple to model arbitrary interferometer layouts observing scenes with arbitrary spectral and polarisation properties. 
+
+[Docs are a work in progress](https://jsallcock.github.io/pycis/), and not currently live. See demo scripts for use examples or [contact me](https://twitter.com/JSAllcock) for a walkthrough.
 
 Authorship:
 
@@ -13,10 +15,9 @@ Python 3. Prerequisite
 packages:
 
 - numpy
+- xarray
 - scipy
 - matplotlib
-- pandas
-- imageio
 
 ### Setup
 
