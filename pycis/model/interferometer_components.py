@@ -16,8 +16,8 @@ def mueller_product(mat1, mat2):
     Mueller matrix product
 
     :param mat1: (xr.DataArray) Mueller matrix
-    :param mat2: (xr.DataArray) can be Mueller matrix or Stokes vector
-    :return: either a Mueller matrix or Stokes vector, depending on the dimensions of mat2
+    :param mat2: (xr.DataArray) Mueller matrix or Stokes vector
+    :return: (xr.DataArray) Mueller matrix or Stokes vector, depending on the dimensions of mat2
 
     """
 
@@ -52,35 +52,65 @@ def calculate_rot_matrix(angle):
 
 class Component:
     """
-    base class for CI interferometer component
+    base class for interferometer component
 
     """
-
-    def __init__(self, orientation, ):
-        """
-        :param orientation: orientation angle [ rad ]
-
-        """
-
-        self.orientation = orientation
-
-    def orient(self, matrix):
-        """
-        orient component
-        
-        :param matrix: (xr.DataArray) Mueller matrix
-        :return:
-
-        """
-
-        matrix_i = mueller_product(matrix, calculate_rot_matrix(self.orientation))
-        return mueller_product(calculate_rot_matrix(-self.orientation), matrix_i)
+    def __init__(self, ):
+        pass
 
     def calculate_mueller_matrix(self, *args, **kwargs):
         raise NotImplementedError
 
 
-class LinearPolariser(Component):
+class Filter(Component):
+    """
+    optical filter with no polarisation-dependent effects
+
+    """
+    def __init__(self, tx, n):
+        """
+        :param tx: (xr.DataArray) fractional filter transmission, with dimension 'wavelength' in m
+        :param n: (float) refractive index (effective)
+        """
+        super().__init__()
+        assert all(tx >= 0) and all(tx <= 1)
+        self.tx = tx
+        self.wl_centre = float((tx * tx.wavelength).integrate(dim='wavelength') / tx.integrate(dim='wavelength'))
+        self.n = n
+
+    def calculate_mueller_matrix(self, wavelength, *args, **kwargs):
+        # TODO incorporate filter tilt wavelength shift
+        # wl_shift = self.wl_centre * (np.sqrt(1 - (np.sin(inc_angle) / self.n) ** 2) - 1)
+
+        tx = self.tx.interp(wavelength=wavelength)
+        return xr.DataArray(np.identity(4), dims=('mueller_v', 'mueller_h',)) * tx
+
+
+class OrientableComponent(Component):
+    """
+    base class for interferometer component whose orientation determines behaviour
+
+    """
+    def __init__(self, orientation, ):
+        """
+        :param orientation: float, in radians
+
+        """
+        super().__init__()
+        self.orientation = orientation
+
+    def orient(self, matrix):
+        """
+        :param matrix: (xr.DataArray) Mueller matrix
+
+        :return:
+        """
+
+        matrix_i = mueller_product(matrix, calculate_rot_matrix(self.orientation))
+        return mueller_product(calculate_rot_matrix(-self.orientation), matrix_i)
+
+
+class LinearPolariser(OrientableComponent):
     """
     linear polariser
 
@@ -100,18 +130,16 @@ class LinearPolariser(Component):
         self.tx_2 = tx_2
 
     def calculate_mueller_matrix(self, *args, **kwargs):
-        """
-        Mueller matrix for ideal linear polariser
 
-        """
-        mat = 0.5 * np.array([[self.tx_2 ** 2 + self.tx_1 ** 2, self.tx_1 ** 2 - self.tx_2 ** 2, 0, 0],
-                              [self.tx_1 ** 2 - self.tx_2 ** 2, self.tx_2 ** 2 + self.tx_1 ** 2, 0, 0],
-                              [0, 0, 2 * self.tx_2 * self.tx_1, 0],
-                              [0, 0, 0, 2 * self.tx_2 * self.tx_1]])
-        return self.orient(xr.DataArray(mat, dims=('mueller_v', 'mueller_h'), ))
+        m = [[self.tx_2 ** 2 + self.tx_1 ** 2, self.tx_1 ** 2 - self.tx_2 ** 2, 0, 0],
+             [self.tx_1 ** 2 - self.tx_2 ** 2, self.tx_2 ** 2 + self.tx_1 ** 2, 0, 0],
+             [0, 0, 2 * self.tx_2 * self.tx_1, 0],
+             [0, 0, 0, 2 * self.tx_2 * self.tx_1]]
+
+        return self.orient(1 / 2 * xr.DataArray(m, dims=('mueller_v', 'mueller_h'), ))
 
 
-class LinearRetarder(Component):
+class LinearRetarder(OrientableComponent):
     """
     Base class for a general linear retarder
 
@@ -146,18 +174,17 @@ class LinearRetarder(Component):
 
         delay = self.calculate_delay(*args, **kwargs)
 
-        a1 = xr.ones_like(delay)
-        a0 = xr.zeros_like(delay)
-        c_cphase = self.contrast * np.cos(delay)
-        c_sphase = self.contrast * np.sin(delay)
+        m1s = xr.ones_like(delay)
+        m0s = xr.zeros_like(delay)
+        c_c = self.contrast * np.cos(delay)
+        c_s = self.contrast * np.sin(delay)
 
-        mat = [[a1, a0, a0, a0],
-               [a0, a1, a0, a0],
-               [a0, a0, c_cphase, c_sphase],
-               [a0, a0, -c_sphase, c_cphase]]
-        mat = xr.combine_nested(mat, concat_dim=('mueller_v', 'mueller_h', ), )
+        m = [[m1s,  m0s,  m0s,  m0s],
+             [m0s,  m1s,  m0s,  m0s],
+             [m0s,  m0s,  c_c,  c_s],
+             [m0s,  m0s, -c_s,  c_c]]
 
-        return self.orient(mat)
+        return self.orient(xr.combine_nested(m, concat_dim=('mueller_v', 'mueller_h', ), ))
 
     def calculate_delay(self, *args, **kwargs):
         """

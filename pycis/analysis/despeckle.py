@@ -1,8 +1,4 @@
-from matplotlib import pyplot as plt
-import numpy as np
 import scipy.signal
-from pycis.tools.find_nearest import find_nearest
-from pycis.tools.find_peaks import indexes
 
 
 def despeckle(image, display=False):

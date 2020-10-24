@@ -80,7 +80,7 @@ def calculate_coherence(spectrum, delay, material=None, freq_com=None):
     return integrand.integrate(dim='frequency')
 
 
-@vectorize([complex128(float64)], fastmath=True, nopython=True, cache=True, )
+@vectorize([complex128(float64)], fastmath=False, nopython=True, cache=True, )
 def complexp(x):
     return np.exp(1j * x)
 
@@ -171,6 +171,10 @@ def test_with_gaussian_lineshape():
                               label='Numerical\n(Group delay approx.)', markersize=8, color='C1')
         func(doc_n2).plot(ax=ax, lw=0, marker='d', markersize=12, fillstyle='none', label='Numerical (full)', color='C2')
         leg = ax.legend(fontsize=7)
+
+
+    np.testing.assert_almost_equal(doc_analytical(delay_0).real.data, doc_n1.real.data)
+    # np.testing.assert_almost_equal(doc_analytical(delay_0).real.data, doc_n2.real.data)
 
     titles = ['Spectrum', 'Contrast', 'Phase', ]
     for ax, title in zip(axes, titles):
