@@ -4,7 +4,7 @@ from numba import vectorize, f8
 from pycis.model import calculate_dispersion
 
 """
-Misc. conventions:
+Conventions:
 - Mueller matrices are xr.DataArrays with dimensions that include 'mueller_v' and 'mueller_h' (each with length = 4) 
 - Stokes vectors are xr.DataArrays with dimensions that include 'stokes' (with length = 4)
 

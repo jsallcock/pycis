@@ -43,6 +43,6 @@ spectrum = xr.ones_like(x * y * wavelength, )
 spectrum /= spectrum.integrate(dim='wavelength')
 spectrum *= 5e3
 
-igram = instrument.capture_image(spectrum, )
+igram = instrument.capture(spectrum, )
 igram.plot(x='x_pixel', y='y_pixel', vmin=0, )
 plt.show()

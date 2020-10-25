@@ -31,12 +31,14 @@ class Camera(object):
             assert sensor_format[0] % 2 == 0
             assert sensor_format[1] % 2 == 0
 
-    def capture_image(self, image, apply_polarisers=None):
+    def capture(self, spectrum, apply_polarisers=None, clean=False):
         """
-        capture image of scene
+        Capture an image
 
-        :param image: (xr.DataArray) image in units of photons with dimensions 'x', 'y' and (optionally) 'stokes'. If
-        no stokes dim then it is assumed that light is unpolarised (i.e. the spec supplied is the S_0 Stokes parameter)
+        :param spectrum: (xr.DataArray) in units of photons / m with dimensions 'x', 'y', 'wavelength' and (optionally)
+        'stokes'. If there is no stokes dim then the light is assumed to be unpolarised.
+        :param apply_polarisers: (bool) whether to apply the camera's pixelated polariser array to the spectrum.
+        :param clean: (bool) False to add realistic image noise. Clean images used for testing.
         :return:
         """
 
@@ -44,23 +46,24 @@ class Camera(object):
             apply_polarisers = self.polarised
 
         if apply_polarisers:
-            assert 'stokes' in image.dims
+            assert 'stokes' in spectrum.dims
             mueller_matrix = self.calculate_mueller_matrix()
-            image = mueller_product(mueller_matrix, image, )
+            spectrum = mueller_product(mueller_matrix, spectrum, )
 
-        if 'stokes' in image.dims:
-            image = image.isel(stokes=0, drop=True)
+        # ensure only total intensity (first Stokes parameter) is observed
+        if 'stokes' in spectrum.dims:
+            spectrum = spectrum.isel(stokes=0, drop=True)
 
-        if 'wavelength' in image.dims:
-            if len(image.wavelength) >= 2:
-                signal = image.integrate(dim='wavelength')
-        else:
-            signal = image
+        signal = spectrum.integrate(dim='wavelength')
 
-        np.random.seed()
-        signal.values = np.random.poisson(signal.values)
+        if not clean:
+            np.random.seed()
+            signal.values = np.random.poisson(signal.values)
         signal = signal * self.qe
-        signal.values = signal.values + np.random.normal(0, self.cam_noise, signal.values.shape)
+
+        if not clean:
+            signal.values = signal.values + np.random.normal(0, self.cam_noise, signal.values.shape)
+
         signal = signal / self.epercount
         signal.values = np.digitize(signal.values, np.arange(0, 2 ** self.bit_depth))
 
@@ -127,25 +130,19 @@ class Camera(object):
         :return:
         """
 
-        args = [None, ] * 3  # ok this is pretty grim
-        matrix_0deg = LinearPolariser(0).calculate_mueller_matrix(*args)
-        matrix_45deg = LinearPolariser(np.pi / 4).calculate_mueller_matrix(*args)
-        matrix_90deg = LinearPolariser(np.pi / 2).calculate_mueller_matrix(*args)
-        matrix_135deg = LinearPolariser(3 * np.pi / 4).calculate_mueller_matrix(*args)
-
         pix_idxs_x = xr.DataArray(np.arange(0, self.sensor_format[0], 2), dims=('x', ), )
         pix_idxs_y = xr.DataArray(np.arange(0, self.sensor_format[1], 2), dims=('y', ), )
 
-        mueller_matrix = np.zeros([self.sensor_format[0], self.sensor_format[1], 4, 4, ])
+        mat = np.zeros([self.sensor_format[0], self.sensor_format[1], 4, 4, ])
         dims = ('x', 'y', 'mueller_v', 'mueller_h', )
-        mueller_matrix = xr.DataArray(mueller_matrix, dims=dims, ).assign_coords({'x': self.x, 'y': self.y, }, )
+        mat = xr.DataArray(mat, dims=dims, ).assign_coords({'x': self.x, 'y': self.y, }, )
 
-        mueller_matrix[pix_idxs_x, pix_idxs_y, ..., ] = matrix_0deg
-        mueller_matrix[pix_idxs_x + 1, pix_idxs_y, ..., ] = matrix_45deg
-        mueller_matrix[pix_idxs_x + 1, pix_idxs_y + 1, ..., ] = matrix_90deg
-        mueller_matrix[pix_idxs_x, pix_idxs_y + 1, ..., ] = matrix_135deg
+        mat[pix_idxs_x, pix_idxs_y, ..., ] = LinearPolariser(0).calculate_mueller_matrix()
+        mat[pix_idxs_x + 1, pix_idxs_y, ..., ] = LinearPolariser(np.pi / 4).calculate_mueller_matrix()
+        mat[pix_idxs_x + 1, pix_idxs_y + 1, ..., ] = LinearPolariser(np.pi / 2).calculate_mueller_matrix()
+        mat[pix_idxs_x, pix_idxs_y + 1, ..., ] = LinearPolariser(3 * np.pi / 4).calculate_mueller_matrix()
 
-        return mueller_matrix
+        return mat
 
     def calculate_pixelated_phase_mask(self, ):
         """
