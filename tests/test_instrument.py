@@ -11,7 +11,7 @@ pixel_size = 6.5e-6 * 2
 qe = 0.35
 epercount = 0.46  # [e / count]
 cam_noise = 2.5
-camera = Camera(bit_depth, sensor_format, pixel_size, qe, epercount, cam_noise, polarised=False)
+camera = Camera(bit_depth, sensor_format, pixel_size, qe, epercount, cam_noise, mode='mono')
 
 # define instrument optics
 optics = [17e-3, 105e-3, 150e-3, ]
@@ -36,7 +36,7 @@ class TestInstrument(unittest.TestCase):
         calculation
 
         """
-        camera.polarised = False
+        camera.mode = 'mono'
 
         interferometer = [LinearPolariser(0 + angle, ),
                           UniaxialCrystal(np.pi / 4 + angle, 5e-3, np.pi / 4, contrast=0.5, ),
@@ -60,7 +60,7 @@ class TestInstrument(unittest.TestCase):
         calculation
 
         """
-        camera.polarised = True
+        camera.mode = 'mono_polarised'
 
         interferometer = [LinearPolariser(0 + angle, ),
                           UniaxialCrystal(np.pi / 4 + angle, 5e-3, 0, contrast=0.5, ),
@@ -84,7 +84,7 @@ class TestInstrument(unittest.TestCase):
         calculation
 
         """
-        camera.polarised = True
+        camera.mode = 'mono_polarised'
 
         interferometer = [LinearPolariser(0 + angle, ),
                           UniaxialCrystal(np.pi / 4 + angle, 5e-3, np.pi / 4, contrast=0.5, ),

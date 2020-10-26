@@ -1,12 +1,16 @@
 import numpy as np
 import xarray as xr
-import matplotlib.pyplot as plt
 from pycis.model import LinearPolariser, mueller_product
+
+camera_modes = ['mono',
+                'mono_polarised',
+                'rgb',
+                ]
 
 
 class Camera(object):
 
-    def __init__(self, bit_depth, sensor_format, pixel_size, qe, epercount, cam_noise, polarised=False):
+    def __init__(self, bit_depth, sensor_format, pixel_size, qe, epercount, cam_noise, mode='mono'):
         """
 
         :param bit_depth: 
@@ -15,6 +19,7 @@ class Camera(object):
         :param qe: Quantum efficiency or sensor.
         :param epercount: Conversion gain of sensor.
         :param cam_noise: Camera noise standard deviation [ e- ].
+        :param mode:
 
         """
 
@@ -24,10 +29,11 @@ class Camera(object):
         self.epercount = epercount
         self.cam_noise = cam_noise
         self.bit_depth = bit_depth
-        self.polarised = polarised
+        self.mode = mode
         self.x, self.y = self.calculate_pixel_position()
 
-        if polarised:
+        assert mode in camera_modes
+        if mode == 'mono_polarised':
             assert sensor_format[0] % 2 == 0
             assert sensor_format[1] % 2 == 0
 
@@ -43,7 +49,8 @@ class Camera(object):
         """
 
         if apply_polarisers is None:
-            apply_polarisers = self.polarised
+            if self.mode == 'mono_polarised':
+                apply_polarisers = True
 
         if apply_polarisers:
             assert 'stokes' in spectrum.dims
@@ -54,18 +61,23 @@ class Camera(object):
         if 'stokes' in spectrum.dims:
             spectrum = spectrum.isel(stokes=0, drop=True)
 
-        signal = spectrum.integrate(dim='wavelength')
+        if self.mode == 'rgb':
+            from pycis.tools.color_system import cs_srgb
+            signal = cs_srgb.spec_to_rgb(spectrum, )
 
-        if not clean:
-            np.random.seed()
-            signal.values = np.random.poisson(signal.values)
-        signal = signal * self.qe
+        else:
+            signal = spectrum.integrate(dim='wavelength')
 
-        if not clean:
-            signal.values = signal.values + np.random.normal(0, self.cam_noise, signal.values.shape)
+            if not clean:
+                np.random.seed()
+                signal.values = np.random.poisson(signal.values)
+            signal = signal * self.qe
 
-        signal = signal / self.epercount
-        signal.values = np.digitize(signal.values, np.arange(0, 2 ** self.bit_depth))
+            if not clean:
+                signal.values = signal.values + np.random.normal(0, self.cam_noise, signal.values.shape)
+
+            signal = signal / self.epercount
+            signal.values = np.digitize(signal.values, np.arange(0, 2 ** self.bit_depth))
 
         return signal
 

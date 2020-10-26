@@ -2,9 +2,8 @@ from math import isclose
 import numpy as np
 import xarray as xr
 from numba import vectorize, f8
-from scipy.constants import c
-from pycis.model import mueller_product, LinearPolariser, calculate_coherence, LinearRetarder, \
-    Component, Camera, QuarterWaveplate, UniaxialCrystal, calculate_kappa
+from pycis.model import mueller_product, LinearPolariser, LinearRetarder, Component, Camera, QuarterWaveplate, \
+    UniaxialCrystal
 
 
 class Instrument(object):
@@ -58,7 +57,7 @@ class Instrument(object):
 
         itype = None
 
-        if self.camera.polarised:
+        if self.camera.mode == 'mono_polarised':
 
             # single-delay polarised
             if len(self.interferometer) == 3:
