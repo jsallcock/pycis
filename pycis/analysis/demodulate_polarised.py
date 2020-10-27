@@ -2,7 +2,7 @@ import numpy as np
 from numpy.fft import fft2, ifft2, fftshift, ifftshift, fftfreq
 import xarray as xr
 
-from pycis.analysis import make_window, fft2_im
+from pycis.analysis import make_carrier_window, make_lowpass_window, fft2_im
 
 
 def demodulate_single_delay_polarised(image):
@@ -35,7 +35,8 @@ def demodulate_single_delay_polarised(image):
 def demodulate_multi_delay_polarised(image, fringe_freq, ):
 
     fft = fft2_im(image)
-    window = make_window(fft, fringe_freq)
+    window = make_carrier_window(fft, fringe_freq)
+    w = make_lowpass_window(fft, fringe_freq)
 
     fft_dc = fft * (1 - window)
     fft_carrier = fft * window

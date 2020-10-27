@@ -13,8 +13,8 @@ the RGB camera mode hasn't been tested, don't use this for anything that matters
 
 # define camera
 bit_depth = 12
-sensor_format = (200, 200, )
-pixel_size = 6.5e-6 * 2
+sensor_format = (600, 200, )
+pixel_size = 6.5e-6
 qe = 0.35
 epercount = 0.46  # [e / count]
 cam_noise = 2.5
@@ -29,7 +29,7 @@ angle = 35.2 * np.pi / 180  # an arbitrary rotation angle to be added to all com
 thickness = 7.5e-3
 cut_angle = 0
 contrast = 0.5  # manually set the instrument contrast contribution of this crystal
-uc = UniaxialCrystal(np.pi / 4 + angle, thickness, np.pi / 2, )
+uc = UniaxialCrystal(np.pi / 4 + angle, thickness, 90 * np.pi / 180, )
 interferometer = [LinearPolariser(0 + angle, ),
                   uc,
                   LinearPolariser(np.pi / 2 + angle, ), ]

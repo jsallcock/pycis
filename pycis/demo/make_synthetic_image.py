@@ -15,7 +15,7 @@ pixel_size = 6.5e-6 * 2
 qe = 0.35
 epercount = 0.46  # [e / count]
 cam_noise = 2.5
-camera = Camera(bit_depth, sensor_format, pixel_size, qe, epercount, cam_noise, polarised=False)
+camera = Camera(bit_depth, sensor_format, pixel_size, qe, epercount, cam_noise, mode='mono')
 
 # define instrument optics -- just focal lengths right now
 optics = [17e-3, 105e-3, 150e-3, ]

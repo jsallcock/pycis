@@ -1,9 +1,10 @@
 import numpy as np
-import scipy.signal
+from scipy.ndimage import gaussian_filter
 import xarray as xr
+import matplotlib.pyplot as plt
 
 
-def make_window(fft, fringe_freq):
+def make_carrier_window(fft, fringe_freq):
     """
 
     :return:
@@ -13,21 +14,22 @@ def make_window(fft, fringe_freq):
     fringe_freq_abs = np.sqrt(fringe_freq[0] ** 2 + fringe_freq[1] ** 2)
     fringe_freq_angle = np.arctan2(fringe_freq[1], fringe_freq[0])
 
-    coord_proj = np.cos(fringe_freq_angle) * fft.freq_x + np.sin(fringe_freq_angle) * fft.freq_y
-    condition_1 = coord_proj < fringe_freq_abs - fringe_freq_abs / 1.5
-    condition_2 = coord_proj > fringe_freq_abs + fringe_freq_abs / 1.5
+    # define projected coordinate along direction of fringes
+    coord = np.cos(fringe_freq_angle) * fft.freq_x + np.sin(fringe_freq_angle) * fft.freq_y
+    condition_1 = coord < fringe_freq_abs - fringe_freq_abs / 1.5
+    condition_2 = coord > fringe_freq_abs + fringe_freq_abs / 1.5
     window = xr.ufuncs.logical_not(condition_1 + condition_2).astype(float)
 
     window = xr.where(window == 0, np.nan, window)
-    coord_proj = window * coord_proj
-    coord_proj = (coord_proj - np.nanmin(coord_proj)) / (np.nanmax(coord_proj) - np.nanmin(coord_proj))
+    coord = window * coord
+    coord = (coord - np.nanmin(coord)) / (np.nanmax(coord) - np.nanmin(coord))
 
-    # Blackman window
+    # manually define Blackman window
     alpha = 0.16
     a_0 = (1 - alpha) / 2
     a_1 = 0.5
     a_2 = alpha / 2
-    window = a_0 - a_1 * np.cos(2 * np.pi * coord_proj) + a_2 * np.cos(4 * np.pi * coord_proj)
+    window = a_0 - a_1 * np.cos(2 * np.pi * coord) + a_2 * np.cos(4 * np.pi * coord)
     window = xr.where(xr.ufuncs.isnan(window), 0, window, )
     window = xr.where(window < 0, 0, window, )
 
@@ -36,60 +38,24 @@ def make_window(fft, fringe_freq):
 
     return window
 
-
-def window_old(rfft_length, nfringes, window_width=None, fn='tukey', width_factor=1., alpha=0.5):
+def make_lowpass_window(fft, fringe_freq):
     """
-    LEGACY -- to be deleted
+    extremely quick and dirty for now
 
-    Generate a filters window for isolating the carrier (fringe) frequency.
+    # TODO think about this more
 
-    :param rfft_length: length of the real FFT to be filtered
-    :type rfft_length: int.
-    :param nfringes: The carrier (fringe) frequency to be demodulated, in units of cycles per sequence -- approximately the number of fringes present in the image.
-    :type nfringes: int.
-    :param fn: Specifies the window function to use, see the 'fns' dict at the top of the script for the
-    :type fn: str.
-    :param width_factor: a multiplicative factor determining the width of the filters, multiplies nfringes, which is found to work reasonably well.
-    :type width_factor: float
-
-    :return: generated window as an array.
+    :param fft:
+    :param fringe_freq:
+    :return:
     """
 
-    fns = {'hanning': scipy.signal.hanning,
-           'blackmanharris': scipy.signal.blackmanharris,
-           'tukey': scipy.signal.windows.tukey}
+    window = xr.ones_like(fft.real)
+    freq_x_lim, freq_y_lim = float(fft.freq_x.max() / 2), float(fft.freq_y.max() / 2)
 
-    assert fn in fns
+    window = window.where((-freq_x_lim < window.freq_x) & (window.freq_x < freq_x_lim), 0)
+    window = window.where((-freq_y_lim < window.freq_y) & (window.freq_y < freq_y_lim), 0)
+    sigma = 0.00005 * np.array(fft.shape) * (np.array(fringe_freq) ** 0.7 / (4 * np.array([fft.freq_x.max(), fft.freq_y.max()]))) ** -1
+    window.values = gaussian_filter(window.values, sigma)
 
-    if window_width == None:
-        window_width = int(nfringes * width_factor)
-
-    pre_zeros = [0] * int(nfringes - window_width / 2)
-
-    if fn == 'tukey':
-        fn = fns[fn]
-
-        window_fn = fn(window_width, alpha=alpha)
-    else:
-        fn = fns[fn]
-        window_fn = fn(window_width)
-
-    post_zeros = [0] * (rfft_length - window_width - int(nfringes - window_width / 2 - 1))
-
-    return np.concatenate((pre_zeros, window_fn, post_zeros))[:rfft_length]
-
-
-if __name__ == '__main__':
-
-    alphas = [0, 0.25, 0.5, 0.75, 1.0]
-
-    import matplotlib.pyplot as plt
-    fig, ax = plt.subplots()
-    for a in alphas:
-        win = window(1000, 100, fn='tukey', width_factor=1, alpha=a)
-        print(win)
-        ax.plot(win)
-
-    plt.show(block=True)
-
+    return window
 
