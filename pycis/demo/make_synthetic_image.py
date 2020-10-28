@@ -37,7 +37,7 @@ print(instrument.instrument_type)
 # plane, with units in m. And also with dimension 'wavelength' in units m. Spectrum units are ph / m.
 wavelength = np.linspace(460e-9, 460.05e-9, 5)
 wavelength = xr.DataArray(wavelength, dims=('wavelength', ), coords=(wavelength, ), )
-x, y = camera.calculate_pixel_position()  # camera method returns the camera's pixel x and y positions as DataArrays
+x, y = camera.calc_pixel_position()  # camera method returns the camera's pixel x and y positions as DataArrays
 
 spectrum = xr.ones_like(x * y * wavelength, )
 spectrum /= spectrum.integrate(dim='wavelength')

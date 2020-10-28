@@ -13,13 +13,16 @@ class Camera(object):
     def __init__(self, bit_depth, sensor_format, pixel_size, qe, epercount, cam_noise, mode='mono'):
         """
 
-        :param bit_depth: 
-        :param sensor_format: (x, y, )
-        :param pix_size: pixel dimension [ m ].
-        :param qe: Quantum efficiency or sensor.
-        :param epercount: Conversion gain of sensor.
-        :param cam_noise: Camera noise standard deviation [ e- ].
-        :param mode:
+        :param bit_depth: (int)
+        :param sensor_format: (tuple) number of pixels in each dimension (x, y, ).
+        :param pix_size: (float) pixel size in m.
+        :param qe: (float) Quantum efficiency or sensor in units e- per photon.
+        :param epercount: (float) Conversion gain of sensor in units e- per count.
+        :param cam_noise: (float) Camera noise standard deviation in units e-.
+        :param mode: (str) describes the mode of sensor operation. Currently supported are:
+                    -'mono' - Monochrome.
+                    -'mono_polarised' - Monochrome with a pixelated polariser array (layout of the FLIR Blackfly S camera)
+                    -'rgb' - (untested) - Color imaging
 
         """
 
@@ -30,7 +33,7 @@ class Camera(object):
         self.cam_noise = cam_noise
         self.bit_depth = bit_depth
         self.mode = mode
-        self.x, self.y = self.calculate_pixel_position()
+        self.x, self.y = self.calc_pixel_position()
 
         assert mode in camera_modes
         if mode == 'mono_polarised':
@@ -54,7 +57,7 @@ class Camera(object):
 
         if apply_polarisers:
             assert 'stokes' in spectrum.dims
-            mueller_matrix = self.calculate_mueller_matrix()
+            mueller_matrix = self.calc_mueller_matrix()
             spectrum = mueller_product(mueller_matrix, spectrum, )
 
         # ensure only total intensity (first Stokes parameter) is observed
@@ -81,7 +84,7 @@ class Camera(object):
 
         return signal
 
-    def calculate_pixel_position(self, x_pixel=None, y_pixel=None, ):
+    def calc_pixel_position(self, x_pixel=None, y_pixel=None, ):
         """
         Calculate pixel positions (in m) on the camera's sensor plane (the x-y plane).
 
@@ -113,7 +116,7 @@ class Camera(object):
 
         return x, y
 
-    def calculate_superpixel_position(self):
+    def calc_superpixel_position(self):
         """
 
         :return:
@@ -136,7 +139,7 @@ class Camera(object):
 
         return x, y
 
-    def calculate_mueller_matrix(self, ):
+    def calc_mueller_matrix(self, ):
         """
 
         :return:
@@ -149,28 +152,42 @@ class Camera(object):
         dims = ('x', 'y', 'mueller_v', 'mueller_h', )
         mat = xr.DataArray(mat, dims=dims, ).assign_coords({'x': self.x, 'y': self.y, }, )
 
-        mat[pix_idxs_x, pix_idxs_y, ..., ] = LinearPolariser(0).calculate_mueller_matrix()
-        mat[pix_idxs_x + 1, pix_idxs_y, ..., ] = LinearPolariser(np.pi / 4).calculate_mueller_matrix()
-        mat[pix_idxs_x + 1, pix_idxs_y + 1, ..., ] = LinearPolariser(np.pi / 2).calculate_mueller_matrix()
-        mat[pix_idxs_x, pix_idxs_y + 1, ..., ] = LinearPolariser(3 * np.pi / 4).calculate_mueller_matrix()
+        mat[pix_idxs_x, pix_idxs_y, ..., ] = LinearPolariser(0).calc_mueller_matrix()
+        mat[pix_idxs_x + 1, pix_idxs_y, ..., ] = LinearPolariser(np.pi / 4).calc_mueller_matrix()
+        mat[pix_idxs_x + 1, pix_idxs_y + 1, ..., ] = LinearPolariser(np.pi / 2).calc_mueller_matrix()
+        mat[pix_idxs_x, pix_idxs_y + 1, ..., ] = LinearPolariser(3 * np.pi / 4).calc_mueller_matrix()
 
         return mat
 
-    def calculate_pixelated_phase_mask(self, ):
+    def calc_pixelated_phase_mask(self, ):
         """
+        Calls the fn. camera.calc_pixelated_phase_mask and assigns the correct x, y coordinates.
 
         :return:
         """
+        return calc_pixelated_phase_mask(self.sensor_format).assign_coords({'x': self.x, 'y': self.y, }, )
 
-        pix_idxs_x = xr.DataArray(np.arange(0, self.sensor_format[0], 2), dims=('x', ), )
-        pix_idxs_y = xr.DataArray(np.arange(0, self.sensor_format[1], 2), dims=('y', ), )
-        phase_mask = np.zeros(self.sensor_format, )
-        dims = ('x', 'y',)
-        phase_mask = xr.DataArray(phase_mask, dims=dims, ).assign_coords({'x': self.x, 'y': self.y, }, )
 
-        phase_mask[pix_idxs_x, pix_idxs_y, ] = 0
-        phase_mask[pix_idxs_x + 1, pix_idxs_y, ] = np.pi / 2
-        phase_mask[pix_idxs_x + 1, pix_idxs_y + 1, ] = np.pi
-        phase_mask[pix_idxs_x, pix_idxs_y + 1, ] = 3 * np.pi / 2
+def calc_pixelated_phase_mask(sensor_format):
+    """
+    pixelated phase mask for the standard polarised CI instrument layout described in my thesis.
 
-        return phase_mask
+    :param sensor_format: (tuple) number of pixels in each dimension (x, y, ).
+    :return: (xr.DataArray) phase_mask with dimensions 'x' and 'y' and without coordinates.
+    """
+
+    phase_mask = xr.DataArray(np.zeros(sensor_format), dims=('x', 'y', ), )
+    idxs_x = xr.DataArray(np.arange(0, sensor_format[0], 2), dims=('x',), )
+    pix_idxs_y = xr.DataArray(np.arange(0, sensor_format[1], 2), dims=('y',), )
+
+    phase_mask[idxs_x, pix_idxs_y, ] = 0
+    phase_mask[idxs_x + 1, pix_idxs_y, ] = np.pi / 2
+    phase_mask[idxs_x + 1, pix_idxs_y + 1, ] = np.pi
+    phase_mask[idxs_x, pix_idxs_y + 1, ] = 3 * np.pi / 2
+
+    return phase_mask
+
+
+
+
+

@@ -3,6 +3,7 @@ from numpy.fft import fft2, ifft2, fftshift, ifftshift, fftfreq
 import xarray as xr
 
 from pycis.analysis import make_carrier_window
+from pycis.model import calc_pixelated_phase_mask
 
 
 def fft2_im(image):
@@ -35,7 +36,7 @@ def demodulate_linear(image, fringe_freq, ):
     """
 
     fft = fft2_im(image)
-    window = make_carrier_window(fft, fringe_freq)
+    window = make_carrier_window(fft, fringe_freq, sign='pm')
 
     fft_dc = fft * (1 - window)
     fft_carrier = fft * window

@@ -42,7 +42,8 @@ def calculate_coherence(spectrum, delay, material=None, freq_com=None):
     if 'wavelength' in spectrum.dims:
         spectrum = spectrum.rename({'wavelength': 'frequency'})
         spectrum['frequency'] = c / spectrum['frequency']
-        spectrum = spectrum * c / spectrum['frequency'] ** 2  # to maintain correct intensity units
+        spectrum = spectrum.sortby('frequency')
+        spectrum /= spectrum.integrate('frequency')
 
     # calculate centre of mass (c.o.m.) frequency if not supplied
     if freq_com is None:

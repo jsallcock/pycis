@@ -4,10 +4,17 @@ import xarray as xr
 import matplotlib.pyplot as plt
 
 
-def make_carrier_window(fft, fringe_freq):
+def make_carrier_window(fft, fringe_freq, sign='p'):
     """
+    Generates Fourier-domain window to isolate a carrier term at the given spatial frequency.
 
-    :return:
+    Window extends outwards in the orthogonal direction to the fringe frequency.
+
+    :param fft: (xr.DataArray) Fourier-trasformed image with dimensions 'freq_x' and 'freq_y'
+    :param fringe_freq:
+    :param sign: (str) 'p' to window the positive frequency carrier term. 'm' to window the negative frequency carrier,
+    'pm' to window both.
+    :return: window (xr.DataArray) with same dims and coords as fft.
     """
 
     # make window for isolating carrier frequency
@@ -33,9 +40,16 @@ def make_carrier_window(fft, fringe_freq):
     window = xr.where(xr.ufuncs.isnan(window), 0, window, )
     window = xr.where(window < 0, 0, window, )
 
-    window.values = window.values + np.flip(window.values)  # second window for negative frequency carrier
-    window /= float(window.max())  # normalise
+    if sign == 'p':
+        pass
+    elif sign == 'm':
+        window.values = np.flip(window.values)
+    elif sign == 'pm':
+        window.values = window.values + np.flip(window.values)  # second window for negative frequency carrier
+    else:
+        raise Exception('input not understood')
 
+    window /= float(window.max())  # normalise
     return window
 
 def make_lowpass_window(fft, fringe_freq):
@@ -54,7 +68,9 @@ def make_lowpass_window(fft, fringe_freq):
 
     window = window.where((-freq_x_lim < window.freq_x) & (window.freq_x < freq_x_lim), 0)
     window = window.where((-freq_y_lim < window.freq_y) & (window.freq_y < freq_y_lim), 0)
-    sigma = 0.00005 * np.array(fft.shape) * (np.array(fringe_freq) ** 0.7 / (4 * np.array([fft.freq_x.max(), fft.freq_y.max()]))) ** -1
+
+    sigma = 0.00005 * np.array(fft.shape) * (abs(np.array(fringe_freq)) ** 0.7 / (4 * np.array([fft.freq_x.max(), fft.freq_y.max()]))) ** -1
+    print(sigma)
     window.values = gaussian_filter(window.values, sigma)
 
     return window

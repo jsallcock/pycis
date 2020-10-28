@@ -108,7 +108,7 @@ class Instrument(object):
 
         return itype
 
-    def calculate_inc_angle(self, x, y):
+    def calc_inc_angle(self, x, y):
         """
         calculate incidence angles of ray(s) through crystal
 
@@ -117,9 +117,9 @@ class Instrument(object):
         :return: incidence angles [ rad ]
 
         """
-        return xr.apply_ufunc(_calculate_inc_angle, x, y, self.optics[2], dask='allowed')
+        return xr.apply_ufunc(_calc_inc_angle, x, y, self.optics[2], dask='allowed')
 
-    def calculate_azim_angle(self, x, y, crystal):
+    def calc_azim_angle(self, x, y, crystal):
         """
         calculate azimuthal angles of rays through crystal (varies with crystal orientation)
 
@@ -129,7 +129,7 @@ class Instrument(object):
         :return: azimuthal angles [ rad ]
 
         """
-        return xr.apply_ufunc(_calculate_azim_angle, x, y, crystal.orientation, dask='allowed, ')
+        return xr.apply_ufunc(_calc_azim_angle, x, y, crystal.orientation, dask='allowed, ')
 
     def capture(self, spectrum, clean=False):
         """
@@ -152,12 +152,12 @@ class Instrument(object):
                 a0 = xr.zeros_like(spectrum)
                 spectrum = xr.combine_nested([spectrum, a0, a0, a0], concat_dim=('stokes',))
 
-            mueller_matrix_total = self.calculate_mueller_matrix(spectrum)
+            mueller_matrix_total = self.calc_mueller_matrix(spectrum)
             spectrum = mueller_product(mueller_matrix_total, spectrum)
             apply_polarisers = None
 
         else:
-            delay = self.calculate_delay(spectrum.wavelength)
+            delay = self.calc_delay(spectrum.wavelength)
             apply_polarisers = False
 
             if self.instrument_type == 'single_delay_linear' and 'stokes' not in spectrum.dims:
@@ -166,12 +166,12 @@ class Instrument(object):
 
             elif self.instrument_type == 'single_delay_polarised' and 'stokes' not in spectrum.dims:
                 contrast = self.crystals[0].contrast
-                phase_mask = self.camera.calculate_pixelated_phase_mask()
+                phase_mask = self.camera.calc_pixelated_phase_mask()
                 spectrum = spectrum / 4 * (1 + contrast * np.cos(delay + phase_mask))
 
             elif self.instrument_type == 'multi_delay_polarised' and 'stokes' not in spectrum.dims:
 
-                phase_mask = self.camera.calculate_pixelated_phase_mask()
+                phase_mask = self.camera.calc_pixelated_phase_mask()
 
                 delay_1, delay_2, delay_sum, delay_diff = delay
                 contrast_1 = self.crystals[0].contrast
@@ -190,7 +190,7 @@ class Instrument(object):
         image = self.camera.capture(spectrum, apply_polarisers=apply_polarisers, clean=clean)
         return image
 
-    def calculate_mueller_matrix(self, spectrum):
+    def calc_mueller_matrix(self, spectrum):
         """
         calculate the total Mueller matrix for the interferometer
 
@@ -199,17 +199,17 @@ class Instrument(object):
 
         """
 
-        inc_angle = self.calculate_inc_angle(spectrum.x, spectrum.y)
+        inc_angle = self.calc_inc_angle(spectrum.x, spectrum.y)
         total_matrix = xr.DataArray(np.identity(4), dims=('mueller_v', 'mueller_h'), )
 
         for component in self.interferometer:
-            azim_angle = self.calculate_azim_angle(spectrum.x, spectrum.y, component)
-            component_matrix = component.calculate_mueller_matrix(spectrum.wavelength, inc_angle, azim_angle)
+            azim_angle = self.calc_azim_angle(spectrum.x, spectrum.y, component)
+            component_matrix = component.calc_mueller_matrix(spectrum.wavelength, inc_angle, azim_angle)
             total_matrix = mueller_product(component_matrix, total_matrix)
 
         return total_matrix
 
-    def calculate_delay(self, wavelength, ):
+    def calc_delay(self, wavelength, ):
         """
         calculate the interferometer delay(s) at the given wavelength(s)
 
@@ -225,34 +225,34 @@ class Instrument(object):
         # calculate the ray angles through the interferometer
         if hasattr(wavelength, 'coords'):
             if 'x' in wavelength.coords.keys() and 'y' in wavelength.coords.keys():
-                inc_angle = self.calculate_inc_angle(wavelength.x, wavelength.y)
-                azim_angle = self.calculate_azim_angle(wavelength.x, wavelength.y, self.crystals[0])
+                inc_angle = self.calc_inc_angle(wavelength.x, wavelength.y)
+                azim_angle = self.calc_azim_angle(wavelength.x, wavelength.y, self.crystals[0])
 
             else:
-                inc_angle = self.calculate_inc_angle(self.camera.x, self.camera.y, )
-                azim_angle = self.calculate_azim_angle(self.camera.x, self.camera.y, self.crystals[0])
+                inc_angle = self.calc_inc_angle(self.camera.x, self.camera.y, )
+                azim_angle = self.calc_azim_angle(self.camera.x, self.camera.y, self.crystals[0])
 
 
         else:
-            inc_angle = self.calculate_inc_angle(self.camera.x, self.camera.y, )
-            azim_angle = self.calculate_azim_angle(self.camera.x, self.camera.y, self.crystals[0])
+            inc_angle = self.calc_inc_angle(self.camera.x, self.camera.y, )
+            azim_angle = self.calc_azim_angle(self.camera.x, self.camera.y, self.crystals[0])
 
         if self.instrument_type == 'single_delay_linear':
             # add delay contribution due to each crystal
             delay = 0
             for crystal in self.crystals:
-                delay += crystal.calculate_delay(wavelength, inc_angle, azim_angle, )
+                delay += crystal.calc_delay(wavelength, inc_angle, azim_angle, )
 
         elif self.instrument_type == 'single_delay_polarised':
             # generalise to arbitrary interferometer orientations
             orientation_delay = -2 * self.polarisers[0].orientation
-            delay = self.crystals[0].calculate_delay(wavelength, inc_angle, azim_angle, ) + orientation_delay
+            delay = self.crystals[0].calc_delay(wavelength, inc_angle, azim_angle, ) + orientation_delay
 
         elif self.instrument_type == 'multi_delay_polarised':
             # generalise to arbitrary interferometer orientations
             orientation_delay = -2 * self.polarisers[0].orientation
-            delay_1 = self.crystals[0].calculate_delay(wavelength, inc_angle, azim_angle, )
-            delay_2 = self.crystals[1].calculate_delay(wavelength, inc_angle, azim_angle, ) + orientation_delay
+            delay_1 = self.crystals[0].calc_delay(wavelength, inc_angle, azim_angle, )
+            delay_2 = self.crystals[1].calc_delay(wavelength, inc_angle, azim_angle, ) + orientation_delay
             delay_sum = delay_1 + delay_2
             delay_diff = abs(delay_1 - delay_2)
 
@@ -262,7 +262,7 @@ class Instrument(object):
 
         return delay
 
-    def calculate_fringe_frequency(self, wavelength):
+    def calc_fringe_frequency(self, wavelength):
         """
         calculates the (rough) interference fringe period at the sensor plane and at the given wavelength
 
@@ -278,13 +278,13 @@ class Instrument(object):
             spatial_freq_x, spatial_freq_y = 0, 0
             for crystal in self.crystals:
 
-                sp_f_x, sp_f_y = crystal.calculate_fringe_frequency(wavelength, self.optics[2], )
+                sp_f_x, sp_f_y = crystal.calc_fringe_frequency(wavelength, self.optics[2], )
                 spatial_freq_x += sp_f_x
                 spatial_freq_y += sp_f_y
 
         elif self.instrument_type == 'multi_delay_polarised':
             crystal = self.crystals[0]
-            spatial_freq_x, spatial_freq_y = crystal.calculate_fringe_frequency(wavelength, self.optics[2], )
+            spatial_freq_x, spatial_freq_y = crystal.calc_fringe_frequency(wavelength, self.optics[2], )
             # TODO and also the sum and difference terms?
 
         else:
@@ -294,10 +294,10 @@ class Instrument(object):
 
 
 @vectorize([f8(f8, f8, f8, ), ], nopython=True, fastmath=True, cache=True, )
-def _calculate_inc_angle(x, y, f_3):
+def _calc_inc_angle(x, y, f_3):
     return np.arctan2((x ** 2 + y ** 2) ** 0.5, f_3, )
 
 
 @vectorize([f8(f8, f8, f8, ), ], nopython=True, fastmath=True, cache=True, )
-def _calculate_azim_angle(x, y, crystal_orientation, ):
+def _calc_azim_angle(x, y, crystal_orientation, ):
     return np.arctan2(y, x) + np.pi - crystal_orientation

@@ -33,7 +33,7 @@ def mueller_product(mat1, mat2):
         raise Exception('input not understood')
 
 
-def calculate_rot_matrix(angle):
+def rotation_matrix(angle):
     """
     general Mueller matrix for frame rotation (anti-clockwise from x-axis)
 
@@ -58,7 +58,7 @@ class Component:
     def __init__(self, ):
         pass
 
-    def calculate_mueller_matrix(self, *args, **kwargs):
+    def calc_mueller_matrix(self, *args, **kwargs):
         raise NotImplementedError
 
 
@@ -78,7 +78,7 @@ class Filter(Component):
         self.wl_centre = float((tx * tx.wavelength).integrate(dim='wavelength') / tx.integrate(dim='wavelength'))
         self.n = n
 
-    def calculate_mueller_matrix(self, wavelength, *args, **kwargs):
+    def calc_mueller_matrix(self, wavelength, *args, **kwargs):
         # TODO incorporate filter tilt wavelength shift
         # wl_shift = self.wl_centre * (np.sqrt(1 - (np.sin(inc_angle) / self.n) ** 2) - 1)
 
@@ -106,8 +106,8 @@ class OrientableComponent(Component):
         :return:
         """
 
-        matrix_i = mueller_product(matrix, calculate_rot_matrix(self.orientation))
-        return mueller_product(calculate_rot_matrix(-self.orientation), matrix_i)
+        matrix_i = mueller_product(matrix, rotation_matrix(self.orientation))
+        return mueller_product(rotation_matrix(-self.orientation), matrix_i)
 
 
 class LinearPolariser(OrientableComponent):
@@ -129,7 +129,7 @@ class LinearPolariser(OrientableComponent):
         self.tx_1 = tx_1
         self.tx_2 = tx_2
 
-    def calculate_mueller_matrix(self, *args, **kwargs):
+    def calc_mueller_matrix(self, *args, **kwargs):
 
         m = [[self.tx_2 ** 2 + self.tx_1 ** 2, self.tx_1 ** 2 - self.tx_2 ** 2, 0, 0],
              [self.tx_1 ** 2 - self.tx_2 ** 2, self.tx_2 ** 2 + self.tx_1 ** 2, 0, 0],
@@ -166,13 +166,13 @@ class LinearRetarder(OrientableComponent):
         self.source = material_source
         self.contrast = contrast
 
-    def calculate_mueller_matrix(self, *args, **kwargs):
+    def calc_mueller_matrix(self, *args, **kwargs):
         """
         general Mueller matrix for a linear retarder
 
         """
 
-        delay = self.calculate_delay(*args, **kwargs)
+        delay = self.calc_delay(*args, **kwargs)
 
         m1s = xr.ones_like(delay)
         m0s = xr.zeros_like(delay)
@@ -186,14 +186,14 @@ class LinearRetarder(OrientableComponent):
 
         return self.orient(xr.combine_nested(m, concat_dim=('mueller_v', 'mueller_h', ), ))
 
-    def calculate_delay(self, *args, **kwargs):
+    def calc_delay(self, *args, **kwargs):
         """
         Interferometer delay in radians
 
         """
         raise NotImplementedError
 
-    def calculate_fringe_frequency(self, *args, **kwargs):
+    def calc_fringe_frequency(self, *args, **kwargs):
         """
         Spatial frequency of the fringe pattern at the sensor plane in units m^-1
 
@@ -216,7 +216,7 @@ class UniaxialCrystal(LinearRetarder):
         super().__init__(orientation, thickness, material=material, material_source=material_source, contrast=contrast, )
         self.cut_angle = cut_angle
 
-    def calculate_delay(self, wavelength, inc_angle, azim_angle, n_e=None, n_o=None):
+    def calc_delay(self, wavelength, inc_angle, azim_angle, n_e=None, n_o=None):
         """
         calculate phase delay (in rad) due to uniaxial crystal.
 
@@ -247,9 +247,9 @@ class UniaxialCrystal(LinearRetarder):
             biref, n_e, n_o = calculate_dispersion(wavelength, self.material, source=self.source)
 
         args = [wavelength, inc_angle, azim_angle, n_e, n_o, self.cut_angle, self.thickness, ]
-        return xr.apply_ufunc(_calculate_delay_uniaxial_crystal, *args, dask='allowed', )
+        return xr.apply_ufunc(_calc_delay_uniaxial_crystal, *args, dask='allowed', )
 
-    def calculate_fringe_frequency(self, wavelength, focal_length, ):
+    def calc_fringe_frequency(self, wavelength, focal_length, ):
         """
         calculate the approx. spatial frequency of the fringe pattern for a given lens focal length and light wavelength
 
@@ -285,7 +285,7 @@ class SavartPlate(LinearRetarder):
         super().__init__(orientation, thickness, material=material, material_source=material_source, contrast=contrast, )
         self.mode = mode
 
-    def calculate_delay(self, wavelength, inc_angle, azim_angle, n_e=None, n_o=None):
+    def calc_delay(self, wavelength, inc_angle, azim_angle, n_e=None, n_o=None):
         """
         calculate phase delay (in rad) due to Savart plate.
 
@@ -349,15 +349,15 @@ class SavartPlate(LinearRetarder):
             crystal_1 = UniaxialCrystal(or1, t, cut_angle=-np.pi / 4, material=self.material)
             crystal_2 = UniaxialCrystal(or2, t, cut_angle=np.pi / 4, material=self.material)
 
-            delay = crystal_1.calculate_delay(wavelength, inc_angle, azim_angle1, n_e=n_e, n_o=n_o) - \
-                    crystal_2.calculate_delay(wavelength, inc_angle, azim_angle2, n_e=n_e, n_o=n_o)
+            delay = crystal_1.calc_delay(wavelength, inc_angle, azim_angle1, n_e=n_e, n_o=n_o) - \
+                    crystal_2.calc_delay(wavelength, inc_angle, azim_angle2, n_e=n_e, n_o=n_o)
 
         else:
             raise Exception('invalid SavartPlate.mode')
 
         return delay
 
-    def calculate_fringe_frequency(self, *args, **kwargs):
+    def calc_fringe_frequency(self, *args, **kwargs):
         # TODO
         raise NotImplementedError
 
@@ -372,10 +372,10 @@ class IdealWaveplate(LinearRetarder):
         super().__init__(orientation, thickness, )
         self.ideal_delay = ideal_delay
 
-    def calculate_delay(self, *args, **kwargs):
+    def calc_delay(self, *args, **kwargs):
         return xr.DataArray(self.ideal_delay)
 
-    def calculate_fringe_frequency(self, *args, **kwargs):
+    def calc_fringe_frequency(self, *args, **kwargs):
         # no phase change across sensor plane
         return 0, 0
 
@@ -401,7 +401,7 @@ class HalfWaveplate(IdealWaveplate):
 
 
 @vectorize([f8(f8, f8, f8, f8, f8, f8, f8), ], nopython=True, fastmath=True, cache=True, )
-def _calculate_delay_uniaxial_crystal(wavelength, inc_angle, azim_angle, n_e, n_o, cut_angle, thickness, ):
+def _calc_delay_uniaxial_crystal(wavelength, inc_angle, azim_angle, n_e, n_o, cut_angle, thickness, ):
     s_inc_angle = np.sin(inc_angle)
     s_inc_angle_2 = s_inc_angle ** 2
     s_cut_angle_2 = np.sin(cut_angle) ** 2

@@ -38,7 +38,7 @@ instrument = Instrument(camera, optics, interferometer, force_mueller=False)
 
 wavelength = np.linspace(100e-9, 1000e-9, 200)
 wavelength = xr.DataArray(wavelength, dims=('wavelength', ), coords=(wavelength, ), )
-x, y = camera.calculate_pixel_position()  # camera method returns the camera's pixel x and y positions as DataArrays
+x, y = camera.calc_pixel_position()  # camera method returns the camera's pixel x and y positions as DataArrays
 
 spectrum = xr.ones_like(x * y * wavelength, )
 spectrum /= spectrum.integrate(dim='wavelength')
