@@ -18,15 +18,13 @@ import sys
 
 # sys.path.insert(0, os.path.abspath(".."))
 
-def skip(app, what, name, obj, would_skip, options):
-    if name == "__init__":
-        return False
-    return would_skip
+# def skip(app, what, name, obj, would_skip, options):
+#     if name == "__init__":
+#         return False
+#     return would_skip
 
-def setup(app):
-    app.connect("autodoc-skip-member", skip)
-
-
+# def setup(app):
+#     app.connect("autodoc-skip-member", skip)
 
 
 # -- Project information -----------------------------------------------------
@@ -50,7 +48,8 @@ release = ''
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.githubpages']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.githubpages', 'sphinx.ext.imgmath']
+autodoc_member_order = 'bysource'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

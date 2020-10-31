@@ -3,22 +3,14 @@ import xarray as xr
 from numba import vectorize, f8
 from pycis.model import calculate_dispersion
 
-"""
-Conventions:
-- Mueller matrices are xr.DataArrays with dimensions that include 'mueller_v' and 'mueller_h' (each with length = 4) 
-- Stokes vectors are xr.DataArrays with dimensions that include 'stokes' (with length = 4)
-
-"""
-
 
 def mueller_product(mat1, mat2):
     """
-    Mueller matrix product
+    Compute the product of two Mueller matrices.
 
-    :param mat1: (xr.DataArray) Mueller matrix
-    :param mat2: (xr.DataArray) Mueller matrix or Stokes vector
-    :return: (xr.DataArray) Mueller matrix or Stokes vector, depending on the dimensions of mat2
-
+    :param xr.DataArray mat1: Mueller matrix
+    :param xr.DataArray mat2: Mueller matrix or Stokes vector
+    :return: (xr.DataArray) mat1 @ mat2, a Mueller matrix or a Stokes vector, depending on the dimensions of mat2.
     """
 
     if 'mueller_v' in mat2.dims and 'mueller_h' in mat2.dims:
@@ -35,11 +27,10 @@ def mueller_product(mat1, mat2):
 
 def rotation_matrix(angle):
     """
-    general Mueller matrix for frame rotation (anti-clockwise from x-axis)
+    Mueller matrix for frame rotation (anti-clockwise from x-axis).
 
-    :param angle: rotation angle [ rad ]
-    :return:
-
+    :param float angle: rotation angle in radians.
+    :return: (xr.DataArray) rotation matrix
     """
 
     angle2 = 2 * angle
@@ -52,33 +43,34 @@ def rotation_matrix(angle):
 
 class Component:
     """
-    base class for interferometer component
+    Base class for interferometer component.
 
     """
     def __init__(self, ):
         pass
 
-    def calc_mueller_matrix(self, *args, **kwargs):
+    def get_mueller_matrix(self, *args, **kwargs):
         raise NotImplementedError
 
 
 class Filter(Component):
     """
-    optical filter with no polarisation-dependent effects
+    Optical filter with no polarisation-dependent behaviour.
 
     """
     def __init__(self, tx, n):
         """
-        :param tx: (xr.DataArray) fractional filter transmission, with dimension 'wavelength' in m
-        :param n: (float) refractive index (effective)
+        :param xr.DataArray tx: Fractional filter transmission, whose dimension 'wavelength' has coordinates in m.
+        :param float n: Refractive index (effective).
         """
+
         super().__init__()
         assert all(tx >= 0) and all(tx <= 1)
         self.tx = tx
         self.wl_centre = float((tx * tx.wavelength).integrate(dim='wavelength') / tx.integrate(dim='wavelength'))
         self.n = n
 
-    def calc_mueller_matrix(self, wavelength, *args, **kwargs):
+    def get_mueller_matrix(self, wavelength, *args, **kwargs):
         # TODO incorporate filter tilt wavelength shift
         # wl_shift = self.wl_centre * (np.sqrt(1 - (np.sin(inc_angle) / self.n) ** 2) - 1)
 
@@ -88,7 +80,7 @@ class Filter(Component):
 
 class OrientableComponent(Component):
     """
-    base class for interferometer component whose orientation determines behaviour
+    Base class for interferometer component with orientation-dependent behaviour.
 
     """
     def __init__(self, orientation, ):
@@ -117,7 +109,7 @@ class LinearPolariser(OrientableComponent):
     """
     def __init__(self, orientation, tx_1=1, tx_2=0, ):
         """
-        :param orientation: [ rad ] 0 aligns transmission axis to x-axis
+        :param float orientation: Orientation in radians of thetransmission axis relative to the x-axis.
         :param tx_1: transmission primary component. [0, 1] - defaults to 1
         :param tx_2: transmission secondary (orthogonal) component. [0, 1] - defaults to 0
 
@@ -129,7 +121,7 @@ class LinearPolariser(OrientableComponent):
         self.tx_1 = tx_1
         self.tx_2 = tx_2
 
-    def calc_mueller_matrix(self, *args, **kwargs):
+    def get_mueller_matrix(self, *args, **kwargs):
 
         m = [[self.tx_2 ** 2 + self.tx_1 ** 2, self.tx_1 ** 2 - self.tx_2 ** 2, 0, 0],
              [self.tx_1 ** 2 - self.tx_2 ** 2, self.tx_2 ** 2 + self.tx_1 ** 2, 0, 0],
@@ -146,15 +138,10 @@ class LinearRetarder(OrientableComponent):
     """
     def __init__(self, orientation, thickness, material='a-BBO', material_source=None, contrast=1, ):
         """
-        :param thickness: [ m ]
-        :type thickness: float
-
-        :param material: string denoting crystal material
-        :type material: str
-
-        :param material_source: string denoting source of Sellmeier coefficients describing dispersion in the crystal.
+        :param float thickness: thickness in m.
+        :param str material: Crystal material
+        :param str material_source: Source of Sellmeier coefficients describing dispersion in the crystal.
         If blank, the default material source specified in pycis.model.dispersion
-        :type material: str
 
         :param contrast: arbitrary contrast degradation factor for crystal, uniform contrast only for now.
         :type contrast: float
@@ -166,13 +153,13 @@ class LinearRetarder(OrientableComponent):
         self.source = material_source
         self.contrast = contrast
 
-    def calc_mueller_matrix(self, *args, **kwargs):
+    def get_mueller_matrix(self, *args, **kwargs):
         """
-        general Mueller matrix for a linear retarder
+        General Mueller matrix for a linear retarder.
 
         """
 
-        delay = self.calc_delay(*args, **kwargs)
+        delay = self.get_delay(*args, **kwargs)
 
         m1s = xr.ones_like(delay)
         m0s = xr.zeros_like(delay)
@@ -186,14 +173,14 @@ class LinearRetarder(OrientableComponent):
 
         return self.orient(xr.combine_nested(m, concat_dim=('mueller_v', 'mueller_h', ), ))
 
-    def calc_delay(self, *args, **kwargs):
+    def get_delay(self, *args, **kwargs):
         """
         Interferometer delay in radians
 
         """
         raise NotImplementedError
 
-    def calc_fringe_frequency(self, *args, **kwargs):
+    def get_fringe_frequency(self, *args, **kwargs):
         """
         Spatial frequency of the fringe pattern at the sensor plane in units m^-1
 
@@ -203,43 +190,30 @@ class LinearRetarder(OrientableComponent):
 
 class UniaxialCrystal(LinearRetarder):
     """
-    Uniaxial birefringent crystal
+    Uniaxial birefringent crystal.
 
     """
     def __init__(self, orientation, thickness, cut_angle, material='a-BBO', material_source=None, contrast=1, ):
         """
-        
-        :param cut_angle: [ rad ] angle between optic axis and crystal front face
-        :type cut_angle: float
+        :param float cut_angle: angle between optic axis and crystal front face in radians.
 
         """
         super().__init__(orientation, thickness, material=material, material_source=material_source, contrast=contrast, )
         self.cut_angle = cut_angle
 
-    def calc_delay(self, wavelength, inc_angle, azim_angle, n_e=None, n_o=None):
+    def get_delay(self, wavelength, inc_angle, azim_angle, n_e=None, n_o=None):
         """
         calculate phase delay (in rad) due to uniaxial crystal.
 
         Veiras defines optical path difference as OPL_o - OPL_e ie. +ve phase indicates a delayed extraordinary
         ray
 
-        :param wavelength: wavelength [ m ]
-        :type wavelength: float or array-like (1-D)
-
-        :param inc_angle: ray incidence angle [ rad ]
-        :type inc_angle: float or array-like (up to 2-D)
-
-        :param azim_angle: ray azimuthal angle [ rad ]
-        :type azim_angle: float or array-like (up to 2-D)
-
+        :param wavelength: wavelength in m.
+        :param inc_angle: ray incidence angle in radians.
+        :param azim_angle: ray azimuthal angle in radians.
         :param n_e: manually set extraordinary refractive index (for fitting)
-        :type n_e: float
-
         :param n_o: manually set ordinary refractive index (for fitting)
-        :type n_o: float
-
-        :return: phase [ rad ]
-
+        :return: delay in radians.
         """
 
         # if refractive indices have not been manually set, calculate
@@ -249,7 +223,7 @@ class UniaxialCrystal(LinearRetarder):
         args = [wavelength, inc_angle, azim_angle, n_e, n_o, self.cut_angle, self.thickness, ]
         return xr.apply_ufunc(_calc_delay_uniaxial_crystal, *args, dask='allowed', )
 
-    def calc_fringe_frequency(self, wavelength, focal_length, ):
+    def get_fringe_frequency(self, wavelength, focal_length, ):
         """
         calculate the approx. spatial frequency of the fringe pattern for a given lens focal length and light wavelength
 
@@ -285,7 +259,7 @@ class SavartPlate(LinearRetarder):
         super().__init__(orientation, thickness, material=material, material_source=material_source, contrast=contrast, )
         self.mode = mode
 
-    def calc_delay(self, wavelength, inc_angle, azim_angle, n_e=None, n_o=None):
+    def get_delay(self, wavelength, inc_angle, azim_angle, n_e=None, n_o=None):
         """
         calculate phase delay (in rad) due to Savart plate.
 
@@ -349,15 +323,15 @@ class SavartPlate(LinearRetarder):
             crystal_1 = UniaxialCrystal(or1, t, cut_angle=-np.pi / 4, material=self.material)
             crystal_2 = UniaxialCrystal(or2, t, cut_angle=np.pi / 4, material=self.material)
 
-            delay = crystal_1.calc_delay(wavelength, inc_angle, azim_angle1, n_e=n_e, n_o=n_o) - \
-                    crystal_2.calc_delay(wavelength, inc_angle, azim_angle2, n_e=n_e, n_o=n_o)
+            delay = crystal_1.get_delay(wavelength, inc_angle, azim_angle1, n_e=n_e, n_o=n_o) - \
+                    crystal_2.get_delay(wavelength, inc_angle, azim_angle2, n_e=n_e, n_o=n_o)
 
         else:
             raise Exception('invalid SavartPlate.mode')
 
         return delay
 
-    def calc_fringe_frequency(self, *args, **kwargs):
+    def get_fringe_frequency(self, *args, **kwargs):
         # TODO
         raise NotImplementedError
 
@@ -372,17 +346,17 @@ class IdealWaveplate(LinearRetarder):
         super().__init__(orientation, thickness, )
         self.ideal_delay = ideal_delay
 
-    def calc_delay(self, *args, **kwargs):
+    def get_delay(self, *args, **kwargs):
         return xr.DataArray(self.ideal_delay)
 
-    def calc_fringe_frequency(self, *args, **kwargs):
+    def get_fringe_frequency(self, *args, **kwargs):
         # no phase change across sensor plane
         return 0, 0
 
 
 class QuarterWaveplate(IdealWaveplate):
     """
-    Ideal quarter-wave plate
+    Ideal quarter-wave plate.
 
     """
     def __init__(self, orientation, ):
@@ -392,7 +366,7 @@ class QuarterWaveplate(IdealWaveplate):
 
 class HalfWaveplate(IdealWaveplate):
     """
-    Ideal half-wave plate
+    Ideal half-wave plate.
 
     """
     def __init__(self, orientation, ):

@@ -3,7 +3,7 @@ from numpy.fft import fft2, ifft2, fftshift, ifftshift, fftfreq
 import xarray as xr
 
 from pycis.analysis import make_carrier_window
-from pycis.model import calc_pixelated_phase_mask
+from pycis.model import get_pixelated_phase_mask
 
 
 def fft2_im(image):

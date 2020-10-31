@@ -22,7 +22,7 @@ angle = np.random.rand() * 180 * np.pi / 180
 # define input spectrum
 wavelength = np.linspace(460e-9, 460.05e-9, 20)
 wavelength = xr.DataArray(wavelength, dims=('wavelength',), coords=(wavelength,), )
-x, y = camera.calc_pixel_position()
+x, y = camera.get_pixel_position()
 
 spectrum = xr.ones_like(x * y * wavelength, )
 spectrum /= spectrum.integrate(dim='wavelength')

@@ -8,36 +8,33 @@ import pycis
 
 def calculate_coherence(spectrum, delay, material=None, freq_com=None):
     """
-    calculate the (temporal) coherence of an intensity spectrum for given interferometer delay(s)
+    Calculates the (temporal) coherence of a given intensity spectrum for a given interferometer delay(s).
 
-    Coherence is the Fourier transform of the frequency spectrum. Generally, instrument dispersion breaks this
-    relationship, but a first-order (linear) approx. for dispersion maintains it in a modified form (the 'group delay'
-    approximation).
+
+    Temporal coherence :math:`\\Gamma(\\tau)` is the Fourier transform of the frequency spectrum :math:`I(\\nu)`:
+
+     .. math::
+        \\Gamma(\\tau)=\\int_{-\\infty}^{\\infty}I(\\nu)\\exp(2\\pi{}i\\nu\\tau)d\\nu,
+
+    with interferometer delay time :math:`\\tau` and frequency :math:`\\nu` as the conjugate variables.
+    Generally, dispersion means that :math:`\\tau\\rightarrow\\tau(\\nu)`  but a first-order (linear) approx. for dispersion maintains it in a modified form (the 'group delay' approximation).
 
     See test_with_gaussian_lineshape() below for examples of how to use.
 
-    :param spectrum: Intensity spectrum. An xr.DataArray object whose dimension 'wavelength' has coordinates
-    with units ( m ) or else whose dim. 'frequency' has coords. with units ( Hz ). Intensity spectrum units are then
-    ( arb. / m ) or (arb. / Hz ) respectively.
-
-    :param delay: Interferometer delay in units ( radians ). Can be a float or an xr.DataArray. If delay is a float or
-    is a DataArray without a 'wavelength' or a 'frequency' dimension, then the group delay approx. is used. In this
-    case, it is assumed that the delay value(s) correspond to the centre-of-mass (COM) frequency of the given spectrum
-    and the coherence is calculated for each delay value. If delay has either a 'wavelength' dim. or a
-    'frequency' dim. -- with coordinates that match the corresponding dim. of spectrum -- then the full dispersive
-    integral is evaluated.
-
+    :param xr.DataArray spectrum: Intensity spectrum. Dim. 'wavelength' has coords with units m or else dim.
+        'frequency' has coords. with units Hz. Spectrum units are then ( arb. / m ) or (arb. / Hz ) respectively.
+    :param xr.DataArray delay: Interferometer delay in units radians. If delay is a float or is a DataArray without a
+        'wavelength' or a 'frequency' dimension, then the group delay approx. is used. In this case, it is assumed that
+        the delay value(s) correspond to the centre-of-mass (COM) frequency of the given spectrum and the coherence is
+        calculated for each delay value. If delay has either a 'wavelength' dim. or a 'frequency' dim. -- with
+        coordinates that match the corresponding dim. of spectrum -- then the full dispersive integral is evaluated.
     :param material: string specifying the interferometer crystal material. See pycis.model.dispersion for valid inputs.
-    This is not needed in the full dispersive treatment as the dispersion info has already been provided in the delay
-    argument. To do a none-dispersive calculation, you should leave material=None and use a delay argument that will
-    trigger the group delay approx.
-
+         This is not needed in the full dispersive treatment as the dispersion info has already been provided in the
+         delay argument. To do a none-dispersive calculation, you should leave material=None and use a delay argument
+         that will trigger the group delay approx.
     :param freq_com: centre of mass frequency of spectrum, if it has already been calculated.
-
-    :return: coherence (temporal). Units are those of the spectrum argument, but integrated over the spectral dimension
-    e.g. if spectrum has units ( W / m^2 / m ) then coherence has units ( W / m^2 ).
+    :return: coherence (temporal). Units are those of the spectrum argument, but integrated over the spectral dimension e.g. if spectrum has units ( W / m^2 / m ) then coherence has units ( W / m^2 ).
     """
-
     # if necessary, convert spectrum's wavelength (m) dim + coordinate to frequency (Hz)
     if 'wavelength' in spectrum.dims:
         spectrum = spectrum.rename({'wavelength': 'frequency'})

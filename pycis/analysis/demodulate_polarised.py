@@ -3,7 +3,7 @@ from numpy.fft import ifft2, ifftshift
 import xarray as xr
 
 from pycis.analysis import make_carrier_window, make_lowpass_window, fft2_im
-from pycis.model import calc_pixelated_phase_mask
+from pycis.model import get_pixelated_phase_mask
 
 
 def demodulate_single_delay_polarised(image):
@@ -53,7 +53,7 @@ def demodulate_multi_delay_polarised(image, fringe_freq, ):
     dc = xr.DataArray(ifft2(ifftshift(fft_dc.data)), coords=image.coords, dims=image.dims).real
     carrier_1 = xr.DataArray(ifft2(ifftshift(fft_carrier.data)), coords=image.coords, dims=image.dims)
 
-    pm = calc_pixelated_phase_mask(image.shape)
+    pm = get_pixelated_phase_mask(image.shape)
     sp = image * np.exp(1j * pm)
 
     fft_sp = fft2_im(sp)

@@ -2,14 +2,13 @@ import unittest
 import numpy as np
 from numpy.testing import assert_almost_equal
 import xarray as xr
-
 from pycis import mueller_product
 
 
 class TestMueller(unittest.TestCase):
     def test_mueller_product(self, ):
         """
-        basic Mueller matrix multiplication test
+        Basic Mueller matrix multiplication test.
 
         """
         mdims = ('mueller_v', 'mueller_h')

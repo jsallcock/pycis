@@ -1,0 +1,267 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Coherence &mdash; pycis  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Dispersion" href="dispersion.html" />
+    <link rel="prev" title="Camera" href="camera.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> pycis
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="model.html">Model</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="model.html#conventions">Conventions</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="interferometer.html">Interferometer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="instrument.html">Instrument</a></li>
+<li class="toctree-l3"><a class="reference internal" href="camera.html">Camera</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Coherence</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dispersion.html">Dispersion</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="model.html#indices-and-tables">Indices and tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pycis</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="model.html">Model</a> &raquo;</li>
+        
+      <li>Coherence</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-pycis.model.coherence">
+<span id="coherence"></span><h1>Coherence<a class="headerlink" href="#module-pycis.model.coherence" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="pycis.model.coherence.calculate_coherence">
+<code class="sig-prename descclassname">pycis.model.coherence.</code><code class="sig-name descname">calculate_coherence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spectrum</span></em>, <em class="sig-param"><span class="n">delay</span></em>, <em class="sig-param"><span class="n">material</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">freq_com</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.coherence.calculate_coherence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the (temporal) coherence of a given intensity spectrum for a given interferometer delay(s).</p>
+<p>Temporal coherence <img class="math" src="_images/math/d0af7c2c7c249c40d4e67b4f55a12b65a44f5d6d.png" alt="\Gamma(\tau)"/> is the Fourier transform of the frequency spectrum <img class="math" src="_images/math/e3e429fc442545f7a3a1a62ca4466e517d575c01.png" alt="I(\nu)"/>:</p>
+<blockquote>
+<div><div class="math">
+<p><img src="_images/math/5c307bb77fff8c56ed96f608573349bb4bb7a2a4.png" alt="\Gamma(\tau)=\int_{-\infty}^{\infty}I(\nu)\exp(2\pi{}i\nu\tau)d\nu,"/></p>
+</div></div></blockquote>
+<p>with interferometer delay time <img class="math" src="_images/math/914b2d4b6659b86d3153d5510839dfb254dfc8a3.png" alt="\tau"/> and frequency <img class="math" src="_images/math/14eb89266154200b9c81dcfc3bd058638fa221bf.png" alt="\nu"/> as the conjugate variables.
+Generally, dispersion means that <img class="math" src="_images/math/81ce292887db1396c4df31b6043a1640f930a060.png" alt="\tau\rightarrow\tau(\nu)"/>  but a first-order (linear) approx. for dispersion maintains it in a modified form (the ‘group delay’ approximation).</p>
+<p>See test_with_gaussian_lineshape() below for examples of how to use.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spectrum</strong> (<em>xr.DataArray</em>) – Intensity spectrum. Dim. ‘wavelength’ has coords with units m or else dim.
+‘frequency’ has coords. with units Hz. Spectrum units are then ( arb. / m ) or (arb. / Hz ) respectively.</p></li>
+<li><p><strong>delay</strong> (<em>xr.DataArray</em>) – Interferometer delay in units radians. If delay is a float or is a DataArray without a
+‘wavelength’ or a ‘frequency’ dimension, then the group delay approx. is used. In this case, it is assumed that
+the delay value(s) correspond to the centre-of-mass (COM) frequency of the given spectrum and the coherence is
+calculated for each delay value. If delay has either a ‘wavelength’ dim. or a ‘frequency’ dim. – with
+coordinates that match the corresponding dim. of spectrum – then the full dispersive integral is evaluated.</p></li>
+<li><p><strong>material</strong> – string specifying the interferometer crystal material. See pycis.model.dispersion for valid inputs.
+This is not needed in the full dispersive treatment as the dispersion info has already been provided in the
+delay argument. To do a none-dispersive calculation, you should leave material=None and use a delay argument
+that will trigger the group delay approx.</p></li>
+<li><p><strong>freq_com</strong> – centre of mass frequency of spectrum, if it has already been calculated.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>coherence (temporal). Units are those of the spectrum argument, but integrated over the spectral dimension e.g. if spectrum has units ( W / m^2 / m ) then coherence has units ( W / m^2 ).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="pycis.model.coherence.test_with_gaussian_lineshape">
+<code class="sig-prename descclassname">pycis.model.coherence.</code><code class="sig-name descname">test_with_gaussian_lineshape</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.coherence.test_with_gaussian_lineshape" title="Permalink to this definition">¶</a></dt>
+<dd><p>numerical / analytical test of calculate_coherence() using a modelled Gaussian spectral lineshape</p>
+<p>It would be nice to turn this into a unit test.</p>
+<p>misc. abbreviations:
+doc = degree of coherence
+wl = wavelength
+biref = birefringence</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="dispersion.html" class="btn btn-neutral float-right" title="Dispersion" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="camera.html" class="btn btn-neutral float-left" title="Camera" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Joseph Allcock
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
