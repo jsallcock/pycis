@@ -1,5 +1,4 @@
 *.egg-info
 *.DS_Store
 *__pycache__
-*.png
 demo/playing.py
