@@ -86,6 +86,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Model</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#conventions">Conventions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#geometry-definitions">Geometry definitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#optical-layout">Optical layout</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#list-of-modules">List of modules</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="interferometer.html">Interferometer</a></li>
 <li class="toctree-l3"><a class="reference internal" href="instrument.html">Instrument</a></li>
@@ -165,12 +166,19 @@
             
   <div class="section" id="model">
 <h1>Model<a class="headerlink" href="#model" title="Permalink to this headline">¶</a></h1>
-<p>A framework for forward-modelling diagnostic images. Built using the <a class="reference external" href="http://xarray.pydata.org/en/stable/">xarray library</a> for labelled multi-dimensional arrays.</p>
+<p>A framework for forward-modelling CI images built using the <a class="reference external" href="http://xarray.pydata.org/en/stable/">xarray library</a> for
+labelled multi-dimensional arrays.</p>
+<p>The Mueller matrix model at the core of pycis makes it simple to model arbitrary interferometer configurations observing
+scenes with arbitrary spectral and polarisation properties.</p>
+<p>For some interferometer layouts there are simple analytical expressions for the interferogram. These analytical
+shortcuts are configured as instrument types in pycis. This functionality makes for faster evaluation and, more
+importantly, allows for methods that return important instrument parameters like interferometer delay(s) across the
+image and fringe frequency.</p>
 <div class="section" id="conventions">
 <h2>Conventions<a class="headerlink" href="#conventions" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li>Mueller matrices are xr.DataArrays with dimensions that include &#8216;mueller_v&#8217; and &#8216;mueller_h&#8217; (each with length = 4).</li>
-<li>Stokes vectors are xr.DataArrays with dimensions that include &#8216;stokes&#8217; (with length = 4).</li>
+<li>Mueller matrices are xr.DataArray instances with dimensions that include &#8216;mueller_v&#8217; and &#8216;mueller_h&#8217; (each with length = 4).</li>
+<li>Stokes vectors are xr.DataArray instances with dimensions that include &#8216;stokes&#8217; (with length = 4).</li>
 <li>The coordinate system is defined with its origin at the centre of the camera sensor, which lies in the xy plane.</li>
 <li>S.I. units are used throughout, and all angles are in radians.</li>
 </ul>
@@ -180,6 +188,9 @@
 <div class="figure">
 <img alt="_images/angles.pdf" src="_images/angles.pdf" />
 </div>
+</div>
+<div class="section" id="optical-layout">
+<h2>Optical layout<a class="headerlink" href="#optical-layout" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="list-of-modules">
 <h2>List of modules<a class="headerlink" href="#list-of-modules" title="Permalink to this headline">¶</a></h2>
