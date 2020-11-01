@@ -3,8 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to pycis's documentation!
-=================================
+pycis
+=====
+
+Analysis and modelling tools for the Coherence Imaging Spectroscopy (CIS) plasma diagnostic technique.
 
 Contents:
 
