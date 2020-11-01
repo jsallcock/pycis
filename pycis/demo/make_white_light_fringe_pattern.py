@@ -33,6 +33,7 @@ uc = UniaxialCrystal(np.pi / 4 + angle, thickness, 90 * np.pi / 180, )
 sp = SavartPlate(np.pi / 4 + angle, thickness / 10, )
 interferometer = [LinearPolariser(0 + angle, ),
                   sp,
+                  uc,
                   LinearPolariser(np.pi / 2 + angle, ), ]
 
 instrument = Instrument(camera, optics, interferometer, force_mueller=False)
@@ -54,5 +55,5 @@ ax.set_axis_off()
 fig.add_axes(ax)
 
 ax.imshow(igram.values.T)
-plt.savefig('white_light_fringes_savart.png', bbox_inches='tight', pad_inches=0)
+plt.savefig('white_light_fringes.png', bbox_inches='tight', pad_inches=0)
 plt.close()

@@ -8,8 +8,6 @@ pycis
 
 Analysis and modelling tools for the Coherence Imaging Spectroscopy (CIS) plasma diagnostic technique.
 
-Contents:
-
 .. toctree::
    :caption: Table of Contents
    :maxdepth: 2
