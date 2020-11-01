@@ -17,36 +17,33 @@
   
 
   
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
-  
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
 
+  
+  
     
 
   
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Examples" href="examples.html" />
     <link rel="prev" title="Dispersion" href="dispersion.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
+
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
+        <div class="wy-side-nav-search">
           
 
           
@@ -157,49 +154,57 @@
 <p>Tools for analysing raw CIS images.</p>
 <div class="section" id="wrap">
 <h2>wrap<a class="headerlink" href="#wrap" title="Permalink to this headline">¶</a></h2>
-<dl class="py function">
+<dl class="function">
 <dt id="pycis.analysis.wrap">
-<code class="sig-prename descclassname">pycis.analysis.</code><code class="sig-name descname">wrap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">phase</span></em>, <em class="sig-param"><span class="n">units</span><span class="o">=</span><span class="default_value">'rad'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.analysis.wrap" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pycis.analysis.</code><code class="descname">wrap</code><span class="sig-paren">(</span><em>phase</em>, <em>units='rad'</em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.analysis.wrap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrap N-D phase profile within (- pi, pi] radian interval.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>phase</strong> (<em>array_like</em>) – input phase</p></li>
-<li><p><strong>units</strong> (<em>str</em>) – Units of phase (accepted: ‘rad’, ‘waves’, ‘fringes’).</p></li>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>phase</strong> (<em>array_like</em>) &#8211; input phase</li>
+<li><strong>units</strong> (<em>str</em>) &#8211; Units of phase (accepted: &#8216;rad&#8217;, &#8216;waves&#8217;, &#8216;fringes&#8217;).</li>
 </ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>wrapped values (radians).</p>
-</dd>
-</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">wrapped values (radians).</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
 <div class="section" id="unwrap">
 <h2>unwrap<a class="headerlink" href="#unwrap" title="Permalink to this headline">¶</a></h2>
-<dl class="py function">
+<dl class="function">
 <dt id="pycis.analysis.unwrap">
-<code class="sig-prename descclassname">pycis.analysis.</code><code class="sig-name descname">unwrap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">phase</span></em>, <em class="sig-param"><span class="n">centre</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.analysis.unwrap" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pycis.analysis.</code><code class="descname">unwrap</code><span class="sig-paren">(</span><em>phase</em>, <em>centre=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.analysis.unwrap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Unwrap 1-D / 2-D phase profiles.</p>
 <p>In 2-D, a simple phase unwrapping algorithm sequentially unwraps columns and then rows (or vice versa). For noisy
 data however, this method can perform poorly.</p>
-<p>This ‘pseudo 2D’ unwrapping algorithm relies on the strong vertical phase shear present in the CIS raw_data.
+<p>This &#8216;pseudo 2D&#8217; unwrapping algorithm relies on the strong vertical phase shear present in the CIS raw_data.
 In an ideal system the optical axis is projected onto the detector centre. On axis, the Savart plate introduces
 zero net phase delay, so the (wrapped) phase measured at the centre of the detector array is the (wrapped) waveplate
-phase delay – a handy quantity to know. Numpy’s np.unwrap function sets the 0th array element to be wrapped, set
-‘centre’ to False to return this numpy-like behaviour. ‘centre’ defaults to True, wrapping the phase at the array
+phase delay &#8211; a handy quantity to know. Numpy&#8217;s np.unwrap function sets the 0th array element to be wrapped, set
+&#8216;centre&#8217; to False to return this numpy-like behaviour. &#8216;centre&#8217; defaults to True, wrapping the phase at the array
 centre.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>phase</strong> (<em>np.ndarray</em>) – input phase [ rad ], 1-D or 2-D.</p></li>
-<li><p><strong>centre</strong> (<em>bool</em>) – Unwrap the phase such that the centre of the input array is wrapped.</p></li>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>phase</strong> (<em>np.ndarray</em>) &#8211; input phase [ rad ], 1-D or 2-D.</li>
+<li><strong>centre</strong> (<em>bool</em>) &#8211; Unwrap the phase such that the centre of the input array is wrapped.</li>
 </ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Unwrapped phase [ rad ].</p>
-</dd>
-</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Unwrapped phase [ rad ].</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -216,7 +221,7 @@ centre.</p>
         <a href="examples.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="dispersion.html" class="btn btn-neutral float-left" title="Dispersion" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="dispersion.html" class="btn btn-neutral" title="Dispersion" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -225,7 +230,7 @@ centre.</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, Joseph Allcock
+        &copy; Copyright 2018, Joseph Allcock.
 
     </p>
   </div>
@@ -242,16 +247,35 @@ centre.</p>
   
 
 
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  false,
+            SOURCELINK_SUFFIX: ''
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

@@ -17,36 +17,33 @@
   
 
   
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
-  
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
 
+  
+  
     
 
   
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Coherence" href="coherence.html" />
     <link rel="prev" title="Instrument" href="instrument.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
+
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
+        <div class="wy-side-nav-search">
           
 
           
@@ -162,32 +159,35 @@
             
   <div class="section" id="camera">
 <h1>Camera<a class="headerlink" href="#camera" title="Permalink to this headline">¶</a></h1>
-<div class="figure align-default">
+<div class="figure">
 <a class="reference internal image-reference" href="_images/pixelated_polariser_array.png"><img alt="_images/pixelated_polariser_array.png" src="_images/pixelated_polariser_array.png" style="width: 330.8px; height: 302.40000000000003px;" /></a>
 </div>
-<span class="target" id="module-pycis.model.camera"></span><dl class="py class">
+<span class="target" id="module-pycis.model.camera"></span><dl class="class">
 <dt id="pycis.model.camera.Camera">
-<em class="property">class </em><code class="sig-prename descclassname">pycis.model.camera.</code><code class="sig-name descname">Camera</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bit_depth</span></em>, <em class="sig-param"><span class="n">sensor_format</span></em>, <em class="sig-param"><span class="n">pixel_size</span></em>, <em class="sig-param"><span class="n">qe</span></em>, <em class="sig-param"><span class="n">epercount</span></em>, <em class="sig-param"><span class="n">cam_noise</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'mono'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.camera.Camera" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pycis.model.camera.</code><code class="descname">Camera</code><span class="sig-paren">(</span><em>bit_depth</em>, <em>sensor_format</em>, <em>pixel_size</em>, <em>qe</em>, <em>epercount</em>, <em>cam_noise</em>, <em>mode='mono'</em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.camera.Camera" title="Permalink to this definition">¶</a></dt>
 <dd><p>t</p>
-<dl class="py method">
+<dl class="method">
 <dt id="pycis.model.camera.Camera.capture">
-<code class="sig-name descname">capture</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spectrum</span></em>, <em class="sig-param"><span class="n">apply_polarisers</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">clean</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.camera.Camera.capture" title="Permalink to this definition">¶</a></dt>
+<code class="descname">capture</code><span class="sig-paren">(</span><em>spectrum</em>, <em>apply_polarisers=None</em>, <em>clean=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.camera.Camera.capture" title="Permalink to this definition">¶</a></dt>
 <dd><p>Capture an image</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>spectrum</strong> – (xr.DataArray) in units of photons / m with dimensions ‘x’, ‘y’, ‘wavelength’ and (optionally)</p>
-</dd>
-</dl>
-<p>‘stokes’. If there is no stokes dim then the light is assumed to be unpolarised.
-:param apply_polarisers: (bool) whether to apply the camera’s pixelated polariser array to the spectrum.
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spectrum</strong> &#8211; (xr.DataArray) in units of photons / m with dimensions &#8216;x&#8217;, &#8216;y&#8217;, &#8216;wavelength&#8217; and (optionally)</td>
+</tr>
+</tbody>
+</table>
+<p>&#8216;stokes&#8217;. If there is no stokes dim then the light is assumed to be unpolarised.
+:param apply_polarisers: (bool) whether to apply the camera&#8217;s pixelated polariser array to the spectrum.
 :param clean: (bool) False to add realistic image noise. Clean images used for testing.
 :return:</p>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="pycis.model.camera.Camera.get_pixel_position">
-<code class="sig-name descname">get_pixel_position</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x_pixel</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">y_pixel</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.camera.Camera.get_pixel_position" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate pixel positions (in m) on the camera’s sensor plane (the x-y plane).</p>
+<code class="descname">get_pixel_position</code><span class="sig-paren">(</span><em>x_pixel=None</em>, <em>y_pixel=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.camera.Camera.get_pixel_position" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate pixel positions (in m) on the camera&#8217;s sensor plane (the x-y plane).</p>
 <p>The origin of the x-y coordinate system is the centre of the sensor. Pixel positions correspond to the pixel
 centres. If x_pixel and y_pixel are specified then only returns the position of that pixel.
 :param x_pixel:
@@ -195,51 +195,62 @@ centres. If x_pixel and y_pixel are specified then only returns the position of 
 :return: x_pos, y_pos, both instances of xr.DataArray</p>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="pycis.model.camera.Camera.get_superpixel_position">
-<code class="sig-name descname">get_superpixel_position</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.camera.Camera.get_superpixel_position" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p></p>
-</dd>
-</dl>
+<code class="descname">get_superpixel_position</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.camera.Camera.get_superpixel_position" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="pycis.model.camera.Camera.get_mueller_matrix">
-<code class="sig-name descname">get_mueller_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.camera.Camera.get_mueller_matrix" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p></p>
-</dd>
-</dl>
+<code class="descname">get_mueller_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.camera.Camera.get_mueller_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="pycis.model.camera.Camera.get_pixelated_phase_mask">
-<code class="sig-name descname">get_pixelated_phase_mask</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.camera.Camera.get_pixelated_phase_mask" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_pixelated_phase_mask</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.camera.Camera.get_pixelated_phase_mask" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calls the fn. camera.calc_pixelated_phase_mask and assigns the correct x, y coordinates.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p></p>
-</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="py function">
+<dl class="function">
 <dt id="pycis.model.camera.get_pixelated_phase_mask">
-<code class="sig-prename descclassname">pycis.model.camera.</code><code class="sig-name descname">get_pixelated_phase_mask</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sensor_format</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.camera.get_pixelated_phase_mask" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pycis.model.camera.</code><code class="descname">get_pixelated_phase_mask</code><span class="sig-paren">(</span><em>sensor_format</em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.camera.get_pixelated_phase_mask" title="Permalink to this definition">¶</a></dt>
 <dd><p>pixelated phase mask for the standard polarised CI instrument layout described in my thesis.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>sensor_format</strong> – (tuple) number of pixels in each dimension (x, y, ).</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>(xr.DataArray) phase_mask with dimensions ‘x’ and ‘y’ and without coordinates.</p>
-</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sensor_format</strong> &#8211; (tuple) number of pixels in each dimension (x, y, ).</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(xr.DataArray) phase_mask with dimensions &#8216;x&#8217; and &#8216;y&#8217; and without coordinates.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -255,7 +266,7 @@ centres. If x_pixel and y_pixel are specified then only returns the position of 
         <a href="coherence.html" class="btn btn-neutral float-right" title="Coherence" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="instrument.html" class="btn btn-neutral float-left" title="Instrument" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="instrument.html" class="btn btn-neutral" title="Instrument" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -264,7 +275,7 @@ centres. If x_pixel and y_pixel are specified then only returns the position of 
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, Joseph Allcock
+        &copy; Copyright 2018, Joseph Allcock.
 
     </p>
   </div>
@@ -281,16 +292,35 @@ centres. If x_pixel and y_pixel are specified then only returns the position of 
   
 
 
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  false,
+            SOURCELINK_SUFFIX: ''
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

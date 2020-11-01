@@ -17,36 +17,33 @@
   
 
   
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
-  
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
 
+  
+  
     
 
   
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Camera" href="camera.html" />
     <link rel="prev" title="Interferometer" href="interferometer.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
+
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
+        <div class="wy-side-nav-search">
           
 
           
@@ -162,124 +159,147 @@
             
   <div class="section" id="module-pycis.model.instrument">
 <span id="instrument"></span><h1>Instrument<a class="headerlink" href="#module-pycis.model.instrument" title="Permalink to this headline">¶</a></h1>
-<dl class="py class">
+<dl class="class">
 <dt id="pycis.model.instrument.Instrument">
-<em class="property">class </em><code class="sig-prename descclassname">pycis.model.instrument.</code><code class="sig-name descname">Instrument</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">camera</span></em>, <em class="sig-param"><span class="n">optics</span></em>, <em class="sig-param"><span class="n">interferometer</span></em>, <em class="sig-param"><span class="n">force_mueller</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.instrument.Instrument" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pycis.model.instrument.</code><code class="descname">Instrument</code><span class="sig-paren">(</span><em>camera</em>, <em>optics</em>, <em>interferometer</em>, <em>force_mueller=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.instrument.Instrument" title="Permalink to this definition">¶</a></dt>
 <dd><p>Coherence imaging instrument</p>
-<dl class="py method">
+<dl class="method">
 <dt id="pycis.model.instrument.Instrument.get_instrument_type">
-<code class="sig-name descname">get_instrument_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.instrument.Instrument.get_instrument_type" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_instrument_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.instrument.Instrument.get_instrument_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>For certain instrument layouts there are analytical shortcuts for calculating the interferogram, skipping the
 full Mueller matrix treatment.</p>
 <p>current instrument types:
-- ‘mueller’: Full Mueller calculation
-- ‘single_delay_linear’
-- ‘single_delay_polarised’
-- ‘multi_delay_polarised’</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>itype (str)</p>
-</dd>
-</dl>
+- &#8216;mueller&#8217;: Full Mueller calculation
+- &#8216;single_delay_linear&#8217;
+- &#8216;single_delay_polarised&#8217;
+- &#8216;multi_delay_polarised&#8217;</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">itype (str)</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="pycis.model.instrument.Instrument.get_inc_angle">
-<code class="sig-name descname">get_inc_angle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.instrument.Instrument.get_inc_angle" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_inc_angle</code><span class="sig-paren">(</span><em>x</em>, <em>y</em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.instrument.Instrument.get_inc_angle" title="Permalink to this definition">¶</a></dt>
 <dd><p>calculate incidence angles of ray(s) through crystal</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> – (xr.DataArray) x position(s) on sensor plane [ m ]</p></li>
-<li><p><strong>y</strong> – (xr.DataArray) y position(s) on sensor [ m ]</p></li>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> &#8211; (xr.DataArray) x position(s) on sensor plane [ m ]</li>
+<li><strong>y</strong> &#8211; (xr.DataArray) y position(s) on sensor [ m ]</li>
 </ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>incidence angles [ rad ]</p>
-</dd>
-</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">incidence angles [ rad ]</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="pycis.model.instrument.Instrument.get_azim_angle">
-<code class="sig-name descname">get_azim_angle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">crystal</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.instrument.Instrument.get_azim_angle" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_azim_angle</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>crystal</em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.instrument.Instrument.get_azim_angle" title="Permalink to this definition">¶</a></dt>
 <dd><p>calculate azimuthal angles of rays through crystal (varies with crystal orientation)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> – (xr.DataArray) x position(s) on sensor plane [ m ]</p></li>
-<li><p><strong>y</strong> – (xr.DataArray) y position(s) on sensor plane [ m ]</p></li>
-<li><p><strong>crystal</strong> – (pycis.model.BirefringentComponent)</p></li>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> &#8211; (xr.DataArray) x position(s) on sensor plane [ m ]</li>
+<li><strong>y</strong> &#8211; (xr.DataArray) y position(s) on sensor plane [ m ]</li>
+<li><strong>crystal</strong> &#8211; (pycis.model.BirefringentComponent)</li>
 </ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>azimuthal angles [ rad ]</p>
-</dd>
-</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">azimuthal angles [ rad ]</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="pycis.model.instrument.Instrument.capture">
-<code class="sig-name descname">capture</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spectrum</span></em>, <em class="sig-param"><span class="n">clean</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.instrument.Instrument.capture" title="Permalink to this definition">¶</a></dt>
+<code class="descname">capture</code><span class="sig-paren">(</span><em>spectrum</em>, <em>clean=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.instrument.Instrument.capture" title="Permalink to this definition">¶</a></dt>
 <dd><p>capture image of scene</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>spectrum</strong> – (xr.DataArray) photon fluence spectrum with units of ph / m [hitting the pixel area during</p>
-</dd>
-</dl>
-<p>exposure time] and with dimensions ‘wavelength’, ‘x’, ‘y’ and (optionally) ‘stokes’. If no stokes dim then it is assumed
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spectrum</strong> &#8211; (xr.DataArray) photon fluence spectrum with units of ph / m [hitting the pixel area during</td>
+</tr>
+</tbody>
+</table>
+<p>exposure time] and with dimensions &#8216;wavelength&#8217;, &#8216;x&#8217;, &#8216;y&#8217; and (optionally) &#8216;stokes&#8217;. If no stokes dim then it is assumed
 that light is unpolarised (i.e. the spec supplied is the S_0 Stokes parameter only)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>clean</strong> – (bool) False to add realistic image noise, passed to self.camera.capture()</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>clean</strong> &#8211; (bool) False to add realistic image noise, passed to self.camera.capture()</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="pycis.model.instrument.Instrument.get_mueller_matrix">
-<code class="sig-name descname">get_mueller_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spectrum</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.instrument.Instrument.get_mueller_matrix" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_mueller_matrix</code><span class="sig-paren">(</span><em>spectrum</em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.instrument.Instrument.get_mueller_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>calculate the total Mueller matrix for the interferometer</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>spectrum</strong> – (xr.DataArray) see spectrum argument for instrument.capture</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Mueller matrix</p>
-</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spectrum</strong> &#8211; (xr.DataArray) see spectrum argument for instrument.capture</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Mueller matrix</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="pycis.model.instrument.Instrument.get_delay">
-<code class="sig-name descname">get_delay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wavelength</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.instrument.Instrument.get_delay" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_delay</code><span class="sig-paren">(</span><em>wavelength</em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.instrument.Instrument.get_delay" title="Permalink to this definition">¶</a></dt>
 <dd><p>calculate the interferometer delay(s) at the given wavelength(s)</p>
-<p>At the moment this method only works for instrument types other than ‘mueller’. I’m not sure it would be
+<p>At the moment this method only works for instrument types other than &#8216;mueller&#8217;. I&#8217;m not sure it would be
 possible to write a general function?</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>wavelength</strong> – in units (m), can be a float or an xr.DataArray with dimensions including ‘x’ and ‘y’</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>delay in units (rad)</p>
-</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>wavelength</strong> &#8211; in units (m), can be a float or an xr.DataArray with dimensions including &#8216;x&#8217; and &#8216;y&#8217;</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">delay in units (rad)</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="pycis.model.instrument.Instrument.get_fringe_frequency">
-<code class="sig-name descname">get_fringe_frequency</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wavelength</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.instrument.Instrument.get_fringe_frequency" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_fringe_frequency</code><span class="sig-paren">(</span><em>wavelength</em><span class="sig-paren">)</span><a class="headerlink" href="#pycis.model.instrument.Instrument.get_fringe_frequency" title="Permalink to this definition">¶</a></dt>
 <dd><p>calculates the (rough) interference fringe period at the sensor plane and at the given wavelength</p>
-<p>only makes sense for instrument types with a phase shear (e.g. ‘single_delay_linear’ and
-‘multi_delay_polarised’)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p></p>
-</dd>
-</dl>
+<p>only makes sense for instrument types with a phase shear (e.g. &#8216;single_delay_linear&#8217; and
+&#8216;multi_delay_polarised&#8217;)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -297,7 +317,7 @@ possible to write a general function?</p>
         <a href="camera.html" class="btn btn-neutral float-right" title="Camera" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="interferometer.html" class="btn btn-neutral float-left" title="Interferometer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="interferometer.html" class="btn btn-neutral" title="Interferometer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -306,7 +326,7 @@ possible to write a general function?</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, Joseph Allcock
+        &copy; Copyright 2018, Joseph Allcock.
 
     </p>
   </div>
@@ -323,16 +343,35 @@ possible to write a general function?</p>
   
 
 
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  false,
+            SOURCELINK_SUFFIX: ''
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>
