@@ -2,7 +2,7 @@ from math import isclose
 import numpy as np
 import xarray as xr
 from numba import vectorize, f8
-from pycis.model import mueller_product, LinearPolariser, LinearRetarder, Component, Camera, QuarterWaveplate, \
+from pycis.model import mueller_product, LinearPolariser, Camera, QuarterWaveplate, \
     UniaxialCrystal
 
 
@@ -26,14 +26,14 @@ class Instrument(object):
         self.force_mueller = force_mueller
 
         self.input_checks()
-        self.crystals = [co for co in self.interferometer if isinstance(co, LinearRetarder)]
+        self.crystals = [co for co in self.interferometer if isinstance(co, _LinearRetarder)]
         self.polarisers = [co for co in self.interferometer if isinstance(co, LinearPolariser)]
         self.instrument_type = self.get_instrument_type()
 
     def input_checks(self):
         assert isinstance(self.camera, Camera)
         assert isinstance(self.optics, list)
-        assert all(isinstance(co, Component) for co in self.interferometer)
+        assert all(isinstance(co, _Component) for co in self.interferometer)
 
     def get_instrument_type(self):
         """
@@ -117,7 +117,7 @@ class Instrument(object):
 
         :param xr.DataArray x: Pixel x position(s) in sensor plane in m.
         :param xr.DataArray y: Pixel y position(s) in sensor plane in m.
-        :param pycis.model.OrientableComponent crystal: Crystal component.
+        :param pycis.model._OrientableComponent crystal: Crystal component.
         :return: Incidence angles in radians.
         """
         return xr.apply_ufunc(_calc_azim_angle, x, y, crystal.orientation, dask='allowed, ')

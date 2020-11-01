@@ -1,16 +1,16 @@
 Model
 =====
 
-A framework for forward-modelling CI images built using the `xarray library <http://xarray.pydata.org/en/stable/>`_ for
+A framework for modelling CI images built using the `xarray library <http://xarray.pydata.org/en/stable/>`_ for
 labelled multi-dimensional arrays.
 
 The Mueller matrix model at the core of pycis makes it simple to model arbitrary interferometer configurations observing
 scenes with arbitrary spectral and polarisation properties.
 
 For some interferometer layouts there are simple analytical expressions for the interferogram. These analytical
-shortcuts are configured as instrument types in pycis. This functionality makes for faster evaluation and, more
-importantly, allows for methods that return important instrument parameters like interferometer delay(s) across the
-image and fringe frequency.
+shortcuts are configured as instrument types in pycis. This functionality makes for faster evaluation and also allows
+for methods that return important instrument parameters like interferometer delay(s) across the image and fringe
+frequency.
 
 Conventions
 -----------

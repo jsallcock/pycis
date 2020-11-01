@@ -152,7 +152,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
 <span class="kn">from</span> <span class="nn">numba</span> <span class="k">import</span> <span class="n">vectorize</span><span class="p">,</span> <span class="n">f8</span>
-<span class="kn">from</span> <span class="nn">pycis.model</span> <span class="k">import</span> <span class="n">mueller_product</span><span class="p">,</span> <span class="n">LinearPolariser</span><span class="p">,</span> <span class="n">LinearRetarder</span><span class="p">,</span> <span class="n">Component</span><span class="p">,</span> <span class="n">Camera</span><span class="p">,</span> <span class="n">QuarterWaveplate</span><span class="p">,</span> \
+<span class="kn">from</span> <span class="nn">pycis.model</span> <span class="k">import</span> <span class="n">mueller_product</span><span class="p">,</span> <span class="n">LinearPolariser</span><span class="p">,</span> <span class="n">Camera</span><span class="p">,</span> <span class="n">QuarterWaveplate</span><span class="p">,</span> \
     <span class="n">UniaxialCrystal</span>
 
 
@@ -176,14 +176,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">force_mueller</span> <span class="o">=</span> <span class="n">force_mueller</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">input_checks</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">crystals</span> <span class="o">=</span> <span class="p">[</span><span class="n">co</span> <span class="k">for</span> <span class="n">co</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interferometer</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">co</span><span class="p">,</span> <span class="n">LinearRetarder</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">crystals</span> <span class="o">=</span> <span class="p">[</span><span class="n">co</span> <span class="k">for</span> <span class="n">co</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interferometer</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">co</span><span class="p">,</span> <span class="n">_LinearRetarder</span><span class="p">)]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">polarisers</span> <span class="o">=</span> <span class="p">[</span><span class="n">co</span> <span class="k">for</span> <span class="n">co</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interferometer</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">co</span><span class="p">,</span> <span class="n">LinearPolariser</span><span class="p">)]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">instrument_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_instrument_type</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">input_checks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="p">,</span> <span class="n">Camera</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optics</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">co</span><span class="p">,</span> <span class="n">Component</span><span class="p">)</span> <span class="k">for</span> <span class="n">co</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interferometer</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">co</span><span class="p">,</span> <span class="n">_Component</span><span class="p">)</span> <span class="k">for</span> <span class="n">co</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interferometer</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Instrument.get_instrument_type"><a class="viewcode-back" href="../../../instrument.html#pycis.model.instrument.Instrument.get_instrument_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_instrument_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -267,7 +267,7 @@
 
 <span class="sd">        :param xr.DataArray x: Pixel x position(s) in sensor plane in m.</span>
 <span class="sd">        :param xr.DataArray y: Pixel y position(s) in sensor plane in m.</span>
-<span class="sd">        :param pycis.model.OrientableComponent crystal: Crystal component.</span>
+<span class="sd">        :param pycis.model._OrientableComponent crystal: Crystal component.</span>
 <span class="sd">        :return: Incidence angles in radians.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">apply_ufunc</span><span class="p">(</span><span class="n">_calc_azim_angle</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">crystal</span><span class="o">.</span><span class="n">orientation</span><span class="p">,</span> <span class="n">dask</span><span class="o">=</span><span class="s1">&#39;allowed, &#39;</span><span class="p">)</span></div>
