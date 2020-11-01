@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # pycis documentation build configuration file, created by
-# sphinx-quickstart on Sun Nov  1 13:17:10 2020.
+# sphinx-quickstart on Sun Nov  1 13:22:41 2020.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -31,8 +31,8 @@
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.mathjax',
+    'sphinx.ext.imgmath',
+    'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
 ]
 
@@ -85,7 +85,7 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = []
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
