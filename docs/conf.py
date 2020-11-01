@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # pycis documentation build configuration file, created by
-# sphinx-quickstart on Sun Nov  1 12:07:39 2020.
+# sphinx-quickstart on Sun Nov  1 13:17:10 2020.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -33,7 +33,6 @@
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.mathjax',
-    'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
 ]
 
