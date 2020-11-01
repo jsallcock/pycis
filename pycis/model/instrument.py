@@ -8,23 +8,18 @@ from pycis.model import mueller_product, LinearPolariser, LinearRetarder, Compon
 
 class Instrument(object):
     """
-    Coherence imaging instrument
+    Coherence imaging instrument.
+
+    :param pycis.model.Camera camera: Instrument camera.
+    :param list optics: list of floats, the focal lengths (in m) of the three lenses used in the standard CI
+    configuration (see e.g. my thesis or Scott Silburn's): [f_1, f_2, f_3] where f_1 is the objective lens.
+    :param list interferometer: A list of instances of pycis.model.Component, where the first entry is the first
+    component that the light passes through.
+    :param bool force_mueller: Forces the full Mueller matrix calculation of the interferogram, regardless of whether
+    an analytical shortcut is available.
 
     """
     def __init__(self, camera, optics, interferometer, force_mueller=False):
-        """
-
-        :param camera: instance of pycis.model.Camera
-
-        :param optics: list of floats, the focal lengths (in m) of the three lenses used in the standard CI
-        configuration (see e.g. my thesis or Scott Silburn's): [f_1, f_2, f_3] where f_1 is the objective lens.
-
-        :param interferometer:  list of instances of pycis.model.InterferometerComponent, where the first list entry is
-         the first component that the light passes through.
-
-        :param force_mueller: bool, forces the full Mueller matrix calculation of the interferogram, even when
-        an analytical shortcut is available.
-        """
 
         self.camera = camera
         self.optics = optics
@@ -43,16 +38,15 @@ class Instrument(object):
 
     def get_instrument_type(self):
         """
-        For certain instrument layouts there are analytical shortcuts for calculating the interferogram, skipping the
-        full Mueller matrix treatment.
+        Type of instrument determines how interferogram is calculated.
 
-        current instrument types:
+        Valid instrument types:
         - 'mueller': Full Mueller calculation
         - 'single_delay_linear'
         - 'single_delay_polarised'
         - 'multi_delay_polarised'
 
-        :return: itype (str)
+        :return: instrument type (str)
         """
 
         itype = None
@@ -110,36 +104,34 @@ class Instrument(object):
 
     def get_inc_angle(self, x, y):
         """
-        calculate incidence angles of ray(s) through crystal
+        Calculate incidence angles of ray(s) through the interferometer.
 
-        :param x: (xr.DataArray) x position(s) on sensor plane [ m ]
-        :param y: (xr.DataArray) y position(s) on sensor [ m ]
-        :return: incidence angles [ rad ]
-
+        :param xr.DataArray x: x position(s) in sensor plane in m.
+        :param xr.DataArray y: y position(s) in sensor plane in m.
+        :return: Incidence angles in radians.
         """
         return xr.apply_ufunc(_calc_inc_angle, x, y, self.optics[2], dask='allowed')
 
     def get_azim_angle(self, x, y, crystal):
         """
-        calculate azimuthal angles of rays through crystal (varies with crystal orientation)
+        Calculate azimuthal angles of rays through the crystal.
 
-        :param x: (xr.DataArray) x position(s) on sensor plane [ m ]
-        :param y: (xr.DataArray) y position(s) on sensor plane [ m ]
-        :param crystal: (pycis.model.BirefringentComponent)
-        :return: azimuthal angles [ rad ]
-
+        :param xr.DataArray x: x position(s) in sensor plane in m.
+        :param xr.DataArray y: y position(s) in sensor plane in m.
+        :param pycis.model.OrientableComponent crystal: Crystal component.
+        :return: Incidence angles in radians.
         """
         return xr.apply_ufunc(_calc_azim_angle, x, y, crystal.orientation, dask='allowed, ')
 
     def capture(self, spectrum, clean=False):
         """
-        capture image of scene
+        Captures image of given spectrum.
 
         :param spectrum: (xr.DataArray) photon fluence spectrum with units of ph / m [hitting the pixel area during
         exposure time] and with dimensions 'wavelength', 'x', 'y' and (optionally) 'stokes'. If no stokes dim then it is assumed
         that light is unpolarised (i.e. the spec supplied is the S_0 Stokes parameter only)
 
-        :param clean: (bool) False to add realistic image noise, passed to self.camera.capture()
+        :param bool clean: False to add realistic image noise, passed to self.camera.capture()
 
         :return:
 
@@ -192,7 +184,7 @@ class Instrument(object):
 
     def get_mueller_matrix(self, spectrum):
         """
-        calculate the total Mueller matrix for the interferometer
+        Calculate the Mueller matrix for the interferometer.
 
         :param spectrum: (xr.DataArray) see spectrum argument for instrument.capture
         :return: Mueller matrix
@@ -211,13 +203,13 @@ class Instrument(object):
 
     def get_delay(self, wavelength, ):
         """
-        calculate the interferometer delay(s) at the given wavelength(s)
+        Calculate the interferometer delay(s) at the given wavelength(s)
 
         At the moment this method only works for instrument types other than 'mueller'. I'm not sure it would be
         possible to write a general function?
 
         :param wavelength: in units (m), can be a float or an xr.DataArray with dimensions including 'x' and 'y'
-        :return: delay in units (rad)
+        :return: (xr.DataArray) delay(s) in radians
         """
 
         assert self.instrument_type != 'mueller'
