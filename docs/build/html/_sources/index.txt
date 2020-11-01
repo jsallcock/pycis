@@ -9,7 +9,13 @@ Welcome to pycis's documentation!
 Contents:
 
 .. toctree::
+   :caption: Table of Contents
    :maxdepth: 2
+
+   model
+   analysis
+   examples
+
 
 
 

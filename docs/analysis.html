@@ -1,0 +1,283 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Analysis &mdash; pycis 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="prev" title="Dispersion" href="dispersion.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> pycis
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="model.html">Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model.html#indices-and-tables">Indices and tables</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Analysis</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#wrap">wrap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#unwrap">unwrap</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pycis</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Analysis</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/analysis.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="analysis">
+<h1>Analysis<a class="headerlink" href="#analysis" title="Permalink to this headline">¶</a></h1>
+<p>Tools for analysing raw CIS images.</p>
+<div class="section" id="wrap">
+<h2>wrap<a class="headerlink" href="#wrap" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="pycis.analysis.wrap">
+<code class="descclassname">pycis.analysis.</code><code class="descname">wrap</code><span class="sig-paren">(</span><em>phase</em>, <em>units='rad'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/analysis/wrap_unwrap.html#wrap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.analysis.wrap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrap N-D phase profile within (- pi, pi] radian interval.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>phase</strong> (<em>array_like</em>) &#8211; input phase</li>
+<li><strong>units</strong> (<em>str</em>) &#8211; Units of phase (accepted: &#8216;rad&#8217;, &#8216;waves&#8217;, &#8216;fringes&#8217;).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">wrapped values (radians).</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="unwrap">
+<h2>unwrap<a class="headerlink" href="#unwrap" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="pycis.analysis.unwrap">
+<code class="descclassname">pycis.analysis.</code><code class="descname">unwrap</code><span class="sig-paren">(</span><em>phase</em>, <em>centre=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/analysis/wrap_unwrap.html#unwrap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.analysis.unwrap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unwrap 1-D / 2-D phase profiles.</p>
+<p>In 2-D, a simple phase unwrapping algorithm sequentially unwraps columns and then rows (or vice versa). For noisy
+data however, this method can perform poorly.</p>
+<p>This &#8216;pseudo 2D&#8217; unwrapping algorithm relies on the strong vertical phase shear present in the CIS raw_data.
+In an ideal system the optical axis is projected onto the detector centre. On axis, the Savart plate introduces
+zero net phase delay, so the (wrapped) phase measured at the centre of the detector array is the (wrapped) waveplate
+phase delay &#8211; a handy quantity to know. Numpy&#8217;s np.unwrap function sets the 0th array element to be wrapped, set
+&#8216;centre&#8217; to False to return this numpy-like behaviour. &#8216;centre&#8217; defaults to True, wrapping the phase at the array
+centre.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>phase</strong> (<em>np.ndarray</em>) &#8211; input phase [ rad ], 1-D or 2-D.</li>
+<li><strong>centre</strong> (<em>bool</em>) &#8211; Unwrap the phase such that the centre of the input array is wrapped.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Unwrapped phase [ rad ].</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="dispersion.html" class="btn btn-neutral" title="Dispersion" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Joseph Allcock.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
