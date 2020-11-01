@@ -9,12 +9,8 @@ Pycis documentation
 Pycis is a Python library providing analysis and modelling tools for the Coherence Imaging Spectroscopy (CIS) plasma
 diagnostic technique.
 
-.. toctree::
-   :caption: Table of Contents
-
-   model
-   analysis
-   examples
+..
+    .. toctree:: :caption: Table of Contents model analysis examples
 
 
 Indices and tables
