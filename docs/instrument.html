@@ -84,7 +84,9 @@
               <p class="caption"><span class="caption-text">Table of Contents</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="model.html">Model</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="model.html#conventions">Conventions</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="model.html#conventions">Conventions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model.html#geometry-definitions">Geometry definitions</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="model.html#list-of-modules">List of modules</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="interferometer.html">Interferometer</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Instrument</a></li>
 <li class="toctree-l3"><a class="reference internal" href="camera.html">Camera</a></li>
@@ -96,6 +98,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="model.html#indices-and-tables">Indices and tables</a></li>
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 </ul>
 
             
@@ -167,116 +170,29 @@
 <dl class="class">
 <dt id="pycis.model.instrument.Instrument">
 <em class="property">class </em><code class="descclassname">pycis.model.instrument.</code><code class="descname">Instrument</code><span class="sig-paren">(</span><em>camera</em>, <em>optics</em>, <em>interferometer</em>, <em>force_mueller=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument" title="Permalink to this definition">¶</a></dt>
-<dd><p>Coherence imaging instrument</p>
-<dl class="method">
-<dt id="pycis.model.instrument.Instrument.capture">
-<code class="descname">capture</code><span class="sig-paren">(</span><em>spectrum</em>, <em>clean=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.capture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.capture" title="Permalink to this definition">¶</a></dt>
-<dd><p>capture image of scene</p>
+<dd><p>Coherence imaging instrument.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spectrum</strong> &#8211; (xr.DataArray) photon fluence spectrum with units of ph / m [hitting the pixel area during</td>
-</tr>
-</tbody>
-</table>
-<p>exposure time] and with dimensions &#8216;wavelength&#8217;, &#8216;x&#8217;, &#8216;y&#8217; and (optionally) &#8216;stokes&#8217;. If no stokes dim then it is assumed
-that light is unpolarised (i.e. the spec supplied is the S_0 Stokes parameter only)</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>clean</strong> &#8211; (bool) False to add realistic image noise, passed to self.camera.capture()</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="pycis.model.instrument.Instrument.get_azim_angle">
-<code class="descname">get_azim_angle</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>crystal</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_azim_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_azim_angle" title="Permalink to this definition">¶</a></dt>
-<dd><p>calculate azimuthal angles of rays through crystal (varies with crystal orientation)</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>x</strong> &#8211; (xr.DataArray) x position(s) on sensor plane [ m ]</li>
-<li><strong>y</strong> &#8211; (xr.DataArray) y position(s) on sensor plane [ m ]</li>
-<li><strong>crystal</strong> &#8211; (pycis.model.BirefringentComponent)</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>camera</strong> (<em>pycis.model.Camera</em>) &#8211; Instrument camera.</li>
+<li><strong>optics</strong> (<em>list</em>) &#8211; A list of floats, the focal lengths (in m) of the three lenses used in the standard CI
+configuration (see e.g. my thesis or Scott Silburn&#8217;s): [f_1, f_2, f_3] where f_1 is the objective lens.</li>
+<li><strong>interferometer</strong> (<em>list</em>) &#8211; A list of instances of pycis.model.Component, where the first entry is the first
+component that the light passes through.</li>
+<li><strong>force_mueller</strong> (<em>bool</em>) &#8211; Forces the full Mueller matrix calculation of the interferogram, regardless of whether an
+analytical shortcut is available.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">azimuthal angles [ rad ]</p>
-</td>
-</tr>
 </tbody>
 </table>
-</dd></dl>
-
-<dl class="method">
-<dt id="pycis.model.instrument.Instrument.get_delay">
-<code class="descname">get_delay</code><span class="sig-paren">(</span><em>wavelength</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_delay" title="Permalink to this definition">¶</a></dt>
-<dd><p>calculate the interferometer delay(s) at the given wavelength(s)</p>
-<p>At the moment this method only works for instrument types other than &#8216;mueller&#8217;. I&#8217;m not sure it would be
-possible to write a general function?</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>wavelength</strong> &#8211; in units (m), can be a float or an xr.DataArray with dimensions including &#8216;x&#8217; and &#8216;y&#8217;</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">delay in units (rad)</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="pycis.model.instrument.Instrument.get_fringe_frequency">
-<code class="descname">get_fringe_frequency</code><span class="sig-paren">(</span><em>wavelength</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_fringe_frequency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_fringe_frequency" title="Permalink to this definition">¶</a></dt>
-<dd><p>calculates the (rough) interference fringe period at the sensor plane and at the given wavelength</p>
-<p>only makes sense for instrument types with a phase shear (e.g. &#8216;single_delay_linear&#8217; and
-&#8216;multi_delay_polarised&#8217;)</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="pycis.model.instrument.Instrument.get_inc_angle">
-<code class="descname">get_inc_angle</code><span class="sig-paren">(</span><em>x</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_inc_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_inc_angle" title="Permalink to this definition">¶</a></dt>
-<dd><p>calculate incidence angles of ray(s) through crystal</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>x</strong> &#8211; (xr.DataArray) x position(s) on sensor plane [ m ]</li>
-<li><strong>y</strong> &#8211; (xr.DataArray) y position(s) on sensor [ m ]</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">incidence angles [ rad ]</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
 <dl class="method">
 <dt id="pycis.model.instrument.Instrument.get_instrument_type">
 <code class="descname">get_instrument_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_instrument_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_instrument_type" title="Permalink to this definition">¶</a></dt>
-<dd><p>For certain instrument layouts there are analytical shortcuts for calculating the interferogram, skipping the
-full Mueller matrix treatment.</p>
-<p>current instrument types:
+<dd><p>Type of instrument determines how interferogram is calculated.</p>
+<p>Valid instrument types:
 - &#8216;mueller&#8217;: Full Mueller calculation
 - &#8216;single_delay_linear&#8217;
 - &#8216;single_delay_polarised&#8217;
@@ -285,7 +201,73 @@ full Mueller matrix treatment.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">itype (str)</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">instrument type (str)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pycis.model.instrument.Instrument.get_inc_angle">
+<code class="descname">get_inc_angle</code><span class="sig-paren">(</span><em>x</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_inc_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_inc_angle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate incidence angles of ray(s) through the interferometer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>xr.DataArray</em>) &#8211; Pixel x position(s) in sensor plane in m.</li>
+<li><strong>y</strong> (<em>xr.DataArray</em>) &#8211; Pixel y position(s) in sensor plane in m.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Incidence angles in radians.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pycis.model.instrument.Instrument.get_azim_angle">
+<code class="descname">get_azim_angle</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>crystal</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_azim_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_azim_angle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate azimuthal angles of rays through the crystal.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>xr.DataArray</em>) &#8211; Pixel x position(s) in sensor plane in m.</li>
+<li><strong>y</strong> (<em>xr.DataArray</em>) &#8211; Pixel y position(s) in sensor plane in m.</li>
+<li><strong>crystal</strong> (<em>pycis.model.OrientableComponent</em>) &#8211; Crystal component.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Incidence angles in radians.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pycis.model.instrument.Instrument.capture">
+<code class="descname">capture</code><span class="sig-paren">(</span><em>spectrum</em>, <em>clean=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.capture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.capture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Capture image of given spectrum.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>spectrum</strong> &#8211; (xr.DataArray) photon fluence spectrum with units of ph / m [hitting the pixel area during
+exposure time] and with dimensions &#8216;wavelength&#8217;, &#8216;x&#8217;, &#8216;y&#8217; and (optionally) &#8216;stokes&#8217;. If no stokes dim then
+it is assumed that light is unpolarised (i.e. the spec supplied is the S_0 Stokes parameter only).</li>
+<li><strong>clean</strong> (<em>bool</em>) &#8211; False to add realistic image noise, passed to self.camera.capture()</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(xr.DataArray) image in units of camera counts.</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -294,14 +276,48 @@ full Mueller matrix treatment.</p>
 <dl class="method">
 <dt id="pycis.model.instrument.Instrument.get_mueller_matrix">
 <code class="descname">get_mueller_matrix</code><span class="sig-paren">(</span><em>spectrum</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_mueller_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_mueller_matrix" title="Permalink to this definition">¶</a></dt>
-<dd><p>calculate the total Mueller matrix for the interferometer</p>
+<dd><p>Calculate the Mueller matrix for the interferometer.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spectrum</strong> &#8211; (xr.DataArray) see spectrum argument for instrument.capture</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spectrum</strong> (<em>xr.DataArray</em>) &#8211; See &#8216;spectrum&#8217; argument for instrument.capture.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Mueller matrix</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pycis.model.instrument.Instrument.get_delay">
+<code class="descname">get_delay</code><span class="sig-paren">(</span><em>wavelength</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_delay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the interferometer delay(s) at the given wavelength(s).</p>
+<p>At the moment this method only works for instrument types other than &#8216;mueller&#8217;. I&#8217;m not sure it would be
+possible to write a general function?</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>wavelength</strong> &#8211; in units (m), can be a float or an xr.DataArray with dimensions including &#8216;x&#8217; and &#8216;y&#8217;</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(xr.DataArray) delay(s) in radians</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pycis.model.instrument.Instrument.get_fringe_frequency">
+<code class="descname">get_fringe_frequency</code><span class="sig-paren">(</span><em>wavelength</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_fringe_frequency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_fringe_frequency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the (approx.) interference fringe period at the sensor plane for the given wavelength.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>wavelength</strong> (<em>float</em>) &#8211; Wavelength in m.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Fringe frequency with units m^-1.</td>
 </tr>
 </tbody>
 </table>

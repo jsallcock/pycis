@@ -10,8 +10,13 @@ Conventions
 - The coordinate system is defined with its origin at the centre of the camera sensor, which lies in the xy plane.
 - S.I. units are used throughout, and all angles are in radians.
 
+Geometry definitions
+--------------------
+
 .. figure:: angles.pdf
 
+List of modules
+---------------
 
 .. toctree::
    :maxdepth: 2

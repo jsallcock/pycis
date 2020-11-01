@@ -11,13 +11,12 @@ class Instrument(object):
     Coherence imaging instrument.
 
     :param pycis.model.Camera camera: Instrument camera.
-    :param list optics: list of floats, the focal lengths (in m) of the three lenses used in the standard CI
-    configuration (see e.g. my thesis or Scott Silburn's): [f_1, f_2, f_3] where f_1 is the objective lens.
+    :param list optics: A list of floats, the focal lengths (in m) of the three lenses used in the standard CI
+        configuration (see e.g. my thesis or Scott Silburn's): [f_1, f_2, f_3] where f_1 is the objective lens.
     :param list interferometer: A list of instances of pycis.model.Component, where the first entry is the first
-    component that the light passes through.
-    :param bool force_mueller: Forces the full Mueller matrix calculation of the interferogram, regardless of whether
-    an analytical shortcut is available.
-
+        component that the light passes through.
+    :param bool force_mueller: Forces the full Mueller matrix calculation of the interferogram, regardless of whether an
+        analytical shortcut is available.
     """
     def __init__(self, camera, optics, interferometer, force_mueller=False):
 
@@ -106,8 +105,8 @@ class Instrument(object):
         """
         Calculate incidence angles of ray(s) through the interferometer.
 
-        :param xr.DataArray x: x position(s) in sensor plane in m.
-        :param xr.DataArray y: y position(s) in sensor plane in m.
+        :param xr.DataArray x: Pixel x position(s) in sensor plane in m.
+        :param xr.DataArray y: Pixel y position(s) in sensor plane in m.
         :return: Incidence angles in radians.
         """
         return xr.apply_ufunc(_calc_inc_angle, x, y, self.optics[2], dask='allowed')
@@ -116,8 +115,8 @@ class Instrument(object):
         """
         Calculate azimuthal angles of rays through the crystal.
 
-        :param xr.DataArray x: x position(s) in sensor plane in m.
-        :param xr.DataArray y: y position(s) in sensor plane in m.
+        :param xr.DataArray x: Pixel x position(s) in sensor plane in m.
+        :param xr.DataArray y: Pixel y position(s) in sensor plane in m.
         :param pycis.model.OrientableComponent crystal: Crystal component.
         :return: Incidence angles in radians.
         """
@@ -125,16 +124,13 @@ class Instrument(object):
 
     def capture(self, spectrum, clean=False):
         """
-        Captures image of given spectrum.
+        Capture image of given spectrum.
 
         :param spectrum: (xr.DataArray) photon fluence spectrum with units of ph / m [hitting the pixel area during
-        exposure time] and with dimensions 'wavelength', 'x', 'y' and (optionally) 'stokes'. If no stokes dim then it is assumed
-        that light is unpolarised (i.e. the spec supplied is the S_0 Stokes parameter only)
-
+            exposure time] and with dimensions 'wavelength', 'x', 'y' and (optionally) 'stokes'. If no stokes dim then
+            it is assumed that light is unpolarised (i.e. the spec supplied is the S_0 Stokes parameter only).
         :param bool clean: False to add realistic image noise, passed to self.camera.capture()
-
-        :return:
-
+        :return: (xr.DataArray) image in units of camera counts.
         """
 
         if self.instrument_type == 'mueller':
@@ -186,9 +182,8 @@ class Instrument(object):
         """
         Calculate the Mueller matrix for the interferometer.
 
-        :param spectrum: (xr.DataArray) see spectrum argument for instrument.capture
+        :param xr.DataArray spectrum: See 'spectrum' argument for instrument.capture.
         :return: Mueller matrix
-
         """
 
         inc_angle = self.get_inc_angle(spectrum.x, spectrum.y)
@@ -203,7 +198,7 @@ class Instrument(object):
 
     def get_delay(self, wavelength, ):
         """
-        Calculate the interferometer delay(s) at the given wavelength(s)
+        Calculate the interferometer delay(s) at the given wavelength(s).
 
         At the moment this method only works for instrument types other than 'mueller'. I'm not sure it would be
         possible to write a general function?
@@ -256,12 +251,10 @@ class Instrument(object):
 
     def get_fringe_frequency(self, wavelength):
         """
-        calculates the (rough) interference fringe period at the sensor plane and at the given wavelength
+        Calculate the (approx.) interference fringe period at the sensor plane for the given wavelength.
 
-        only makes sense for instrument types with a phase shear (e.g. 'single_delay_linear' and
-        'multi_delay_polarised')
-
-        :return:
+        :param float wavelength: Wavelength in m.
+        :return: Fringe frequency with units m^-1.
         """
         assert self.instrument_type != 'mueller'
 
