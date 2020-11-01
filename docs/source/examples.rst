@@ -6,4 +6,7 @@ Tokamak divertor view
 
 White light fringe pattern
 --------------------------
-.. figure:: white_light_fringes.png
+
+..
+    .. figure:: white_light_fringes.png
+
