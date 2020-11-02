@@ -218,9 +218,9 @@ class UniaxialCrystal(LinearRetarder):
         """
         Calculate the (approx.) spatial frequency of the fringe pattern at the sensor plane.
 
-        :param focal_length: in m
-        :param wavelength: in m
-        :return: spatial frequency x, spatial frequency y in (m ** -1)
+        :param float focal_length: Focal length of imaging lens in m.
+        :param float wavelength: Wavelength in m.
+        :return: (tuple) x and y components of the fringe frequency in units m^-1 and in order (f_x, f_y).
         """
 
         biref, n_e, n_o = calculate_dispersion(wavelength, self.material, source=self.source)

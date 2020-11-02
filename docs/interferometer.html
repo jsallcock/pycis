@@ -317,12 +317,12 @@ between 0 and 1. Simulates the effect of real crystal imperfections.</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>focal_length</strong> &#8211; in m</li>
-<li><strong>wavelength</strong> &#8211; in m</li>
+<li><strong>focal_length</strong> (<em>float</em>) &#8211; Focal length of imaging lens in m.</li>
+<li><strong>wavelength</strong> (<em>float</em>) &#8211; Wavelength in m.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">spatial frequency x, spatial frequency y in (m ** -1)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(tuple) x and y components of the fringe frequency in units m^-1 and in order (f_x, f_y).</p>
 </td>
 </tr>
 </tbody>

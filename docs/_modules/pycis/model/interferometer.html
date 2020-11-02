@@ -368,9 +368,9 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the (approx.) spatial frequency of the fringe pattern at the sensor plane.</span>
 
-<span class="sd">        :param focal_length: in m</span>
-<span class="sd">        :param wavelength: in m</span>
-<span class="sd">        :return: spatial frequency x, spatial frequency y in (m ** -1)</span>
+<span class="sd">        :param float focal_length: Focal length of imaging lens in m.</span>
+<span class="sd">        :param float wavelength: Wavelength in m.</span>
+<span class="sd">        :return: (tuple) x and y components of the fringe frequency in units m^-1 and in order (f_x, f_y).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">biref</span><span class="p">,</span> <span class="n">n_e</span><span class="p">,</span> <span class="n">n_o</span> <span class="o">=</span> <span class="n">calculate_dispersion</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">)</span>
