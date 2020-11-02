@@ -86,6 +86,7 @@
 <li class="toctree-l1 current"><a class="reference internal" href="model.html">Model</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="model.html#conventions">Conventions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="model.html#geometry-definitions">Geometry definitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model.html#optical-layout">Optical layout</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="model.html#list-of-modules">List of modules</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="interferometer.html">Interferometer</a></li>
 <li class="toctree-l3"><a class="reference internal" href="instrument.html">Instrument</a></li>
@@ -170,19 +171,19 @@
 <dl class="function">
 <dt id="pycis.model.dispersion.calculate_dispersion">
 <code class="descclassname">pycis.model.dispersion.</code><code class="descname">calculate_dispersion</code><span class="sig-paren">(</span><em>wavelength</em>, <em>material</em>, <em>source=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/dispersion.html#calculate_dispersion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.dispersion.calculate_dispersion" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculates the birefringence and refractive indices of a material as a function of wavelength.</p>
+<dd><p>Calculate the birefringence and refractive indices of a material as a function of wavelength.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>wavelength</strong> &#8211; wavelength(s) with units ( m ), can be float, np.array or xr.DataArray.</li>
-<li><strong>material</strong> &#8211; string specifying the material. See above dict for valid inputs.</li>
-<li><strong>source</strong> &#8211; string specifying source of dispersion info. See above dict for valid inputs.</li>
+<li><strong>wavelength</strong> (<em>float, np.array, xr.DataArray</em>) &#8211; Wavelength(s) with units m.</li>
+<li><strong>material</strong> (<em>str</em>) &#8211; Specifies the material.</li>
+<li><strong>source</strong> (<em>str</em>) &#8211; Specifies source of dispersion info.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A tuple of (birefringence, extraordinary refractive index, ordinary refractive index).</p>
 </td>
 </tr>
 </tbody>
@@ -191,20 +192,20 @@
 
 <dl class="function">
 <dt id="pycis.model.dispersion.calculate_kappa">
-<code class="descclassname">pycis.model.dispersion.</code><code class="descname">calculate_kappa</code><span class="sig-paren">(</span><em>wl</em>, <em>material</em>, <em>source=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/dispersion.html#calculate_kappa"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.dispersion.calculate_kappa" title="Permalink to this definition">¶</a></dt>
-<dd><p>calculate kappa, the unitless first-order dispersion parameter</p>
+<code class="descclassname">pycis.model.dispersion.</code><code class="descname">calculate_kappa</code><span class="sig-paren">(</span><em>wavelength</em>, <em>material</em>, <em>source=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/dispersion.html#calculate_kappa"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.dispersion.calculate_kappa" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate kappa for a material, the unitless first-order dispersion parameter, as a function of wavelength.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>wl</strong> &#8211; </li>
-<li><strong>material</strong> &#8211; </li>
-<li><strong>source</strong> &#8211; </li>
+<li><strong>wavelength</strong> (<em>float, np.array, xr.DataArray</em>) &#8211; Wavelength(s) with units m.</li>
+<li><strong>material</strong> (<em>str</em>) &#8211; Specifies the material.</li>
+<li><strong>source</strong> (<em>str</em>) &#8211; Specifies source of dispersion info.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Dispersion parameter kappa.</p>
 </td>
 </tr>
 </tbody>

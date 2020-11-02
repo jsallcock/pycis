@@ -2,7 +2,7 @@ from math import isclose
 import numpy as np
 import xarray as xr
 from numba import vectorize, f8
-from pycis.model import mueller_product, LinearPolariser, Camera, QuarterWaveplate, \
+from pycis.model import mueller_product, LinearPolariser, Camera, QuarterWaveplate, Component, LinearRetarder, \
     UniaxialCrystal
 
 
@@ -26,14 +26,14 @@ class Instrument(object):
         self.force_mueller = force_mueller
 
         self.input_checks()
-        self.crystals = [co for co in self.interferometer if isinstance(co, _LinearRetarder)]
+        self.crystals = [co for co in self.interferometer if isinstance(co, LinearRetarder)]
         self.polarisers = [co for co in self.interferometer if isinstance(co, LinearPolariser)]
         self.instrument_type = self.get_instrument_type()
 
     def input_checks(self):
         assert isinstance(self.camera, Camera)
         assert isinstance(self.optics, list)
-        assert all(isinstance(co, _Component) for co in self.interferometer)
+        assert all(isinstance(co, Component) for co in self.interferometer)
 
     def get_instrument_type(self):
         """
@@ -103,22 +103,26 @@ class Instrument(object):
 
     def get_inc_angle(self, x, y):
         """
-        Calculate incidence angles of ray(s) through the interferometer.
+        Calculate incidence angle(s) of ray(s) through the interferometer.
 
-        :param xr.DataArray x: Pixel x position(s) in sensor plane in m.
-        :param xr.DataArray y: Pixel y position(s) in sensor plane in m.
-        :return: Incidence angles in radians.
+        :param x: Pixel centre x position(s) in sensor plane in m.
+        :type x: float, xr.DataArray
+        :param y: Pixel centre y position(s) in sensor plane in m.
+        :type y: float, xr.DataArray
+        :return: (float, xr.DataArray) Incidence angle(s) in radians.
         """
         return xr.apply_ufunc(_calc_inc_angle, x, y, self.optics[2], dask='allowed')
 
     def get_azim_angle(self, x, y, crystal):
         """
-        Calculate azimuthal angles of rays through the crystal.
+        Calculate azimuthal angle(s) of ray(s) through the crystal.
 
-        :param xr.DataArray x: Pixel x position(s) in sensor plane in m.
-        :param xr.DataArray y: Pixel y position(s) in sensor plane in m.
-        :param pycis.model._OrientableComponent crystal: Crystal component.
-        :return: Incidence angles in radians.
+        :param x: Pixel centre x position(s) in sensor plane in m.
+        :type x: float, xr.DataArray
+        :param y: Pixel centre y position(s) in sensor plane in m.
+        :type y: float, xr.DataArray
+        :param pycis.model.OrientableComponent crystal: Crystal component.
+        :return: (float, xr.DataArray) Azimuthal angle(s) in radians.
         """
         return xr.apply_ufunc(_calc_azim_angle, x, y, crystal.orientation, dask='allowed, ')
 
@@ -180,10 +184,10 @@ class Instrument(object):
 
     def get_mueller_matrix(self, spectrum):
         """
-        Calculate the Mueller matrix for the interferometer.
+        Calculate total Mueller matrix for the interferometer.
 
         :param xr.DataArray spectrum: See 'spectrum' argument for instrument.capture.
-        :return: Mueller matrix
+        :return: (xr.DataArray) Mueller matrix.
         """
 
         inc_angle = self.get_inc_angle(spectrum.x, spectrum.y)
@@ -200,13 +204,14 @@ class Instrument(object):
         """
         Calculate the interferometer delay(s) at the given wavelength(s).
 
-        At the moment this method only works for instrument types other than 'mueller'. I'm not sure it would be
-        possible to write a general function?
-
-        :param wavelength: in units (m), can be a float or an xr.DataArray with dimensions including 'x' and 'y'
-        :return: (xr.DataArray) delay(s) in radians
+        :param wavelength: Wavelength in units m, can be a float or an xr.DataArray with dimensions including 'x' and
+            'y'.
+        :type wavelength: float, xr.DataArray
+        :return: (xr.DataArray) Interferometer delay(s) in radians.
         """
 
+        # This method only works for instrument types other than 'mueller'. I'm not sure it would be possible to write a
+        # general function?
         assert self.instrument_type != 'mueller'
 
         # calculate the ray angles through the interferometer
@@ -254,7 +259,7 @@ class Instrument(object):
         Calculate the (approx.) interference fringe period at the sensor plane for the given wavelength.
 
         :param float wavelength: Wavelength in m.
-        :return: Fringe frequency with units m^-1.
+        :return: (tuple) x and y components of the fringe frequency in units m^-1 and in order (f_x, f_y).
         """
         assert self.instrument_type != 'mueller'
 

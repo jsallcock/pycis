@@ -51,12 +51,13 @@ default_sources = {'calcite': 'ghosh',
 
 def calculate_dispersion(wavelength, material, source=None, ):
     """
-    Calculates the birefringence and refractive indices of a material as a function of wavelength.
+    Calculate the birefringence and refractive indices of a material as a function of wavelength.
     
-    :param wavelength: wavelength(s) with units ( m ), can be float, np.array or xr.DataArray.
-    :param material: string specifying the material. See above dict for valid inputs.
-    :param source: string specifying source of dispersion info. See above dict for valid inputs.
-    :return:
+    :param wavelength: Wavelength(s) with units m.
+    :type wavelength: float, np.array, xr.DataArray
+    :param str material: Specifies the material.
+    :param str source: Specifies source of dispersion info.
+    :return: A tuple of (birefringence, extraordinary refractive index, ordinary refractive index).
     """
 
     wl_mic = wavelength * 1e6
@@ -80,17 +81,18 @@ def calculate_dispersion(wavelength, material, source=None, ):
     return biref, n_e, n_o
 
 
-def calculate_kappa(wl, material, source=None, ):
+def calculate_kappa(wavelength, material, source=None, ):
     """
-    calculate kappa, the unitless first-order dispersion parameter
+    Calculate kappa for a material, the unitless first-order dispersion parameter, as a function of wavelength.
 
-    :param wl:
-    :param material:
-    :param source:
-    :return:
+    :param wavelength: Wavelength(s) with units m.
+    :type wavelength: float, np.array, xr.DataArray
+    :param str material: Specifies the material.
+    :param str source: Specifies source of dispersion info.
+    :return: Dispersion parameter kappa.
     """
 
-    wl_mic = wl * 1e6
+    wl_mic = wavelength * 1e6
 
     if source is None:
         source = default_sources[material]
@@ -108,12 +110,12 @@ def calculate_kappa(wl, material, source=None, ):
         wl_p1_mic = wl_mic + d_lambda_mic
         wl_m1_mic = wl_mic - d_lambda_mic
 
-        biref, n_e, n_o = calculate_dispersion(wl, material, source=source, )
+        biref, n_e, n_o = calculate_dispersion(wavelength, material, source=source, )
         biref_p1 = _sellmeier_eqn(wl_p1_mic, sc_e, form) - _sellmeier_eqn(wl_p1_mic, sc_o, form)
         biref_m1 = _sellmeier_eqn(wl_m1_mic, sc_e, form) - _sellmeier_eqn(wl_m1_mic, sc_o, form)
 
         biref_deriv = (biref_p1 - biref_m1) / (2 * d_lambda)
-        kappa = 1 - (wl / biref) * biref_deriv
+        kappa = 1 - (wavelength / biref) * biref_deriv
 
     return kappa
 

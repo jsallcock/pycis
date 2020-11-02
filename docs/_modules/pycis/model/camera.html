@@ -160,24 +160,19 @@
 
 <div class="viewcode-block" id="Camera"><a class="viewcode-back" href="../../../camera.html#pycis.model.camera.Camera">[docs]</a><span class="k">class</span> <span class="nc">Camera</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    t</span>
+<span class="sd">    Camera class.</span>
+
+<span class="sd">    :param int bit_depth: Bit depth of camera pixels.</span>
+<span class="sd">    :param tuple sensor_format: Number of pixels in each dimension (x, y, ).</span>
+<span class="sd">    :param float pix_size: Pixel size in m.</span>
+<span class="sd">    :param float qe: Quantum efficiency or sensor in units e- per photon.</span>
+<span class="sd">    :param float epercount: (float) Conversion gain of sensor in units e- per count.</span>
+<span class="sd">    :param float cam_noise: (float) Camera noise standard deviation in units e-.</span>
+<span class="sd">    :param str mode: Describes the mode of sensor operation. Currently supported are: &#39;mono&#39; for monochrome, &#39;rgb&#39;</span>
+<span class="sd">        (untested) for color imaging and &#39;mono_polarised&#39; for monochrome with a pixelated polariser array (layout of the</span>
+<span class="sd">        FLIR Blackfly S camera).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bit_depth</span><span class="p">,</span> <span class="n">sensor_format</span><span class="p">,</span> <span class="n">pixel_size</span><span class="p">,</span> <span class="n">qe</span><span class="p">,</span> <span class="n">epercount</span><span class="p">,</span> <span class="n">cam_noise</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;mono&#39;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        :param bit_depth: (int)</span>
-<span class="sd">        :param sensor_format: (tuple) number of pixels in each dimension (x, y, ).</span>
-<span class="sd">        :param pix_size: (float) pixel size in m.</span>
-<span class="sd">        :param qe: (float) Quantum efficiency or sensor in units e- per photon.</span>
-<span class="sd">        :param epercount: (float) Conversion gain of sensor in units e- per count.</span>
-<span class="sd">        :param cam_noise: (float) Camera noise standard deviation in units e-.</span>
-<span class="sd">        :param mode: (str) describes the mode of sensor operation. Currently supported are:</span>
-<span class="sd">                    -&#39;mono&#39; - Monochrome.</span>
-<span class="sd">                    -&#39;mono_polarised&#39; - Monochrome with a pixelated polariser array (layout of the FLIR Blackfly S camera)</span>
-<span class="sd">                    -&#39;rgb&#39; - (untested) - Color imaging</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span> <span class="o">=</span> <span class="n">pixel_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sensor_format</span> <span class="o">=</span> <span class="n">sensor_format</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">qe</span> <span class="o">=</span> <span class="n">qe</span>
@@ -194,13 +189,13 @@
 
 <div class="viewcode-block" id="Camera.capture"><a class="viewcode-back" href="../../../camera.html#pycis.model.camera.Camera.capture">[docs]</a>    <span class="k">def</span> <span class="nf">capture</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">,</span> <span class="n">apply_polarisers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clean</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Capture an image</span>
+<span class="sd">        Capture an image.</span>
 
-<span class="sd">        :param spectrum: (xr.DataArray) in units of photons / m with dimensions &#39;x&#39;, &#39;y&#39;, &#39;wavelength&#39; and (optionally)</span>
-<span class="sd">        &#39;stokes&#39;. If there is no stokes dim then the light is assumed to be unpolarised.</span>
-<span class="sd">        :param apply_polarisers: (bool) whether to apply the camera&#39;s pixelated polariser array to the spectrum.</span>
-<span class="sd">        :param clean: (bool) False to add realistic image noise. Clean images used for testing.</span>
-<span class="sd">        :return:</span>
+<span class="sd">        :param xr.DataArray spectrum: Spectrum in units of photons / m with dimensions &#39;x&#39;, &#39;y&#39;, &#39;wavelength&#39; and</span>
+<span class="sd">            (optionally) &#39;stokes&#39;. If there is no &#39;stokes&#39; dim then the light is assumed to be unpolarised.</span>
+<span class="sd">        :param bool apply_polarisers: Whether to apply a pixelated polariser array to the spectrum.</span>
+<span class="sd">        :param bool clean: False to add realistic image noise. Clean images used for testing.</span>
+<span class="sd">        :return: (xr.DataArray) Captured image.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">apply_polarisers</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>

@@ -201,12 +201,13 @@
 
 <div class="viewcode-block" id="calculate_dispersion"><a class="viewcode-back" href="../../../dispersion.html#pycis.model.dispersion.calculate_dispersion">[docs]</a><span class="k">def</span> <span class="nf">calculate_dispersion</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Calculates the birefringence and refractive indices of a material as a function of wavelength.</span>
+<span class="sd">    Calculate the birefringence and refractive indices of a material as a function of wavelength.</span>
 <span class="sd">    </span>
-<span class="sd">    :param wavelength: wavelength(s) with units ( m ), can be float, np.array or xr.DataArray.</span>
-<span class="sd">    :param material: string specifying the material. See above dict for valid inputs.</span>
-<span class="sd">    :param source: string specifying source of dispersion info. See above dict for valid inputs.</span>
-<span class="sd">    :return:</span>
+<span class="sd">    :param wavelength: Wavelength(s) with units m.</span>
+<span class="sd">    :type wavelength: float, np.array, xr.DataArray</span>
+<span class="sd">    :param str material: Specifies the material.</span>
+<span class="sd">    :param str source: Specifies source of dispersion info.</span>
+<span class="sd">    :return: A tuple of (birefringence, extraordinary refractive index, ordinary refractive index).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">wl_mic</span> <span class="o">=</span> <span class="n">wavelength</span> <span class="o">*</span> <span class="mi">1</span><span class="n">e6</span>
@@ -230,17 +231,18 @@
     <span class="k">return</span> <span class="n">biref</span><span class="p">,</span> <span class="n">n_e</span><span class="p">,</span> <span class="n">n_o</span></div>
 
 
-<div class="viewcode-block" id="calculate_kappa"><a class="viewcode-back" href="../../../dispersion.html#pycis.model.dispersion.calculate_kappa">[docs]</a><span class="k">def</span> <span class="nf">calculate_kappa</span><span class="p">(</span><span class="n">wl</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="p">):</span>
+<div class="viewcode-block" id="calculate_kappa"><a class="viewcode-back" href="../../../dispersion.html#pycis.model.dispersion.calculate_kappa">[docs]</a><span class="k">def</span> <span class="nf">calculate_kappa</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    calculate kappa, the unitless first-order dispersion parameter</span>
+<span class="sd">    Calculate kappa for a material, the unitless first-order dispersion parameter, as a function of wavelength.</span>
 
-<span class="sd">    :param wl:</span>
-<span class="sd">    :param material:</span>
-<span class="sd">    :param source:</span>
-<span class="sd">    :return:</span>
+<span class="sd">    :param wavelength: Wavelength(s) with units m.</span>
+<span class="sd">    :type wavelength: float, np.array, xr.DataArray</span>
+<span class="sd">    :param str material: Specifies the material.</span>
+<span class="sd">    :param str source: Specifies source of dispersion info.</span>
+<span class="sd">    :return: Dispersion parameter kappa.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">wl_mic</span> <span class="o">=</span> <span class="n">wl</span> <span class="o">*</span> <span class="mi">1</span><span class="n">e6</span>
+    <span class="n">wl_mic</span> <span class="o">=</span> <span class="n">wavelength</span> <span class="o">*</span> <span class="mi">1</span><span class="n">e6</span>
 
     <span class="k">if</span> <span class="n">source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">source</span> <span class="o">=</span> <span class="n">default_sources</span><span class="p">[</span><span class="n">material</span><span class="p">]</span>
@@ -258,12 +260,12 @@
         <span class="n">wl_p1_mic</span> <span class="o">=</span> <span class="n">wl_mic</span> <span class="o">+</span> <span class="n">d_lambda_mic</span>
         <span class="n">wl_m1_mic</span> <span class="o">=</span> <span class="n">wl_mic</span> <span class="o">-</span> <span class="n">d_lambda_mic</span>
 
-        <span class="n">biref</span><span class="p">,</span> <span class="n">n_e</span><span class="p">,</span> <span class="n">n_o</span> <span class="o">=</span> <span class="n">calculate_dispersion</span><span class="p">(</span><span class="n">wl</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span> <span class="p">)</span>
+        <span class="n">biref</span><span class="p">,</span> <span class="n">n_e</span><span class="p">,</span> <span class="n">n_o</span> <span class="o">=</span> <span class="n">calculate_dispersion</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span> <span class="p">)</span>
         <span class="n">biref_p1</span> <span class="o">=</span> <span class="n">_sellmeier_eqn</span><span class="p">(</span><span class="n">wl_p1_mic</span><span class="p">,</span> <span class="n">sc_e</span><span class="p">,</span> <span class="n">form</span><span class="p">)</span> <span class="o">-</span> <span class="n">_sellmeier_eqn</span><span class="p">(</span><span class="n">wl_p1_mic</span><span class="p">,</span> <span class="n">sc_o</span><span class="p">,</span> <span class="n">form</span><span class="p">)</span>
         <span class="n">biref_m1</span> <span class="o">=</span> <span class="n">_sellmeier_eqn</span><span class="p">(</span><span class="n">wl_m1_mic</span><span class="p">,</span> <span class="n">sc_e</span><span class="p">,</span> <span class="n">form</span><span class="p">)</span> <span class="o">-</span> <span class="n">_sellmeier_eqn</span><span class="p">(</span><span class="n">wl_m1_mic</span><span class="p">,</span> <span class="n">sc_o</span><span class="p">,</span> <span class="n">form</span><span class="p">)</span>
 
         <span class="n">biref_deriv</span> <span class="o">=</span> <span class="p">(</span><span class="n">biref_p1</span> <span class="o">-</span> <span class="n">biref_m1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">d_lambda</span><span class="p">)</span>
-        <span class="n">kappa</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">wl</span> <span class="o">/</span> <span class="n">biref</span><span class="p">)</span> <span class="o">*</span> <span class="n">biref_deriv</span>
+        <span class="n">kappa</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">wavelength</span> <span class="o">/</span> <span class="n">biref</span><span class="p">)</span> <span class="o">*</span> <span class="n">biref_deriv</span>
 
     <span class="k">return</span> <span class="n">kappa</span></div>
 

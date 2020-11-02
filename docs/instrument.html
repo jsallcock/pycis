@@ -211,18 +211,18 @@ analytical shortcut is available.</li>
 <dl class="method">
 <dt id="pycis.model.instrument.Instrument.get_inc_angle">
 <code class="descname">get_inc_angle</code><span class="sig-paren">(</span><em>x</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_inc_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_inc_angle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate incidence angles of ray(s) through the interferometer.</p>
+<dd><p>Calculate incidence angle(s) of ray(s) through the interferometer.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>x</strong> (<em>xr.DataArray</em>) &#8211; Pixel x position(s) in sensor plane in m.</li>
-<li><strong>y</strong> (<em>xr.DataArray</em>) &#8211; Pixel y position(s) in sensor plane in m.</li>
+<li><strong>x</strong> (<em>float, xr.DataArray</em>) &#8211; Pixel centre x position(s) in sensor plane in m.</li>
+<li><strong>y</strong> (<em>float, xr.DataArray</em>) &#8211; Pixel centre y position(s) in sensor plane in m.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Incidence angles in radians.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(float, xr.DataArray) Incidence angle(s) in radians.</p>
 </td>
 </tr>
 </tbody>
@@ -232,19 +232,19 @@ analytical shortcut is available.</li>
 <dl class="method">
 <dt id="pycis.model.instrument.Instrument.get_azim_angle">
 <code class="descname">get_azim_angle</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>crystal</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_azim_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_azim_angle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate azimuthal angles of rays through the crystal.</p>
+<dd><p>Calculate azimuthal angle(s) of ray(s) through the crystal.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>x</strong> (<em>xr.DataArray</em>) &#8211; Pixel x position(s) in sensor plane in m.</li>
-<li><strong>y</strong> (<em>xr.DataArray</em>) &#8211; Pixel y position(s) in sensor plane in m.</li>
-<li><strong>crystal</strong> (<em>pycis.model._OrientableComponent</em>) &#8211; Crystal component.</li>
+<li><strong>x</strong> (<em>float, xr.DataArray</em>) &#8211; Pixel centre x position(s) in sensor plane in m.</li>
+<li><strong>y</strong> (<em>float, xr.DataArray</em>) &#8211; Pixel centre y position(s) in sensor plane in m.</li>
+<li><strong>crystal</strong> (<em>pycis.model.OrientableComponent</em>) &#8211; Crystal component.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Incidence angles in radians.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(float, xr.DataArray) Azimuthal angle(s) in radians.</p>
 </td>
 </tr>
 </tbody>
@@ -277,14 +277,14 @@ it is assumed that light is unpolarised (i.e. the spec supplied is the S_0 Stoke
 <dl class="method">
 <dt id="pycis.model.instrument.Instrument.get_mueller_matrix">
 <code class="descname">get_mueller_matrix</code><span class="sig-paren">(</span><em>spectrum</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_mueller_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_mueller_matrix" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the Mueller matrix for the interferometer.</p>
+<dd><p>Calculate total Mueller matrix for the interferometer.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spectrum</strong> (<em>xr.DataArray</em>) &#8211; See &#8216;spectrum&#8217; argument for instrument.capture.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Mueller matrix</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(xr.DataArray) Mueller matrix.</td>
 </tr>
 </tbody>
 </table>
@@ -294,15 +294,14 @@ it is assumed that light is unpolarised (i.e. the spec supplied is the S_0 Stoke
 <dt id="pycis.model.instrument.Instrument.get_delay">
 <code class="descname">get_delay</code><span class="sig-paren">(</span><em>wavelength</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_delay" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the interferometer delay(s) at the given wavelength(s).</p>
-<p>At the moment this method only works for instrument types other than &#8216;mueller&#8217;. I&#8217;m not sure it would be
-possible to write a general function?</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>wavelength</strong> &#8211; in units (m), can be a float or an xr.DataArray with dimensions including &#8216;x&#8217; and &#8216;y&#8217;</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>wavelength</strong> (<em>float, xr.DataArray</em>) &#8211; Wavelength in units m, can be a float or an xr.DataArray with dimensions including &#8216;x&#8217; and
+&#8216;y&#8217;.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(xr.DataArray) delay(s) in radians</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(xr.DataArray) Interferometer delay(s) in radians.</td>
 </tr>
 </tbody>
 </table>
@@ -318,7 +317,7 @@ possible to write a general function?</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>wavelength</strong> (<em>float</em>) &#8211; Wavelength in m.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Fringe frequency with units m^-1.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(tuple) x and y components of the fringe frequency in units m^-1 and in order (f_x, f_y).</td>
 </tr>
 </tbody>
 </table>

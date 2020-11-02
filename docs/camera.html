@@ -86,6 +86,7 @@
 <li class="toctree-l1 current"><a class="reference internal" href="model.html">Model</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="model.html#conventions">Conventions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="model.html#geometry-definitions">Geometry definitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model.html#optical-layout">Optical layout</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="model.html#list-of-modules">List of modules</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="interferometer.html">Interferometer</a></li>
 <li class="toctree-l3"><a class="reference internal" href="instrument.html">Instrument</a></li>
@@ -170,23 +171,47 @@
 <span class="target" id="module-pycis.model.camera"></span><dl class="class">
 <dt id="pycis.model.camera.Camera">
 <em class="property">class </em><code class="descclassname">pycis.model.camera.</code><code class="descname">Camera</code><span class="sig-paren">(</span><em>bit_depth</em>, <em>sensor_format</em>, <em>pixel_size</em>, <em>qe</em>, <em>epercount</em>, <em>cam_noise</em>, <em>mode='mono'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/camera.html#Camera"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.camera.Camera" title="Permalink to this definition">¶</a></dt>
-<dd><p>t</p>
-<dl class="method">
-<dt id="pycis.model.camera.Camera.capture">
-<code class="descname">capture</code><span class="sig-paren">(</span><em>spectrum</em>, <em>apply_polarisers=None</em>, <em>clean=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/camera.html#Camera.capture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.camera.Camera.capture" title="Permalink to this definition">¶</a></dt>
-<dd><p>Capture an image</p>
+<dd><p>Camera class.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spectrum</strong> &#8211; (xr.DataArray) in units of photons / m with dimensions &#8216;x&#8217;, &#8216;y&#8217;, &#8216;wavelength&#8217; and (optionally)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>bit_depth</strong> (<em>int</em>) &#8211; Bit depth of camera pixels.</li>
+<li><strong>sensor_format</strong> (<em>tuple</em>) &#8211; Number of pixels in each dimension (x, y, ).</li>
+<li><strong>pix_size</strong> (<em>float</em>) &#8211; Pixel size in m.</li>
+<li><strong>qe</strong> (<em>float</em>) &#8211; Quantum efficiency or sensor in units e- per photon.</li>
+<li><strong>epercount</strong> (<em>float</em>) &#8211; (float) Conversion gain of sensor in units e- per count.</li>
+<li><strong>cam_noise</strong> (<em>float</em>) &#8211; (float) Camera noise standard deviation in units e-.</li>
+<li><strong>mode</strong> (<em>str</em>) &#8211; Describes the mode of sensor operation. Currently supported are: &#8216;mono&#8217; for monochrome, &#8216;rgb&#8217;
+(untested) for color imaging and &#8216;mono_polarised&#8217; for monochrome with a pixelated polariser array (layout of the
+FLIR Blackfly S camera).</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
-<p>&#8216;stokes&#8217;. If there is no stokes dim then the light is assumed to be unpolarised.
-:param apply_polarisers: (bool) whether to apply the camera&#8217;s pixelated polariser array to the spectrum.
-:param clean: (bool) False to add realistic image noise. Clean images used for testing.
-:return:</p>
+<dl class="method">
+<dt id="pycis.model.camera.Camera.capture">
+<code class="descname">capture</code><span class="sig-paren">(</span><em>spectrum</em>, <em>apply_polarisers=None</em>, <em>clean=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/camera.html#Camera.capture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.camera.Camera.capture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Capture an image.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>spectrum</strong> (<em>xr.DataArray</em>) &#8211; Spectrum in units of photons / m with dimensions &#8216;x&#8217;, &#8216;y&#8217;, &#8216;wavelength&#8217; and
+(optionally) &#8216;stokes&#8217;. If there is no &#8216;stokes&#8217; dim then the light is assumed to be unpolarised.</li>
+<li><strong>apply_polarisers</strong> (<em>bool</em>) &#8211; Whether to apply a pixelated polariser array to the spectrum.</li>
+<li><strong>clean</strong> (<em>bool</em>) &#8211; False to add realistic image noise. Clean images used for testing.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(xr.DataArray) Captured image.</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">

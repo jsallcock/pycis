@@ -10,24 +10,19 @@ camera_modes = ['mono',
 
 class Camera(object):
     """
-    t
+    Camera class.
+
+    :param int bit_depth: Bit depth of camera pixels.
+    :param tuple sensor_format: Number of pixels in each dimension (x, y, ).
+    :param float pix_size: Pixel size in m.
+    :param float qe: Quantum efficiency or sensor in units e- per photon.
+    :param float epercount: (float) Conversion gain of sensor in units e- per count.
+    :param float cam_noise: (float) Camera noise standard deviation in units e-.
+    :param str mode: Describes the mode of sensor operation. Currently supported are: 'mono' for monochrome, 'rgb'
+        (untested) for color imaging and 'mono_polarised' for monochrome with a pixelated polariser array (layout of the
+        FLIR Blackfly S camera).
     """
     def __init__(self, bit_depth, sensor_format, pixel_size, qe, epercount, cam_noise, mode='mono'):
-        """
-
-        :param bit_depth: (int)
-        :param sensor_format: (tuple) number of pixels in each dimension (x, y, ).
-        :param pix_size: (float) pixel size in m.
-        :param qe: (float) Quantum efficiency or sensor in units e- per photon.
-        :param epercount: (float) Conversion gain of sensor in units e- per count.
-        :param cam_noise: (float) Camera noise standard deviation in units e-.
-        :param mode: (str) describes the mode of sensor operation. Currently supported are:
-                    -'mono' - Monochrome.
-                    -'mono_polarised' - Monochrome with a pixelated polariser array (layout of the FLIR Blackfly S camera)
-                    -'rgb' - (untested) - Color imaging
-
-        """
-
         self.pixel_size = pixel_size
         self.sensor_format = sensor_format
         self.qe = qe
@@ -44,13 +39,13 @@ class Camera(object):
 
     def capture(self, spectrum, apply_polarisers=None, clean=False):
         """
-        Capture an image
+        Capture an image.
 
-        :param spectrum: (xr.DataArray) in units of photons / m with dimensions 'x', 'y', 'wavelength' and (optionally)
-        'stokes'. If there is no stokes dim then the light is assumed to be unpolarised.
-        :param apply_polarisers: (bool) whether to apply the camera's pixelated polariser array to the spectrum.
-        :param clean: (bool) False to add realistic image noise. Clean images used for testing.
-        :return:
+        :param xr.DataArray spectrum: Spectrum in units of photons / m with dimensions 'x', 'y', 'wavelength' and
+            (optionally) 'stokes'. If there is no 'stokes' dim then the light is assumed to be unpolarised.
+        :param bool apply_polarisers: Whether to apply a pixelated polariser array to the spectrum.
+        :param bool clean: False to add realistic image noise. Clean images used for testing.
+        :return: (xr.DataArray) Captured image.
         """
 
         if apply_polarisers is None:
