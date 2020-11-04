@@ -91,6 +91,7 @@
 <li class="toctree-l3"><a class="reference internal" href="interferometer.html">Interferometer</a></li>
 <li class="toctree-l3"><a class="reference internal" href="instrument.html">Instrument</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Camera</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pixelated-polariser">Pixelated Polariser</a></li>
 <li class="toctree-l3"><a class="reference internal" href="coherence.html">Coherence</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dispersion.html">Dispersion</a></li>
 </ul>
@@ -168,6 +169,12 @@
             
   <div class="section" id="camera">
 <h1>Camera<a class="headerlink" href="#camera" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="pixelated-polariser">
+<h1>Pixelated Polariser<a class="headerlink" href="#pixelated-polariser" title="Permalink to this headline">¶</a></h1>
+<div class="figure">
+<a class="reference internal image-reference" href="_images/pixelated_polariser_array.png"><img alt="_images/pixelated_polariser_array.png" src="_images/pixelated_polariser_array.png" style="width: 330.8px; height: 302.40000000000003px;" /></a>
+</div>
 <span class="target" id="module-pycis.model.camera"></span><dl class="class">
 <dt id="pycis.model.camera.Camera">
 <em class="property">class </em><code class="descclassname">pycis.model.camera.</code><code class="descname">Camera</code><span class="sig-paren">(</span><em>bit_depth</em>, <em>sensor_format</em>, <em>pixel_size</em>, <em>qe</em>, <em>epercount</em>, <em>cam_noise</em>, <em>mode='mono'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/camera.html#Camera"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.camera.Camera" title="Permalink to this definition">¶</a></dt>
@@ -219,9 +226,11 @@ FLIR Blackfly S camera).</li>
 <code class="descname">get_pixel_position</code><span class="sig-paren">(</span><em>x_pixel=None</em>, <em>y_pixel=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/camera.html#Camera.get_pixel_position"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.camera.Camera.get_pixel_position" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate pixel positions (in m) on the camera&#8217;s sensor plane (the x-y plane).</p>
 <p>The origin of the x-y coordinate system is the centre of the sensor. Pixel positions correspond to the pixel
-centres. If x_pixel and y_pixel are specified then only returns the position of that pixel.
-:param x_pixel:
-:param y_pixel:
+centres.
+:param x_pixel: If specified, only return position of these x_pixels.
+:type x_pixel: float, np.array, xr.DataArray
+:param y_pixel: If specified, only return position of these y_pixels.
+:type y_pixel: float, np.array, xr.DataArray
 :return: x_pos, y_pos, both instances of xr.DataArray</p>
 </dd></dl>
 
@@ -241,7 +250,8 @@ centres. If x_pixel and y_pixel are specified then only returns the position of 
 <dl class="method">
 <dt id="pycis.model.camera.Camera.get_mueller_matrix">
 <code class="descname">get_mueller_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/camera.html#Camera.get_mueller_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.camera.Camera.get_mueller_matrix" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>If the</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">

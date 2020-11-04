@@ -177,7 +177,7 @@ class UniaxialCrystal(LinearRetarder):
     Plane-parallel uniaxial birefringent crystal.
 
     :param float orientation: Orientation of component fast axis in radians, relative to the x-axis.
-    :param float thickness: thickness in m.
+    :param float thickness: Crystal thickness in m.
     :param float cut_angle: Angle in radians between crystal optic axis and front face.
     :param str material: Crystal material.
     :param str material_source: Source of Sellmeier coefficients describing dispersion in the crystal. If blank, the
@@ -193,14 +193,14 @@ class UniaxialCrystal(LinearRetarder):
         """
         Calculate imparted delay in radians.
 
-        :param wavelength: wavelength in m.
+        :param wavelength: Wavelength in m.
         :type wavelength: float, xr.DataArray
-        :param inc_angle: ray incidence angle in radians.
+        :param inc_angle: Ray incidence angle(s) in radians.
         :type inc_angle: float, xr.DataArray
-        :param azim_angle: ray azimuthal angle in radians.
+        :param azim_angle: Ray azimuthal angle(s) in radians.
         :type azim_angle: float, xr.DataArray
-        :param float n_e: manually set extraordinary refractive index (e.g. for fitting).
-        :param float n_o: manually set ordinary refractive index (e.g. for fitting).
+        :param float n_e: Manually set extraordinary refractive index (e.g. for fitting).
+        :param float n_o: Manually set ordinary refractive index (e.g. for fitting).
         :return: (float, xr.DataArray) Imparted delay in radians.
         """
 
@@ -241,7 +241,7 @@ class SavartPlate(LinearRetarder):
     Savart plate.
 
     :param float orientation: Orientation of component fast axis in radians, relative to the x-axis.
-    :param float thickness: thickness in m.
+    :param float thickness: Total thickness of plate in m.
     :param str material: Crystal material.
     :param str material_source: Source of Sellmeier coefficients describing dispersion in the crystal. If blank, the
         default material source specified in pycis.model.dispersion
@@ -257,11 +257,11 @@ class SavartPlate(LinearRetarder):
         """
         Calculate imparted delay in radians.
 
-        :param wavelength: wavelength in m.
+        :param wavelength: Wavelength in m.
         :type wavelength: float, xr.DataArray
-        :param inc_angle: ray incidence angle in radians.
+        :param inc_angle: Ray incidence angle(s) in radians.
         :type inc_angle: float, xr.DataArray
-        :param azim_angle: ray azimuthal angle in radians.
+        :param azim_angle: Ray azimuthal angle(s) in radians.
         :type azim_angle: float, xr.DataArray
         :param float n_e: manually set extraordinary refractive index (e.g. for fitting).
         :param float n_o: manually set ordinary refractive index (e.g. for fitting).
@@ -320,15 +320,15 @@ class IdealWaveplate(LinearRetarder):
     Ideal waveplate imparting a given delay to all rays.
 
     :param float orientation: Orientation of component fast axis in radians, relative to the x-axis.
-    :param float ideal_delay: Imparted delay in radians.
+    :param float delay: Imparted delay in radians.
     """
-    def __init__(self, orientation, ideal_delay, ):
+    def __init__(self, orientation, delay, ):
         thickness = 1.  # this value is arbitrary since delay is set
         super().__init__(orientation, thickness, )
-        self.ideal_delay = ideal_delay
+        self.delay = delay
 
     def get_delay(self, *args, **kwargs):
-        return xr.DataArray(self.ideal_delay)
+        return xr.DataArray(self.delay)
 
     def get_fringe_frequency(self, *args, **kwargs):
         # no phase change across sensor plane

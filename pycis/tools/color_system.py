@@ -126,25 +126,3 @@ cs_srgb = ColourSystem(red=xyz_from_xy(0.64, 0.33),
                        blue=xyz_from_xy(0.15, 0.06),
                        white=illuminant_D65)
 
-
-# if __name__ == '__main__':
-#     # wl = np.linspace(300, 700, 1000)
-#     # wavelength = np.arange(380., 781., 5)
-#     wavelength = np.linspace(380e-9, 781e-9, 1000)
-#     wavelength = xr.DataArray(wavelength, coords=(wavelength, ), dims=('wavelength', ), )
-#
-#     x = np.linspace(0, 1, 100)
-#     x = xr.DataArray(x, coords=(x, ), dims=('x', ), )
-#
-#     y = np.linspace(0, 1, 100)
-#     y = xr.DataArray(y, coords=(y,), dims=('y',), )
-#
-#     wl_0 = xr.DataArray(np.linspace(400e-9, 700e-9, 100), coords=(x, ), dims=('x', ), )
-#     sigma = xr.DataArray(np.linspace(0.1e-9, 100e-9, 100), coords=(y, ), dims=('y', ), )
-#     spectrum = 10 * np.exp(-1 / 2 * ((wavelength - wl_0) / sigma) ** 2)
-#     spectrum /= spectrum.integrate(dim='wavelength')
-#     # spectrum = xr.DataArray(spectrum, coords=(wavelength, x, ), dims=('wavelength', 'x', ), )
-#
-#     cs = cs_smpte
-#     rgb = cs.spec_to_rgb(spectrum, )
-

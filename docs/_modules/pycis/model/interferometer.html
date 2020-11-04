@@ -327,7 +327,7 @@
 <span class="sd">    Plane-parallel uniaxial birefringent crystal.</span>
 
 <span class="sd">    :param float orientation: Orientation of component fast axis in radians, relative to the x-axis.</span>
-<span class="sd">    :param float thickness: thickness in m.</span>
+<span class="sd">    :param float thickness: Crystal thickness in m.</span>
 <span class="sd">    :param float cut_angle: Angle in radians between crystal optic axis and front face.</span>
 <span class="sd">    :param str material: Crystal material.</span>
 <span class="sd">    :param str material_source: Source of Sellmeier coefficients describing dispersion in the crystal. If blank, the</span>
@@ -343,14 +343,14 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate imparted delay in radians.</span>
 
-<span class="sd">        :param wavelength: wavelength in m.</span>
+<span class="sd">        :param wavelength: Wavelength in m.</span>
 <span class="sd">        :type wavelength: float, xr.DataArray</span>
-<span class="sd">        :param inc_angle: ray incidence angle in radians.</span>
+<span class="sd">        :param inc_angle: Ray incidence angle(s) in radians.</span>
 <span class="sd">        :type inc_angle: float, xr.DataArray</span>
-<span class="sd">        :param azim_angle: ray azimuthal angle in radians.</span>
+<span class="sd">        :param azim_angle: Ray azimuthal angle(s) in radians.</span>
 <span class="sd">        :type azim_angle: float, xr.DataArray</span>
-<span class="sd">        :param float n_e: manually set extraordinary refractive index (e.g. for fitting).</span>
-<span class="sd">        :param float n_o: manually set ordinary refractive index (e.g. for fitting).</span>
+<span class="sd">        :param float n_e: Manually set extraordinary refractive index (e.g. for fitting).</span>
+<span class="sd">        :param float n_o: Manually set ordinary refractive index (e.g. for fitting).</span>
 <span class="sd">        :return: (float, xr.DataArray) Imparted delay in radians.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -391,7 +391,7 @@
 <span class="sd">    Savart plate.</span>
 
 <span class="sd">    :param float orientation: Orientation of component fast axis in radians, relative to the x-axis.</span>
-<span class="sd">    :param float thickness: thickness in m.</span>
+<span class="sd">    :param float thickness: Total thickness of plate in m.</span>
 <span class="sd">    :param str material: Crystal material.</span>
 <span class="sd">    :param str material_source: Source of Sellmeier coefficients describing dispersion in the crystal. If blank, the</span>
 <span class="sd">        default material source specified in pycis.model.dispersion</span>
@@ -407,11 +407,11 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate imparted delay in radians.</span>
 
-<span class="sd">        :param wavelength: wavelength in m.</span>
+<span class="sd">        :param wavelength: Wavelength in m.</span>
 <span class="sd">        :type wavelength: float, xr.DataArray</span>
-<span class="sd">        :param inc_angle: ray incidence angle in radians.</span>
+<span class="sd">        :param inc_angle: Ray incidence angle(s) in radians.</span>
 <span class="sd">        :type inc_angle: float, xr.DataArray</span>
-<span class="sd">        :param azim_angle: ray azimuthal angle in radians.</span>
+<span class="sd">        :param azim_angle: Ray azimuthal angle(s) in radians.</span>
 <span class="sd">        :type azim_angle: float, xr.DataArray</span>
 <span class="sd">        :param float n_e: manually set extraordinary refractive index (e.g. for fitting).</span>
 <span class="sd">        :param float n_o: manually set ordinary refractive index (e.g. for fitting).</span>
@@ -470,15 +470,15 @@
 <span class="sd">    Ideal waveplate imparting a given delay to all rays.</span>
 
 <span class="sd">    :param float orientation: Orientation of component fast axis in radians, relative to the x-axis.</span>
-<span class="sd">    :param float ideal_delay: Imparted delay in radians.</span>
+<span class="sd">    :param float delay: Imparted delay in radians.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="n">ideal_delay</span><span class="p">,</span> <span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="n">delay</span><span class="p">,</span> <span class="p">):</span>
         <span class="n">thickness</span> <span class="o">=</span> <span class="mf">1.</span>  <span class="c1"># this value is arbitrary since delay is set</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">orientation</span><span class="p">,</span> <span class="n">thickness</span><span class="p">,</span> <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ideal_delay</span> <span class="o">=</span> <span class="n">ideal_delay</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delay</span> <span class="o">=</span> <span class="n">delay</span>
 
     <span class="k">def</span> <span class="nf">get_delay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ideal_delay</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">get_fringe_frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="c1"># no phase change across sensor plane</span>

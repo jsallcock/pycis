@@ -86,9 +86,11 @@ class Camera(object):
         Calculate pixel positions (in m) on the camera's sensor plane (the x-y plane).
 
         The origin of the x-y coordinate system is the centre of the sensor. Pixel positions correspond to the pixel
-        centres. If x_pixel and y_pixel are specified then only returns the position of that pixel.
-        :param x_pixel:
-        :param y_pixel:
+        centres.
+        :param x_pixel: If specified, only return position of these x_pixels.
+        :type x_pixel: float, np.array, xr.DataArray
+        :param y_pixel: If specified, only return position of these y_pixels.
+        :type y_pixel: float, np.array, xr.DataArray
         :return: x_pos, y_pos, both instances of xr.DataArray
         """
 
@@ -137,6 +139,7 @@ class Camera(object):
 
     def get_mueller_matrix(self, ):
         """
+        If the
 
         :return:
         """

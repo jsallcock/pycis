@@ -256,7 +256,7 @@ class Instrument(object):
 
     def get_fringe_frequency(self, wavelength):
         """
-        Calculate the (approx.) interference fringe period at the sensor plane for the given wavelength.
+        Calculate the interference fringe period at the sensor plane for the given wavelength.
 
         :param float wavelength: Wavelength in m.
         :return: (tuple) x and y components of the fringe frequency in units m^-1 and in order (f_x, f_y).

@@ -236,9 +236,11 @@
 <span class="sd">        Calculate pixel positions (in m) on the camera&#39;s sensor plane (the x-y plane).</span>
 
 <span class="sd">        The origin of the x-y coordinate system is the centre of the sensor. Pixel positions correspond to the pixel</span>
-<span class="sd">        centres. If x_pixel and y_pixel are specified then only returns the position of that pixel.</span>
-<span class="sd">        :param x_pixel:</span>
-<span class="sd">        :param y_pixel:</span>
+<span class="sd">        centres.</span>
+<span class="sd">        :param x_pixel: If specified, only return position of these x_pixels.</span>
+<span class="sd">        :type x_pixel: float, np.array, xr.DataArray</span>
+<span class="sd">        :param y_pixel: If specified, only return position of these y_pixels.</span>
+<span class="sd">        :type y_pixel: float, np.array, xr.DataArray</span>
 <span class="sd">        :return: x_pos, y_pos, both instances of xr.DataArray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -287,6 +289,7 @@
 
 <div class="viewcode-block" id="Camera.get_mueller_matrix"><a class="viewcode-back" href="../../../camera.html#pycis.model.camera.Camera.get_mueller_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">get_mueller_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        If the</span>
 
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>

@@ -91,6 +91,7 @@
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Interferometer</a></li>
 <li class="toctree-l3"><a class="reference internal" href="instrument.html">Instrument</a></li>
 <li class="toctree-l3"><a class="reference internal" href="camera.html">Camera</a></li>
+<li class="toctree-l3"><a class="reference internal" href="camera.html#pixelated-polariser">Pixelated Polariser</a></li>
 <li class="toctree-l3"><a class="reference internal" href="coherence.html">Coherence</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dispersion.html">Dispersion</a></li>
 </ul>
@@ -272,7 +273,7 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>orientation</strong> (<em>float</em>) &#8211; Orientation of component fast axis in radians, relative to the x-axis.</li>
-<li><strong>thickness</strong> (<em>float</em>) &#8211; thickness in m.</li>
+<li><strong>thickness</strong> (<em>float</em>) &#8211; Crystal thickness in m.</li>
 <li><strong>cut_angle</strong> (<em>float</em>) &#8211; Angle in radians between crystal optic axis and front face.</li>
 <li><strong>material</strong> (<em>str</em>) &#8211; Crystal material.</li>
 <li><strong>material_source</strong> (<em>str</em>) &#8211; Source of Sellmeier coefficients describing dispersion in the crystal. If blank, the
@@ -293,11 +294,11 @@ between 0 and 1. Simulates the effect of real crystal imperfections.</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>wavelength</strong> (<em>float, xr.DataArray</em>) &#8211; wavelength in m.</li>
-<li><strong>inc_angle</strong> (<em>float, xr.DataArray</em>) &#8211; ray incidence angle in radians.</li>
-<li><strong>azim_angle</strong> (<em>float, xr.DataArray</em>) &#8211; ray azimuthal angle in radians.</li>
-<li><strong>n_e</strong> (<em>float</em>) &#8211; manually set extraordinary refractive index (e.g. for fitting).</li>
-<li><strong>n_o</strong> (<em>float</em>) &#8211; manually set ordinary refractive index (e.g. for fitting).</li>
+<li><strong>wavelength</strong> (<em>float, xr.DataArray</em>) &#8211; Wavelength in m.</li>
+<li><strong>inc_angle</strong> (<em>float, xr.DataArray</em>) &#8211; Ray incidence angle(s) in radians.</li>
+<li><strong>azim_angle</strong> (<em>float, xr.DataArray</em>) &#8211; Ray azimuthal angle(s) in radians.</li>
+<li><strong>n_e</strong> (<em>float</em>) &#8211; Manually set extraordinary refractive index (e.g. for fitting).</li>
+<li><strong>n_o</strong> (<em>float</em>) &#8211; Manually set ordinary refractive index (e.g. for fitting).</li>
 </ul>
 </td>
 </tr>
@@ -341,7 +342,7 @@ between 0 and 1. Simulates the effect of real crystal imperfections.</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>orientation</strong> (<em>float</em>) &#8211; Orientation of component fast axis in radians, relative to the x-axis.</li>
-<li><strong>thickness</strong> (<em>float</em>) &#8211; thickness in m.</li>
+<li><strong>thickness</strong> (<em>float</em>) &#8211; Total thickness of plate in m.</li>
 <li><strong>material</strong> (<em>str</em>) &#8211; Crystal material.</li>
 <li><strong>material_source</strong> (<em>str</em>) &#8211; Source of Sellmeier coefficients describing dispersion in the crystal. If blank, the
 default material source specified in pycis.model.dispersion</li>
@@ -362,9 +363,9 @@ between 0 and 1. Simulates the effect of real crystal imperfections.</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>wavelength</strong> (<em>float, xr.DataArray</em>) &#8211; wavelength in m.</li>
-<li><strong>inc_angle</strong> (<em>float, xr.DataArray</em>) &#8211; ray incidence angle in radians.</li>
-<li><strong>azim_angle</strong> (<em>float, xr.DataArray</em>) &#8211; ray azimuthal angle in radians.</li>
+<li><strong>wavelength</strong> (<em>float, xr.DataArray</em>) &#8211; Wavelength in m.</li>
+<li><strong>inc_angle</strong> (<em>float, xr.DataArray</em>) &#8211; Ray incidence angle(s) in radians.</li>
+<li><strong>azim_angle</strong> (<em>float, xr.DataArray</em>) &#8211; Ray azimuthal angle(s) in radians.</li>
 <li><strong>n_e</strong> (<em>float</em>) &#8211; manually set extraordinary refractive index (e.g. for fitting).</li>
 <li><strong>n_o</strong> (<em>float</em>) &#8211; manually set ordinary refractive index (e.g. for fitting).</li>
 </ul>
@@ -381,7 +382,7 @@ between 0 and 1. Simulates the effect of real crystal imperfections.</li>
 
 <dl class="class">
 <dt id="pycis.model.interferometer.IdealWaveplate">
-<em class="property">class </em><code class="descclassname">pycis.model.interferometer.</code><code class="descname">IdealWaveplate</code><span class="sig-paren">(</span><em>orientation</em>, <em>ideal_delay</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#IdealWaveplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.interferometer.IdealWaveplate" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pycis.model.interferometer.</code><code class="descname">IdealWaveplate</code><span class="sig-paren">(</span><em>orientation</em>, <em>delay</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#IdealWaveplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.interferometer.IdealWaveplate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Ideal waveplate imparting a given delay to all rays.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -389,7 +390,7 @@ between 0 and 1. Simulates the effect of real crystal imperfections.</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>orientation</strong> (<em>float</em>) &#8211; Orientation of component fast axis in radians, relative to the x-axis.</li>
-<li><strong>ideal_delay</strong> (<em>float</em>) &#8211; Imparted delay in radians.</li>
+<li><strong>delay</strong> (<em>float</em>) &#8211; Imparted delay in radians.</li>
 </ul>
 </td>
 </tr>
