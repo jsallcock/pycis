@@ -111,7 +111,7 @@ class Instrument(object):
         :type y: float, xr.DataArray
         :return: (float, xr.DataArray) Incidence angle(s) in radians.
         """
-        return xr.apply_ufunc(_calc_inc_angle, x, y, self.optics[2], dask='allowed')
+        return xr.apply_ufunc(_get_inc_angle, x, y, self.optics[2], dask='allowed', )
 
     def get_azim_angle(self, x, y, crystal):
         """
@@ -124,7 +124,7 @@ class Instrument(object):
         :param pycis.model.OrientableComponent crystal: Crystal component.
         :return: (float, xr.DataArray) Azimuthal angle(s) in radians.
         """
-        return xr.apply_ufunc(_calc_azim_angle, x, y, crystal.orientation, dask='allowed, ')
+        return xr.apply_ufunc(_get_azim_angle, x, y, crystal.orientation, dask='allowed', )
 
     def capture(self, spectrum, clean=False):
         """
@@ -256,7 +256,7 @@ class Instrument(object):
 
     def get_fringe_frequency(self, wavelength):
         """
-        Calculate the interference fringe period at the sensor plane for the given wavelength.
+        Calculate the interference fringe frequency at the sensor plane for the given wavelength.
 
         :param float wavelength: Wavelength in m.
         :return: (tuple) x and y components of the fringe frequency in units m^-1 and in order (f_x, f_y).
@@ -284,10 +284,10 @@ class Instrument(object):
 
 
 @vectorize([f8(f8, f8, f8, ), ], nopython=True, fastmath=True, cache=True, )
-def _calc_inc_angle(x, y, f_3):
+def _get_inc_angle(x, y, f_3):
     return np.arctan2((x ** 2 + y ** 2) ** 0.5, f_3, )
 
 
 @vectorize([f8(f8, f8, f8, ), ], nopython=True, fastmath=True, cache=True, )
-def _calc_azim_angle(x, y, crystal_orientation, ):
+def _get_azim_angle(x, y, crystal_orientation, ):
     return np.arctan2(y, x) + np.pi - crystal_orientation

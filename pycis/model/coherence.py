@@ -19,8 +19,6 @@ def calculate_coherence(spectrum, delay, material=None, freq_com=None):
     with interferometer delay time :math:`\\tau` and frequency :math:`\\nu` as the conjugate variables.
     Generally, dispersion means that :math:`\\tau\\rightarrow\\tau(\\nu)`  but a first-order (linear) approx. for dispersion maintains it in a modified form (the 'group delay' approximation).
 
-    See test_with_gaussian_lineshape() below for examples of how to use.
-
     :param xr.DataArray spectrum: Intensity spectrum. Dim. 'wavelength' has coords with units m or else dim.
         'frequency' has coords. with units Hz. Spectrum units are then ( arb. / m ) or (arb. / Hz ) respectively.
     :param xr.DataArray delay: Interferometer delay in units radians. If delay is a float or is a DataArray without a
@@ -35,6 +33,7 @@ def calculate_coherence(spectrum, delay, material=None, freq_com=None):
     :param freq_com: centre of mass frequency of spectrum, if it has already been calculated.
     :return: coherence (temporal). Units are those of the spectrum argument, but integrated over the spectral dimension e.g. if spectrum has units ( W / m^2 / m ) then coherence has units ( W / m^2 ).
     """
+
     # if necessary, convert spectrum's wavelength (m) dim + coordinate to frequency (Hz)
     if 'wavelength' in spectrum.dims:
         spectrum = spectrum.rename({'wavelength': 'frequency'})

@@ -26,7 +26,6 @@ class BandpassFilter:
         # rough central wavelength of filters
         self.wl_centre = self.wl[np.argmax(self.tx)]
 
-
     # core methods inherited by all filters
     def tilt(self, inc_angle):
         """
