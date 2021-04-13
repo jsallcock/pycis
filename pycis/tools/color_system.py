@@ -4,8 +4,6 @@ from os.path import join, abspath, dirname
 
 """
 rough conversion between intensity spectrum of light and perceived colour in RGB format.
-    
-    
 code mostly taken from:
 https://scipython.com/blog/converting-a-spectrum-to-a-colour/
 

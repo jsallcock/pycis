@@ -20,7 +20,7 @@ def calculate_coherence(spectrum, delay, material=None, freq_com=None):
     Generally, dispersion means that :math:`\\tau\\rightarrow\\tau(\\nu)`  but a first-order (linear) approx. for dispersion maintains it in a modified form (the 'group delay' approximation).
 
     :param xr.DataArray spectrum: Intensity spectrum. Dim. 'wavelength' has coords with units m or else dim.
-        'frequency' has coords. with units Hz. Spectrum units are then ( arb. / m ) or (arb. / Hz ) respectively.
+        'frequency' has coords with units Hz. Spectrum units are then either ( arb. / m ) or (arb. / Hz ) respectively.
     :param xr.DataArray delay: Interferometer delay in units radians. If delay is a float or is a DataArray without a
         'wavelength' or a 'frequency' dimension, then the group delay approx. is used. In this case, it is assumed that
         the delay value(s) correspond to the centre-of-mass (COM) frequency of the given spectrum and the coherence is
@@ -43,8 +43,8 @@ def calculate_coherence(spectrum, delay, material=None, freq_com=None):
 
     # calculate centre of mass (c.o.m.) frequency if not supplied
     if freq_com is None:
-        freq_com = (spectrum * spectrum['frequency']).integrate(dim='frequency') / \
-                   spectrum.integrate(dim='frequency')
+        freq_com = (spectrum * spectrum['frequency']).integrate(coord='frequency') / \
+                   spectrum.integrate(coord='frequency')
 
     # determine calculation mode
     if hasattr(delay, 'dims'):
@@ -74,7 +74,7 @@ def calculate_coherence(spectrum, delay, material=None, freq_com=None):
         raise NotImplementedError
 
     integrand = integrand.sortby(integrand.frequency)  # ensure that integration limits are from -ve to +ve frequency
-    return integrand.integrate(dim='frequency')
+    return integrand.integrate(coord='frequency')
 
 
 @vectorize([complex128(float64)], fastmath=False, nopython=True, cache=True, )

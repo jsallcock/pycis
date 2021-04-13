@@ -44,7 +44,6 @@ def rotation_matrix(angle):
 class Component:
     """
     Base class for interferometer component.
-
     """
     def __init__(self, ):
         pass

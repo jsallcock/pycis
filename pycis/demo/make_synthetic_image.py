@@ -40,9 +40,10 @@ wavelength = xr.DataArray(wavelength, dims=('wavelength', ), coords=(wavelength,
 x, y = camera.get_pixel_position()  # camera method returns the camera's pixel x and y positions as DataArrays
 
 spectrum = xr.ones_like(x * y * wavelength, )
-spectrum /= spectrum.integrate(dim='wavelength')
+spectrum /= spectrum.integrate(coord='wavelength')
 spectrum *= 5e3
 
 igram = instrument.capture(spectrum, )
-igram.plot(x='x_pixel', y='y_pixel', vmin=0, )
-plt.show()
+
+# igram.plot(x='x_pixel', y='y_pixel', vmin=0, )
+# plt.show()

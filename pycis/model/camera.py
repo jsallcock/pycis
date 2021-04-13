@@ -66,7 +66,7 @@ class Camera(object):
             signal = cs_srgb.spec_to_rgb(spectrum, )
 
         else:
-            signal = spectrum.integrate(dim='wavelength')
+            signal = spectrum.integrate(coord='wavelength')
 
             if not clean:
                 np.random.seed()
