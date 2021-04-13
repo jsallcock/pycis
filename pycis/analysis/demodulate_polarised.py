@@ -30,7 +30,7 @@ def demodulate_single_delay_polarised(img):
     phase = np.arctan2(img.sel(m=4) - img.sel(m=2), img.sel(m=3) - img.sel(m=1))
     contrast = 1 / i0 * np.sqrt(8 * np.power(img - i0 / 4, 2, ).sum(dim='m'))
 
-    return i0, phase, contrast
+    return i0 / 4, phase, contrast
 
 
 def demodulate_multi_delay_polarised(image, fringe_freq, ):
