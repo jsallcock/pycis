@@ -1,0 +1,338 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Camera &mdash; pycis 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Coherence" href="coherence.html" />
+    <link rel="prev" title="Instrument" href="instrument.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> pycis
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="model.html">Model</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="model.html#conventions">Conventions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model.html#geometry-definitions">Geometry definitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model.html#optical-layout">Optical layout</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="model.html#list-of-modules">List of modules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="interferometer.html">Interferometer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="instrument.html">Instrument</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Camera</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pixelated-polariser">Pixelated Polariser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coherence.html">Coherence</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dispersion.html">Dispersion</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="model.html#indices-and-tables">Indices and tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pycis</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="model.html">Model</a> &raquo;</li>
+        
+      <li>Camera</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/camera.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="camera">
+<h1>Camera<a class="headerlink" href="#camera" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="pixelated-polariser">
+<h1>Pixelated Polariser<a class="headerlink" href="#pixelated-polariser" title="Permalink to this headline">¶</a></h1>
+<figure class="align-default">
+<a class="reference internal image-reference" href="_images/pixelated_polariser_array.png"><img alt="_images/pixelated_polariser_array.png" src="_images/pixelated_polariser_array.png" style="width: 330.8px; height: 302.40000000000003px;" /></a>
+</figure>
+<span class="target" id="module-pycis.model.camera"></span><dl class="py class">
+<dt id="pycis.model.camera.Camera">
+<em class="property">class </em><code class="sig-prename descclassname">pycis.model.camera.</code><code class="sig-name descname">Camera</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bit_depth</span></em>, <em class="sig-param"><span class="n">sensor_format</span></em>, <em class="sig-param"><span class="n">pixel_size</span></em>, <em class="sig-param"><span class="n">qe</span></em>, <em class="sig-param"><span class="n">epercount</span></em>, <em class="sig-param"><span class="n">cam_noise</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'mono'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/camera.html#Camera"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.camera.Camera" title="Permalink to this definition">¶</a></dt>
+<dd><p>Camera class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bit_depth</strong> (<em>int</em>) – Bit depth of camera pixels.</p></li>
+<li><p><strong>sensor_format</strong> (<em>tuple</em>) – Number of pixels in each dimension (x, y, ).</p></li>
+<li><p><strong>pix_size</strong> (<em>float</em>) – Pixel size in m.</p></li>
+<li><p><strong>qe</strong> (<em>float</em>) – Quantum efficiency or sensor in units e- per photon.</p></li>
+<li><p><strong>epercount</strong> (<em>float</em>) – (float) Conversion gain of sensor in units e- per count.</p></li>
+<li><p><strong>cam_noise</strong> (<em>float</em>) – (float) Camera noise standard deviation in units e-.</p></li>
+<li><p><strong>mode</strong> (<em>str</em>) – Describes the mode of sensor operation. Currently supported are: ‘mono’ for monochrome, ‘rgb’
+(untested) for color imaging and ‘mono_polarised’ for monochrome with a pixelated polariser array (layout of the
+FLIR Blackfly S camera).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="pycis.model.camera.Camera.capture">
+<code class="sig-name descname">capture</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spectrum</span></em>, <em class="sig-param"><span class="n">apply_polarisers</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">clean</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/camera.html#Camera.capture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.camera.Camera.capture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Capture an image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spectrum</strong> (<em>xr.DataArray</em>) – Spectrum in units of photons / m with dimensions ‘x’, ‘y’, ‘wavelength’ and
+(optionally) ‘stokes’. If there is no ‘stokes’ dim then the light is assumed to be unpolarised.</p></li>
+<li><p><strong>apply_polarisers</strong> (<em>bool</em>) – Whether to apply a pixelated polariser array to the spectrum.</p></li>
+<li><p><strong>clean</strong> (<em>bool</em>) – False to add realistic image noise. Clean images used for testing.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(xr.DataArray) Captured image.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pycis.model.camera.Camera.get_pixel_position">
+<code class="sig-name descname">get_pixel_position</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x_pixel</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">y_pixel</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/camera.html#Camera.get_pixel_position"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.camera.Camera.get_pixel_position" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate pixel positions (in m) on the camera’s sensor plane (the x-y plane).</p>
+<p>The origin of the x-y coordinate system is the centre of the sensor. Pixel positions correspond to the pixel
+centres.
+:param x_pixel: If specified, only return position of these x_pixels.
+:type x_pixel: float, np.array, xr.DataArray
+:param y_pixel: If specified, only return position of these y_pixels.
+:type y_pixel: float, np.array, xr.DataArray
+:return: x_pos, y_pos, both instances of xr.DataArray</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pycis.model.camera.Camera.get_superpixel_position">
+<code class="sig-name descname">get_superpixel_position</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/camera.html#Camera.get_superpixel_position"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.camera.Camera.get_superpixel_position" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pycis.model.camera.Camera.get_mueller_matrix">
+<code class="sig-name descname">get_mueller_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/camera.html#Camera.get_mueller_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.camera.Camera.get_mueller_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>If the</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pycis.model.camera.Camera.get_pixelated_phase_mask">
+<code class="sig-name descname">get_pixelated_phase_mask</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/camera.html#Camera.get_pixelated_phase_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.camera.Camera.get_pixelated_phase_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calls the fn. camera.calc_pixelated_phase_mask and assigns the correct x, y coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="pycis.model.camera.get_pixelated_phase_mask">
+<code class="sig-prename descclassname">pycis.model.camera.</code><code class="sig-name descname">get_pixelated_phase_mask</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sensor_format</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/camera.html#get_pixelated_phase_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.camera.get_pixelated_phase_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>pixelated phase mask for the standard polarised CI instrument layout described in my thesis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sensor_format</strong> – (tuple) number of pixels in each dimension (x, y, ).</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(xr.DataArray) phase_mask with dimensions ‘x’ and ‘y’ and without coordinates.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="coherence.html" class="btn btn-neutral float-right" title="Coherence" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="instrument.html" class="btn btn-neutral float-left" title="Instrument" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Joseph Allcock.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,389 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>pycis.model.coherence &mdash; pycis 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> pycis
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p><span class="caption-text">Table of Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../model.html">Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../model.html#indices-and-tables">Indices and tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../analysis.html">Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">pycis</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>pycis.model.coherence</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for pycis.model.coherence</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numba</span> <span class="kn">import</span> <span class="n">vectorize</span><span class="p">,</span> <span class="n">float64</span><span class="p">,</span> <span class="n">complex128</span>
+<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">scipy.constants</span> <span class="kn">import</span> <span class="n">c</span>
+<span class="kn">import</span> <span class="nn">pycis</span>
+
+
+<div class="viewcode-block" id="calculate_coherence"><a class="viewcode-back" href="../../../coherence.html#pycis.model.coherence.calculate_coherence">[docs]</a><span class="k">def</span> <span class="nf">calculate_coherence</span><span class="p">(</span><span class="n">spectrum</span><span class="p">,</span> <span class="n">delay</span><span class="p">,</span> <span class="n">material</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">freq_com</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the (temporal) coherence of a given intensity spectrum for a given interferometer delay(s).</span>
+
+
+<span class="sd">    Temporal coherence :math:`\\Gamma(\\tau)` is the Fourier transform of the frequency spectrum :math:`I(\\nu)`:</span>
+
+<span class="sd">     .. math::</span>
+<span class="sd">        \\Gamma(\\tau)=\\int_{-\\infty}^{\\infty}I(\\nu)\\exp(2\\pi{}i\\nu\\tau)d\\nu,</span>
+
+<span class="sd">    with interferometer delay time :math:`\\tau` and frequency :math:`\\nu` as the conjugate variables.</span>
+<span class="sd">    Generally, dispersion means that :math:`\\tau\\rightarrow\\tau(\\nu)`  but a first-order (linear) approx. for dispersion maintains it in a modified form (the &#39;group delay&#39; approximation).</span>
+
+<span class="sd">    :param xr.DataArray spectrum: Intensity spectrum. Dim. &#39;wavelength&#39; has coords with units m or else dim.</span>
+<span class="sd">        &#39;frequency&#39; has coords with units Hz. Spectrum units are then either ( arb. / m ) or (arb. / Hz ) respectively.</span>
+<span class="sd">    :param xr.DataArray delay: Interferometer delay in units radians. If delay is a float or is a DataArray without a</span>
+<span class="sd">        &#39;wavelength&#39; or a &#39;frequency&#39; dimension, then the group delay approx. is used. In this case, it is assumed that</span>
+<span class="sd">        the delay value(s) correspond to the centre-of-mass (COM) frequency of the given spectrum and the coherence is</span>
+<span class="sd">        calculated for each delay value. If delay has either a &#39;wavelength&#39; dim. or a &#39;frequency&#39; dim. -- with</span>
+<span class="sd">        coordinates that match the corresponding dim. of spectrum -- then the full dispersive integral is evaluated.</span>
+<span class="sd">    :param material: string specifying the interferometer crystal material. See pycis.model.dispersion for valid inputs.</span>
+<span class="sd">         This is not needed in the full dispersive treatment as the dispersion info has already been provided in the</span>
+<span class="sd">         delay argument. To do a none-dispersive calculation, you should leave material=None and use a delay argument</span>
+<span class="sd">         that will trigger the group delay approx.</span>
+<span class="sd">    :param freq_com: centre of mass frequency of spectrum, if it has already been calculated.</span>
+<span class="sd">    :return: coherence (temporal). Units are those of the spectrum argument, but integrated over the spectral dimension e.g. if spectrum has units ( W / m^2 / m ) then coherence has units ( W / m^2 ).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># if necessary, convert spectrum&#39;s wavelength (m) dim + coordinate to frequency (Hz)</span>
+    <span class="k">if</span> <span class="s1">&#39;wavelength&#39;</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
+        <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">rename</span><span class="p">({</span><span class="s1">&#39;wavelength&#39;</span><span class="p">:</span> <span class="s1">&#39;frequency&#39;</span><span class="p">})</span>
+        <span class="n">spectrum</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span> <span class="o">/</span> <span class="n">spectrum</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">]</span>
+        <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">sortby</span><span class="p">(</span><span class="s1">&#39;frequency&#39;</span><span class="p">)</span>
+        <span class="n">spectrum</span> <span class="o">/=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="s1">&#39;frequency&#39;</span><span class="p">)</span>
+
+    <span class="c1"># calculate centre of mass (c.o.m.) frequency if not supplied</span>
+    <span class="k">if</span> <span class="n">freq_com</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">freq_com</span> <span class="o">=</span> <span class="p">(</span><span class="n">spectrum</span> <span class="o">*</span> <span class="n">spectrum</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="n">coord</span><span class="o">=</span><span class="s1">&#39;frequency&#39;</span><span class="p">)</span> <span class="o">/</span> \
+                   <span class="n">spectrum</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="n">coord</span><span class="o">=</span><span class="s1">&#39;frequency&#39;</span><span class="p">)</span>
+
+    <span class="c1"># determine calculation mode</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">delay</span><span class="p">,</span> <span class="s1">&#39;dims&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;frequency&#39;</span> <span class="ow">in</span> <span class="n">delay</span><span class="o">.</span><span class="n">dims</span> <span class="ow">or</span> <span class="s1">&#39;wavelength&#39;</span> <span class="ow">in</span> <span class="n">delay</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;full_dispersive&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;group_delay&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;group_delay&#39;</span>
+
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;full_dispersive&#39;</span><span class="p">:</span>
+        <span class="c1"># if necessary, convert delay&#39;s wavelength dim + coordinate to frequency</span>
+        <span class="k">if</span> <span class="s1">&#39;wavelength&#39;</span> <span class="ow">in</span> <span class="n">delay</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
+            <span class="n">delay</span> <span class="o">=</span> <span class="n">delay</span><span class="o">.</span><span class="n">rename</span><span class="p">({</span><span class="s1">&#39;wavelength&#39;</span><span class="p">:</span> <span class="s1">&#39;frequency&#39;</span><span class="p">})</span>
+            <span class="n">delay</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span> <span class="o">/</span> <span class="n">delay</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">]</span>
+        <span class="n">integrand</span> <span class="o">=</span> <span class="n">spectrum</span> <span class="o">*</span> <span class="n">complexp_ufunc</span><span class="p">(</span><span class="n">delay</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;group_delay&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">material</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">kappa_0</span> <span class="o">=</span> <span class="n">pycis</span><span class="o">.</span><span class="n">calculate_kappa</span><span class="p">(</span><span class="n">c</span> <span class="o">/</span> <span class="n">freq_com</span><span class="p">,</span> <span class="n">material</span><span class="o">=</span><span class="n">material</span><span class="p">,</span> <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">kappa_0</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="n">freq_shift_norm</span> <span class="o">=</span> <span class="p">(</span><span class="n">spectrum</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">freq_com</span><span class="p">)</span> <span class="o">/</span> <span class="n">freq_com</span>
+        <span class="n">integrand</span> <span class="o">=</span> <span class="n">spectrum</span> <span class="o">*</span> <span class="n">complexp_ufunc</span><span class="p">(</span><span class="n">delay</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">kappa_0</span> <span class="o">*</span> <span class="n">freq_shift_norm</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="n">integrand</span> <span class="o">=</span> <span class="n">integrand</span><span class="o">.</span><span class="n">sortby</span><span class="p">(</span><span class="n">integrand</span><span class="o">.</span><span class="n">frequency</span><span class="p">)</span>  <span class="c1"># ensure that integration limits are from -ve to +ve frequency</span>
+    <span class="k">return</span> <span class="n">integrand</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="n">coord</span><span class="o">=</span><span class="s1">&#39;frequency&#39;</span><span class="p">)</span></div>
+
+
+<span class="nd">@vectorize</span><span class="p">([</span><span class="n">complex128</span><span class="p">(</span><span class="n">float64</span><span class="p">)],</span> <span class="n">fastmath</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="p">)</span>
+<span class="k">def</span> <span class="nf">complexp</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">complexp_ufunc</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">apply_ufunc</span><span class="p">(</span><span class="n">complexp</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">dask</span><span class="o">=</span><span class="s1">&#39;allowed&#39;</span><span class="p">,</span> <span class="p">)</span>
+
+
+<div class="viewcode-block" id="test_with_gaussian_lineshape"><a class="viewcode-back" href="../../../coherence.html#pycis.model.coherence.test_with_gaussian_lineshape">[docs]</a><span class="k">def</span> <span class="nf">test_with_gaussian_lineshape</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    numerical / analytical test of calculate_coherence() using a modelled Gaussian spectral lineshape</span>
+
+<span class="sd">    It would be nice to turn this into a unit test.</span>
+
+<span class="sd">    misc. abbreviations:</span>
+<span class="sd">    doc = degree of coherence</span>
+<span class="sd">    wl = wavelength</span>
+<span class="sd">    biref = birefringence</span>
+
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">time</span>
+
+    <span class="c1"># ANALYTICAL</span>
+    <span class="n">wl_0</span> <span class="o">=</span> <span class="mf">464.8e-9</span>
+    <span class="n">material</span> <span class="o">=</span> <span class="s1">&#39;a-BBO&#39;</span>
+    <span class="n">kappa_0</span> <span class="o">=</span> <span class="n">pycis</span><span class="o">.</span><span class="n">calculate_kappa</span><span class="p">(</span><span class="n">wl_0</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="p">)</span>
+    <span class="n">wl_sigma</span> <span class="o">=</span> <span class="mf">0.05e-9</span>
+    <span class="n">n_sigma</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">n_bins</span> <span class="o">=</span> <span class="mi">20000</span>
+    <span class="n">thickness</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">4.48e-3</span><span class="p">,</span>
+                          <span class="mf">6.35e-3</span><span class="p">,</span>
+                          <span class="mf">9.79e-3</span><span class="p">,</span> <span class="p">])</span>  <span class="c1"># waveplate thicknesses to test, in m</span>
+
+    <span class="c1"># calculate delays at wl_0 for the given waveplate thicknesses</span>
+    <span class="n">biref_0</span> <span class="o">=</span> <span class="n">pycis</span><span class="o">.</span><span class="n">calculate_dispersion</span><span class="p">(</span><span class="n">wl_0</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">delay_0</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">thickness</span> <span class="o">*</span> <span class="n">biref_0</span> <span class="o">/</span> <span class="n">wl_0</span><span class="p">)</span>  <span class="c1"># (rad)</span>
+    <span class="n">delay_0</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">delay_0</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;delay_0&#39;</span><span class="p">,),</span> <span class="n">coords</span><span class="o">=</span><span class="p">(</span><span class="n">delay_0</span><span class="p">,),</span> <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="s1">&#39;rad&#39;</span><span class="p">})</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">delay_0</span><span class="p">)</span>
+
+    <span class="c1"># generate spectrum in frequency-space</span>
+    <span class="n">freq_0</span> <span class="o">=</span> <span class="n">c</span> <span class="o">/</span> <span class="n">wl_0</span>
+    <span class="n">freq_sigma</span> <span class="o">=</span> <span class="n">c</span> <span class="o">/</span> <span class="n">wl_0</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">wl_sigma</span>
+    <span class="n">freq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">freq_0</span> <span class="o">-</span> <span class="n">n_sigma</span> <span class="o">*</span> <span class="n">freq_sigma</span><span class="p">,</span> <span class="n">freq_0</span> <span class="o">+</span> <span class="n">n_sigma</span> <span class="o">*</span> <span class="n">freq_sigma</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">freq</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;frequency&#39;</span><span class="p">,</span> <span class="p">),</span> <span class="n">coords</span><span class="o">=</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="p">),</span> <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="s1">&#39;Hz&#39;</span><span class="p">})</span>
+    <span class="n">spectrum</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">freq_sigma</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">((</span><span class="n">freq</span> <span class="o">-</span> <span class="n">freq_0</span><span class="p">)</span> <span class="o">/</span> <span class="n">freq_sigma</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">delay_time_axis_0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_sigma</span> <span class="o">/</span> <span class="mi">20</span> <span class="o">*</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">freq_sigma</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">)</span>
+    <span class="n">delay_axis_0</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">delay_time_axis_0</span> <span class="o">*</span> <span class="n">freq_0</span>
+    <span class="n">delay_axis_0</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">delay_axis_0</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="p">(</span><span class="n">delay_axis_0</span><span class="p">,</span> <span class="p">),</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;delay_0&#39;</span><span class="p">,</span> <span class="p">),</span> <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="s1">&#39;rad&#39;</span><span class="p">},</span> <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">doc_analytical</span><span class="p">(</span><span class="n">delay_0</span><span class="p">):</span>
+        <span class="n">doc_analytical</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">freq_sigma</span> <span class="o">*</span> <span class="p">(</span><span class="n">delay_0</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">freq_0</span><span class="p">))</span> <span class="o">*</span> <span class="n">kappa_0</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> \
+                         <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">delay_0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">doc_analytical</span>
+
+    <span class="c1"># NUMERICAL 1 (n1) -- tests group delay approximation</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">doc_n1</span> <span class="o">=</span> <span class="n">calculate_coherence</span><span class="p">(</span><span class="n">spectrum</span><span class="p">,</span> <span class="n">delay_0</span><span class="p">,</span> <span class="n">material</span><span class="o">=</span><span class="n">material</span><span class="p">)</span>
+    <span class="n">e</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;numerical_1 (group delay approx.):&#39;</span><span class="p">,</span> <span class="n">e</span> <span class="o">-</span> <span class="n">s</span><span class="p">,</span> <span class="s1">&#39;seconds&#39;</span><span class="p">)</span>
+
+    <span class="c1"># NUMERICAL 2 (n2) -- tests full dispersion integral</span>
+    <span class="n">thickness</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">thickness</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;delay_0&#39;</span><span class="p">,</span> <span class="p">),</span> <span class="n">coords</span><span class="o">=</span><span class="p">(</span><span class="n">delay_0</span><span class="p">,</span> <span class="p">))</span>
+    <span class="n">biref</span> <span class="o">=</span> <span class="n">pycis</span><span class="o">.</span><span class="n">calculate_dispersion</span><span class="p">(</span><span class="n">c</span> <span class="o">/</span> <span class="n">freq</span><span class="p">,</span> <span class="n">material</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">delay</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">biref</span> <span class="o">*</span> <span class="n">thickness</span> <span class="o">/</span> <span class="p">(</span><span class="n">c</span> <span class="o">/</span> <span class="n">freq</span><span class="p">))</span>
+
+    <span class="n">s</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">doc_n2</span> <span class="o">=</span> <span class="n">calculate_coherence</span><span class="p">(</span><span class="n">spectrum</span><span class="p">,</span> <span class="n">delay</span><span class="p">,</span> <span class="n">material</span><span class="o">=</span><span class="n">material</span><span class="p">)</span>
+    <span class="n">e</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;numerical_2 (full dispersion calc.):&#39;</span><span class="p">,</span> <span class="n">e</span> <span class="o">-</span> <span class="n">s</span><span class="p">,</span> <span class="s1">&#39;seconds&#39;</span><span class="p">)</span>
+
+    <span class="c1"># PLOT</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">,))</span>
+    <span class="n">axes</span> <span class="o">=</span> <span class="p">[</span><span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="p">]]</span>
+
+    <span class="c1"># plot spectrum</span>
+    <span class="n">spectrum</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># plot contrast and phase</span>
+    <span class="n">funcs</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">ufuncs</span><span class="o">.</span><span class="n">angle</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">funcs</span><span class="p">,</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">:])):</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">func</span><span class="p">(</span><span class="n">doc_analytical</span><span class="p">(</span><span class="n">delay_axis_0</span><span class="p">))</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">)</span>
+        <span class="n">func</span><span class="p">(</span><span class="n">doc_analytical</span><span class="p">(</span><span class="n">delay_0</span><span class="p">))</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
+                                             <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Analytical</span><span class="se">\n</span><span class="s1">(Group delay approx.)&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">)</span>
+        <span class="n">func</span><span class="p">(</span><span class="n">doc_n1</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">marker</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">markeredgewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">markeredgecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span>
+                              <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Numerical</span><span class="se">\n</span><span class="s1">(Group delay approx.)&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;C1&#39;</span><span class="p">)</span>
+        <span class="n">func</span><span class="p">(</span><span class="n">doc_n2</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">fillstyle</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Numerical (full)&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;C2&#39;</span><span class="p">)</span>
+        <span class="n">leg</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+
+
+    <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">doc_analytical</span><span class="p">(</span><span class="n">delay_0</span><span class="p">)</span><span class="o">.</span><span class="n">real</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">doc_n1</span><span class="o">.</span><span class="n">real</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    <span class="c1"># np.testing.assert_almost_equal(doc_analytical(delay_0).real.data, doc_n2.real.data)</span>
+
+    <span class="n">titles</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Spectrum&#39;</span><span class="p">,</span> <span class="s1">&#39;Contrast&#39;</span><span class="p">,</span> <span class="s1">&#39;Phase&#39;</span><span class="p">,</span> <span class="p">]</span>
+    <span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">title</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">titles</span><span class="p">):</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">test_with_gaussian_lineshape</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Joseph Allcock.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

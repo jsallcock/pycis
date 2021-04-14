@@ -1,0 +1,365 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Instrument &mdash; pycis 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Camera" href="camera.html" />
+    <link rel="prev" title="Interferometer" href="interferometer.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> pycis
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="model.html">Model</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="model.html#conventions">Conventions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model.html#geometry-definitions">Geometry definitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model.html#optical-layout">Optical layout</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="model.html#list-of-modules">List of modules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="interferometer.html">Interferometer</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Instrument</a></li>
+<li class="toctree-l3"><a class="reference internal" href="camera.html">Camera</a></li>
+<li class="toctree-l3"><a class="reference internal" href="camera.html#pixelated-polariser">Pixelated Polariser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coherence.html">Coherence</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dispersion.html">Dispersion</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="model.html#indices-and-tables">Indices and tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pycis</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="model.html">Model</a> &raquo;</li>
+        
+      <li>Instrument</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/instrument.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="module-pycis.model.instrument">
+<span id="instrument"></span><h1>Instrument<a class="headerlink" href="#module-pycis.model.instrument" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="pycis.model.instrument.Instrument">
+<em class="property">class </em><code class="sig-prename descclassname">pycis.model.instrument.</code><code class="sig-name descname">Instrument</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">camera</span></em>, <em class="sig-param"><span class="n">optics</span></em>, <em class="sig-param"><span class="n">interferometer</span></em>, <em class="sig-param"><span class="n">force_mueller</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument" title="Permalink to this definition">¶</a></dt>
+<dd><p>Coherence imaging instrument.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>camera</strong> (<em>pycis.model.Camera</em>) – Instrument camera.</p></li>
+<li><p><strong>optics</strong> (<em>list</em>) – A list of floats, the focal lengths (in m) of the three lenses used in the standard CI
+configuration (see e.g. my thesis or Scott Silburn’s): [f_1, f_2, f_3] where f_1 is the objective lens.</p></li>
+<li><p><strong>interferometer</strong> (<em>list</em>) – A list of instances of pycis.model.Component, where the first entry is the first
+component that the light passes through.</p></li>
+<li><p><strong>force_mueller</strong> (<em>bool</em>) – Forces the full Mueller matrix calculation of the interferogram, regardless of whether an
+analytical shortcut is available.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="pycis.model.instrument.Instrument.get_instrument_type">
+<code class="sig-name descname">get_instrument_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_instrument_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_instrument_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Type of instrument determines how interferogram is calculated.</p>
+<p>Valid instrument types:
+- ‘mueller’: Full Mueller calculation
+- ‘single_delay_linear’
+- ‘single_delay_polarised’
+- ‘multi_delay_polarised’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>instrument type (str)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pycis.model.instrument.Instrument.get_inc_angle">
+<code class="sig-name descname">get_inc_angle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_inc_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_inc_angle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate incidence angle(s) of ray(s) through the interferometer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre x position(s) in sensor plane in m.</p></li>
+<li><p><strong>y</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre y position(s) in sensor plane in m.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(float, xr.DataArray) Incidence angle(s) in radians.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pycis.model.instrument.Instrument.get_azim_angle">
+<code class="sig-name descname">get_azim_angle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">crystal</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_azim_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_azim_angle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate azimuthal angle(s) of ray(s) through the crystal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre x position(s) in sensor plane in m.</p></li>
+<li><p><strong>y</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre y position(s) in sensor plane in m.</p></li>
+<li><p><strong>crystal</strong> (<em>pycis.model.OrientableComponent</em>) – Crystal component.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(float, xr.DataArray) Azimuthal angle(s) in radians.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pycis.model.instrument.Instrument.capture">
+<code class="sig-name descname">capture</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spectrum</span></em>, <em class="sig-param"><span class="n">clean</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.capture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.capture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Capture image of given spectrum.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spectrum</strong> – (xr.DataArray) photon fluence spectrum with units of ph / m [hitting the pixel area during
+exposure time] and with dimensions ‘wavelength’, ‘x’, ‘y’ and (optionally) ‘stokes’. If no stokes dim then
+it is assumed that light is unpolarised (i.e. the spec supplied is the S_0 Stokes parameter only).</p></li>
+<li><p><strong>clean</strong> (<em>bool</em>) – False to add realistic image noise, passed to self.camera.capture()</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(xr.DataArray) image in units of camera counts.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pycis.model.instrument.Instrument.get_mueller_matrix">
+<code class="sig-name descname">get_mueller_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spectrum</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_mueller_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_mueller_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate total Mueller matrix for the interferometer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>spectrum</strong> (<em>xr.DataArray</em>) – See ‘spectrum’ argument for instrument.capture.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(xr.DataArray) Mueller matrix.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pycis.model.instrument.Instrument.get_delay">
+<code class="sig-name descname">get_delay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wavelength</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_delay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the interferometer delay(s) at the given wavelength(s).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>wavelength</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Wavelength in units m, can be a float or an xr.DataArray with dimensions including ‘x’ and
+‘y’.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(xr.DataArray) Interferometer delay(s) in radians.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pycis.model.instrument.Instrument.get_fringe_frequency">
+<code class="sig-name descname">get_fringe_frequency</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wavelength</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_fringe_frequency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_fringe_frequency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the interference fringe frequency at the sensor plane for the given wavelength.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>wavelength</strong> (<em>float</em>) – Wavelength in m.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(tuple) x and y components of the fringe frequency in units m^-1 and in order (f_x, f_y).</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="camera.html" class="btn btn-neutral float-right" title="Camera" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="interferometer.html" class="btn btn-neutral float-left" title="Interferometer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Joseph Allcock.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
