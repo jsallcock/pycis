@@ -4,8 +4,8 @@ pages:
   script:
   #- pip install -U sphinx
   #- pip install sphinx_rtd_theme
-  #- sphinx-build -d _build/doctrees docs/source docs/.build/html
-  - mv docs/.build/html public
+  #- sphinx-build -d _build/doctrees docs/source docs/build/html
+  - mv docs/build/html public
   artifacts:
         paths:
         - public
