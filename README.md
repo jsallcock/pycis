@@ -4,4 +4,10 @@ Analysis and modelling tools for the Coherence Imaging Spectroscopy (CIS) plasma
 
 :rainbow: [Documentation](https://jsallcock.github.io/pycis/) :rainbow: 
 
-Codebase is just beginning to stabilise. [contact me](https://twitter.com/JSAllcock).
+Codebase beginning to stabilise. [contact me](https://twitter.com/JSAllcock).
+
+Issues
+------
+
+- sort out bandpass filter class
+- check + explicitly state conventions used for phase delay. 
