@@ -1,10 +1,10 @@
 Model
 =====
 
-A framework for modelling CI images built using the `xarray library <http://xarray.pydata.org/en/stable/>`_ for
-labelled multi-dimensional arrays..
+A framework for modelling CI images built using the `xarray library <http://xarray.pydata.org/en/stable/>`_ (xr) for
+multi-dimensional arrays with labelled dimensions.
 
-The Mueller matrix model at the core of pycis makes it simple to model arbitrary interferometer configurations observing
+The Mueller matrix model makes it simple to model arbitrary interferometer configurations observing
 scenes with arbitrary spectral and polarisation properties.
 
 For some interferometer layouts there are simple analytical expressions for the interferogram. These analytical

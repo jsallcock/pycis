@@ -4,7 +4,7 @@ Analysis and modelling tools for the Coherence Imaging Spectroscopy (CIS) plasma
 
 :rainbow: [Documentation](http://coherence_imaging.gitpages.ccfe.ac.uk/pycis ) :rainbow: 
 
-Codebase beginning to stabilise. [contact me](joseph.allcock@ukaea.uk).
+Codebase beginning to stabilise. Contact me at joseph.allcock@ukaea.uk.
 
 Issues
 ------
