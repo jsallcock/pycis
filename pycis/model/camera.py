@@ -12,12 +12,12 @@ class Camera(object):
     """
     Camera class.
 
-    :param int bit_depth: Bit depth of camera pixels.
+    :param int bit_depth: Bit depth sensor.
     :param tuple sensor_format: Number of pixels in each dimension (x, y, ).
     :param float pix_size: Pixel size in m.
     :param float qe: Quantum efficiency or sensor in units e- per photon.
-    :param float epercount: (float) Conversion gain of sensor in units e- per count.
-    :param float cam_noise: (float) Camera noise standard deviation in units e-.
+    :param float epercount: Conversion gain of sensor in units e- per count.
+    :param float cam_noise: Camera noise standard deviation in units e-.
     :param str mode: Describes the mode of sensor operation. Currently supported are: 'mono' for monochrome, 'rgb'
         (untested) for color imaging and 'mono_polarised' for monochrome with a pixelated polariser array (layout of the
         FLIR Blackfly S camera).
