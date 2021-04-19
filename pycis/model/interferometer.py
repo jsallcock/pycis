@@ -173,7 +173,7 @@ class LinearRetarder(OrientableComponent):
 
 class UniaxialCrystal(LinearRetarder):
     """
-    Plane-parallel uniaxial birefringent crystal.
+    Plane-parallel uniaxial birefringent crystal plate.
 
     :param float orientation: Orientation of component fast axis in radians, relative to the x-axis.
     :param float thickness: Crystal thickness in m.

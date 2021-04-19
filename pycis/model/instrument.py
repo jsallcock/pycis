@@ -6,7 +6,7 @@ from pycis.model import mueller_product, LinearPolariser, Camera, QuarterWavepla
     UniaxialCrystal
 
 
-class Instrument(object):
+class Instrument:
     """
     Coherence imaging instrument.
 
@@ -281,6 +281,7 @@ class Instrument(object):
             raise NotImplementedError
 
         return spatial_freq_x, spatial_freq_y
+
 
 
 @vectorize([f8(f8, f8, f8, ), ], nopython=True, fastmath=True, cache=True, )
