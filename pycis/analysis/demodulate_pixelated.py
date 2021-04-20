@@ -6,7 +6,7 @@ from pycis.analysis import make_carrier_window, make_lowpass_window, fft2_im
 from pycis.model import get_pixelated_phase_mask
 
 
-def demodulate_single_delay_polarised(img):
+def demodulate_single_delay_pixelated(img):
     """
 
     :param img:
@@ -33,7 +33,7 @@ def demodulate_single_delay_polarised(img):
     return i0 / 4, phase, contrast
 
 
-def demodulate_multi_delay_polarised(image, fringe_freq, ):
+def demodulate_multi_delay_pixelated(image, fringe_freq, ):
 
     fft = fft2_im(image)
     window_pm = make_carrier_window(fft, fringe_freq, sign='pm')

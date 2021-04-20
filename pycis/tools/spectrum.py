@@ -44,7 +44,7 @@ def get_ciii_triplet(temperature, domain='frequency', nbins=1000):
         # convert from frequency to wavelength
         wlstr = 'wavelength'
         spectrum = spectrum.rename({'frequency': wlstr}).assign_coords({wlstr: wavelength}).sortby(wlstr, )
-        spectrum /= spectrum.integrate(dim='wavelength')
+        spectrum /= spectrum.integrate(coord='wavelength')
         return spectrum
     else:
         raise Exception('input not understood')

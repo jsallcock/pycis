@@ -11,11 +11,6 @@ except ImportError:
     print(traceback.format_exc())
 
 try:
-    from .data import *
-except ImportError:
-    print(traceback.format_exc())
-
-try:
     from .tools import *
 except ImportError:
     print(traceback.format_exc())
