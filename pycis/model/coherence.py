@@ -90,9 +90,9 @@ def test_with_gaussian_lineshape():
     """
     numerical / analytical test of calculate_coherence() using a modelled Gaussian spectral lineshape
 
-    It would be nice to turn this into a unit test.
+    TODO move elsewhere
 
-    misc. abbreviations:
+    old. abbreviations:
     doc = degree of coherence
     wl = wavelength
     biref = birefringence

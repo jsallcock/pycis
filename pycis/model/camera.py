@@ -12,9 +12,9 @@ class Camera(object):
     """
     Camera class.
 
-    :param int bit_depth: Bit depth sensor.
     :param tuple sensor_format: Number of pixels in each dimension (x, y, ).
     :param float pix_size: Pixel size in m.
+    :param int bit_depth: Bit depth sensor.
     :param float qe: Quantum efficiency or sensor in units e- per photon.
     :param float epercount: Conversion gain of sensor in units e- per count.
     :param float cam_noise: Camera noise standard deviation in units e-.
@@ -22,13 +22,13 @@ class Camera(object):
         (untested) for color imaging and 'mono_polarised' for monochrome with a pixelated polariser array (layout of the
         FLIR Blackfly S camera).
     """
-    def __init__(self, bit_depth, sensor_format, pixel_size, qe, epercount, cam_noise, mode='mono'):
-        self.pixel_size = pixel_size
+    def __init__(self, sensor_format, pixel_size, bit_depth, qe, epercount, cam_noise, mode='mono'):
         self.sensor_format = sensor_format
+        self.pixel_size = pixel_size
+        self.bit_depth = bit_depth
         self.qe = qe
         self.epercount = epercount
         self.cam_noise = cam_noise
-        self.bit_depth = bit_depth
         self.mode = mode
         self.x, self.y = self.get_pixel_position()
 
@@ -98,12 +98,12 @@ class Camera(object):
 
         x = (np.arange(self.sensor_format[0]) + 0.5) * self.pixel_size - centre_pos[0]
         y = (np.arange(self.sensor_format[1]) + 0.5) * self.pixel_size - centre_pos[1]
-        x = xr.DataArray(x, dims=('x', ), coords=(x, ), )
-        y = xr.DataArray(y, dims=('y',), coords=(y,), )
+        x = xr.DataArray(x, dims=('x', ), coords=(x, ), attrs={'units': 'm'})
+        y = xr.DataArray(y, dims=('y',), coords=(y,), attrs={'units': 'm'})
 
         # add pixel numbers as non-dimension coordinates -- for explicit indexing and plotting
-        x_pixel_coord = xr.DataArray(np.arange(self.sensor_format[0], ), dims=('x', ), coords=(x, ), )
-        y_pixel_coord = xr.DataArray(np.arange(self.sensor_format[1], ), dims=('y', ), coords=(y, ), )
+        x_pixel_coord = xr.DataArray(np.arange(self.sensor_format[0], ).astype(np.uint16), dims=('x', ), coords=(x, ), )
+        y_pixel_coord = xr.DataArray(np.arange(self.sensor_format[1], ).astype(np.uint16), dims=('y', ), coords=(y, ), )
         x = x.assign_coords({'x_pixel': ('x', x_pixel_coord), }, )
         y = y.assign_coords({'y_pixel': ('y', y_pixel_coord), }, )
 
@@ -152,9 +152,9 @@ class Camera(object):
         mat = xr.DataArray(mat, dims=dims, ).assign_coords({'x': self.x, 'y': self.y, }, )
 
         mat[pix_idxs_x, pix_idxs_y, ..., ] = LinearPolariser(0).get_mueller_matrix()
-        mat[pix_idxs_x + 1, pix_idxs_y, ..., ] = LinearPolariser(np.pi / 4).get_mueller_matrix()
-        mat[pix_idxs_x + 1, pix_idxs_y + 1, ..., ] = LinearPolariser(np.pi / 2).get_mueller_matrix()
-        mat[pix_idxs_x, pix_idxs_y + 1, ..., ] = LinearPolariser(3 * np.pi / 4).get_mueller_matrix()
+        mat[pix_idxs_x + 1, pix_idxs_y, ..., ] = LinearPolariser(45).get_mueller_matrix()
+        mat[pix_idxs_x + 1, pix_idxs_y + 1, ..., ] = LinearPolariser(90).get_mueller_matrix()
+        mat[pix_idxs_x, pix_idxs_y + 1, ..., ] = LinearPolariser(135).get_mueller_matrix()
 
         return mat
 

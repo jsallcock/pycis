@@ -1,7 +1,10 @@
-from math import isclose
+import sys
+import yaml
 import numpy as np
 import xarray as xr
+from math import isclose
 from numba import vectorize, f8
+import pycis
 from pycis.model import mueller_product, LinearPolariser, Camera, QuarterWaveplate, Component, LinearRetarder, \
     UniaxialCrystal
 
@@ -10,6 +13,9 @@ class Instrument:
     """
     Coherence imaging instrument.
 
+    Generated from either a configuration file, or with the constituent python objects.
+
+    :param str config: path to a .yaml instrument configuration file
     :param pycis.model.Camera camera: Instrument camera.
     :param list optics: A list of floats, the focal lengths (in m) of the three lenses used in the standard CI
         configuration (see e.g. my thesis or Scott Silburn's): [f_1, f_2, f_3] where f_1 is the objective lens.
@@ -18,17 +24,45 @@ class Instrument:
     :param bool force_mueller: Forces the full Mueller matrix calculation of the interferogram, regardless of whether an
         analytical shortcut is available.
     """
-    def __init__(self, camera, optics, interferometer, force_mueller=False):
+    def __init__(self, config=None, camera=None, optics=None, interferometer=None, force_mueller=False):
 
-        self.camera = camera
-        self.optics = optics
-        self.interferometer = interferometer
+        if config is not None:
+            self.camera, self.optics, self.interferometer = self.parse_config(config)
+        else:
+            self.camera = camera
+            self.optics = optics
+            self.interferometer = interferometer
+
         self.force_mueller = force_mueller
-
         self.input_checks()
         self.crystals = [co for co in self.interferometer if isinstance(co, LinearRetarder)]
         self.polarisers = [co for co in self.interferometer if isinstance(co, LinearPolariser)]
         self.instrument_type = self.get_instrument_type()
+
+    def parse_config(self, config):
+
+        try:
+            with open(config) as f:
+                config = yaml.load(f, Loader=yaml.FullLoader)
+        except FileNotFoundError:
+            try:
+                with open(os.path.join(os.getcwd(), config)) as f:
+                    config = yaml.safe_load(f, Loader=yaml.FullLoader)
+            except FileNotFoundError:
+                print('pycis: could not find config file')
+                sys.exit(1)
+        try:
+            camera = Camera(**config['camera'])
+            optics = [config['focal_length_lens_' + str(i + 1)] for i in range(3)]
+
+            ic = config['interferometer']
+            interferometer = [getattr(pycis.model, name)(**args) for name, args in zip(ic.keys(), ic.values())]
+
+        except:
+            print('pycis: could not interpret config file')
+            sys.exit(1)
+
+        return camera, optics, interferometer
 
     def input_checks(self):
         assert isinstance(self.camera, Camera)

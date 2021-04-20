@@ -2,6 +2,7 @@ import numpy as np
 import xarray as xr
 from numba import vectorize, f8
 from pycis.model import calculate_dispersion
+from math import radians
 
 
 def mueller_product(mat1, mat2):
@@ -29,11 +30,11 @@ def rotation_matrix(angle):
     """
     Mueller matrix for frame rotation (anti-clockwise from x-axis).
 
-    :param float angle: rotation angle in radians.
+    :param float angle: rotation angle in degrees.
     :return: (xr.DataArray) Frame rotation Mueller matrix.
     """
 
-    angle2 = 2 * angle
+    angle2 = 2 * radians(angle)
     rot_mat = np.array([[1, 0, 0, 0],
                         [0, np.cos(angle2), np.sin(angle2), 0],
                         [0, -np.sin(angle2), np.cos(angle2), 0],
@@ -99,7 +100,7 @@ class LinearPolariser(OrientableComponent):
     """
     Linear polariser.
 
-    :param float orientation: Orientation in radians of the transmission axis relative to the x-axis.
+    :param float orientation: Orientation in degrees of the transmission axis relative to the x-axis.
     :param float tx_1: transmission primary component. [0, 1] - defaults to 1.
     :param float tx_2: transmission secondary (orthogonal) component. [0, 1] - defaults to 0.
     """
@@ -175,7 +176,7 @@ class UniaxialCrystal(LinearRetarder):
     """
     Plane-parallel uniaxial birefringent crystal plate.
 
-    :param float orientation: Orientation of component fast axis in radians, relative to the x-axis.
+    :param float orientation: Orientation of component fast axis in degrees, relative to the x-axis.
     :param float thickness: Crystal thickness in m.
     :param float cut_angle: Angle in radians between crystal optic axis and front face.
     :param str material: Crystal material.
@@ -239,7 +240,7 @@ class SavartPlate(LinearRetarder):
     """
     Savart plate.
 
-    :param float orientation: Orientation of component fast axis in radians, relative to the x-axis.
+    :param float orientation: Orientation of component fast axis in degrees, relative to the x-axis.
     :param float thickness: Total thickness of plate in m.
     :param str material: Crystal material.
     :param str material_source: Source of Sellmeier coefficients describing dispersion in the crystal. If blank, the
