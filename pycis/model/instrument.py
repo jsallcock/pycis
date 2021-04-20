@@ -2,7 +2,7 @@ import sys
 import yaml
 import numpy as np
 import xarray as xr
-from math import isclose
+from math import isclose, radians
 from numba import vectorize, f8
 import pycis
 from pycis.model import mueller_product, LinearPolariser, Camera, QuarterWaveplate, Component, LinearRetarder, \
@@ -37,7 +37,7 @@ class Instrument:
         self.input_checks()
         self.crystals = [co for co in self.interferometer if isinstance(co, LinearRetarder)]
         self.polarisers = [co for co in self.interferometer if isinstance(co, LinearPolariser)]
-        self.instrument_type = self.get_instrument_type()
+        self.type = self.get_type()
 
     def parse_config(self, config):
 
@@ -69,29 +69,28 @@ class Instrument:
         assert isinstance(self.optics, list)
         assert all(isinstance(co, Component) for co in self.interferometer)
 
-    def get_instrument_type(self):
+    def get_type(self):
         """
         Type of instrument determines how interferogram is calculated.
 
         Valid instrument types:
         - 'mueller': Full Mueller calculation
         - 'single_delay_linear'
-        - 'single_delay_polarised'
-        - 'multi_delay_polarised'
+        - 'single_delay_pixelated'
+        - 'multi_delay_pixelated'
 
-        :return: instrument type (str)
+        :return: type (str)
         """
 
         itype = None
-
-        if self.camera.mode == 'mono_polarised':
+        if self.camera.type == 'monochrome_polarised':
 
             # single-delay polarised
             if len(self.interferometer) == 3:
 
                 # check for correct component types and relative orientations
                 types = [LinearPolariser, UniaxialCrystal, QuarterWaveplate, ]
-                relative_orientations = [0, np.pi / 4, np.pi / 2, ]
+                relative_orientations = [0, 45, 90, ]
 
                 conditions_met = []
                 for idx, (typ, rel_or) in enumerate(zip(types, relative_orientations)):
@@ -100,14 +99,14 @@ class Instrument:
                     conditions_met.append(isclose(component.orientation - self.polarisers[0].orientation, rel_or))
 
                 if all(conditions_met):
-                    itype = 'single_delay_polarised'
+                    itype = 'single_delay_pixelated'
 
             # multi-delay polarised
             elif len(self.interferometer) == 5:
 
                 # check for correct component types and relative orientations
                 types = [LinearPolariser, UniaxialCrystal, LinearPolariser, UniaxialCrystal, QuarterWaveplate, ]
-                relative_orientations = [0, np.pi / 4, 0, np.pi / 4, np.pi / 2, ]
+                relative_orientations = [0, 45, 0, 45, 90, ]
 
                 conditions_met = []
                 for idx, (typ, rel_or) in enumerate(zip(types, relative_orientations)):
@@ -116,7 +115,7 @@ class Instrument:
                     conditions_met.append(isclose(component.orientation - self.polarisers[0].orientation, rel_or))
 
                 if all(conditions_met):
-                    itype = 'multi_delay_polarised'
+                    itype = 'multi_delay_pixelated'
 
         # are there two polarisers, at the front and back of the interferometer?
         elif len(self.polarisers) == 2 and (isinstance(self.interferometer[0], LinearPolariser) and
@@ -126,7 +125,7 @@ class Instrument:
             pol_2_orientation = self.interferometer[-1].orientation
 
             conditions_met = [pol_1_orientation == pol_2_orientation, ] + \
-                             [isclose(crys.orientation - pol_1_orientation, np.pi / 4) for crys in self.crystals]
+                             [isclose(crys.orientation - pol_1_orientation, 45) for crys in self.crystals]
             if all(conditions_met):
                 itype = 'single_delay_linear'
 
@@ -137,7 +136,7 @@ class Instrument:
 
     def get_inc_angle(self, x, y):
         """
-        Calculate incidence angle(s) of ray(s) through the interferometer.
+        Calculate incidence angle(s) of ray(s) through the interferometer, in radians.
 
         :param x: Pixel centre x position(s) in sensor plane in m.
         :type x: float, xr.DataArray
@@ -149,7 +148,7 @@ class Instrument:
 
     def get_azim_angle(self, x, y, crystal):
         """
-        Calculate azimuthal angle(s) of ray(s) through the crystal.
+        Calculate azimuthal angle(s) of ray(s) through the crystal, in radians.
 
         :param x: Pixel centre x position(s) in sensor plane in m.
         :type x: float, xr.DataArray
@@ -158,7 +157,7 @@ class Instrument:
         :param pycis.model.OrientableComponent crystal: Crystal component.
         :return: (float, xr.DataArray) Azimuthal angle(s) in radians.
         """
-        return xr.apply_ufunc(_get_azim_angle, x, y, crystal.orientation, dask='allowed', )
+        return xr.apply_ufunc(_get_azim_angle, x, y, radians(crystal.orientation), dask='allowed', )
 
     def capture(self, spectrum, clean=False):
         """
@@ -171,7 +170,7 @@ class Instrument:
         :return: (xr.DataArray) image in units of camera counts.
         """
 
-        if self.instrument_type == 'mueller':
+        if self.type == 'mueller':
             # do the full Mueller matrix calculation
 
             if 'stokes' not in spectrum.dims:
@@ -186,16 +185,16 @@ class Instrument:
             delay = self.get_delay(spectrum.wavelength)
             apply_polarisers = False
 
-            if self.instrument_type == 'single_delay_linear' and 'stokes' not in spectrum.dims:
+            if self.type == 'single_delay_linear' and 'stokes' not in spectrum.dims:
                 contrast = np.array([crystal.contrast for crystal in self.crystals]).prod()
                 spectrum = spectrum / 4 * (1 + contrast * np.cos(delay))
 
-            elif self.instrument_type == 'single_delay_polarised' and 'stokes' not in spectrum.dims:
+            elif self.type == 'single_delay_pixelated' and 'stokes' not in spectrum.dims:
                 contrast = self.crystals[0].contrast
                 phase_mask = self.camera.get_pixelated_phase_mask()
                 spectrum = spectrum / 4 * (1 + contrast * np.cos(delay + phase_mask))
 
-            elif self.instrument_type == 'multi_delay_polarised' and 'stokes' not in spectrum.dims:
+            elif self.type == 'multi_delay_pixelated' and 'stokes' not in spectrum.dims:
 
                 phase_mask = self.camera.get_pixelated_phase_mask()
 
@@ -246,7 +245,7 @@ class Instrument:
 
         # This method only works for instrument types other than 'mueller'. I'm not sure it would be possible to write a
         # general function?
-        assert self.instrument_type != 'mueller'
+        assert self.type != 'mueller'
 
         # calculate the ray angles through the interferometer
         if hasattr(wavelength, 'coords'):
@@ -263,18 +262,18 @@ class Instrument:
             inc_angle = self.get_inc_angle(self.camera.x, self.camera.y, )
             azim_angle = self.get_azim_angle(self.camera.x, self.camera.y, self.crystals[0])
 
-        if self.instrument_type == 'single_delay_linear':
+        if self.type == 'single_delay_linear':
             # add delay contribution due to each crystal
             delay = 0
             for crystal in self.crystals:
                 delay += crystal.get_delay(wavelength, inc_angle, azim_angle, )
 
-        elif self.instrument_type == 'single_delay_polarised':
+        elif self.type == 'single_delay_pixelated':
             # generalise to arbitrary interferometer orientations
             orientation_delay = -2 * self.polarisers[0].orientation
             delay = self.crystals[0].get_delay(wavelength, inc_angle, azim_angle, ) + orientation_delay
 
-        elif self.instrument_type == 'multi_delay_polarised':
+        elif self.type == 'multi_delay_pixelated':
             # generalise to arbitrary interferometer orientations
             orientation_delay = -2 * self.polarisers[0].orientation
             delay_1 = self.crystals[0].get_delay(wavelength, inc_angle, azim_angle, )
@@ -295,9 +294,9 @@ class Instrument:
         :param float wavelength: Wavelength in m.
         :return: (tuple) x and y components of the fringe frequency in units m^-1 and in order (f_x, f_y).
         """
-        assert self.instrument_type != 'mueller'
+        assert self.type != 'mueller'
 
-        if self.instrument_type == 'single_delay_linear':
+        if self.type == 'single_delay_linear':
             # add contribution due to each crystal
             spatial_freq_x, spatial_freq_y = 0, 0
             for crystal in self.crystals:
@@ -306,7 +305,7 @@ class Instrument:
                 spatial_freq_x += sp_f_x
                 spatial_freq_y += sp_f_y
 
-        elif self.instrument_type == 'multi_delay_polarised':
+        elif self.type == 'multi_delay_pixelated':
             crystal = self.crystals[0]
             spatial_freq_x, spatial_freq_y = crystal.get_fringe_frequency(wavelength, self.optics[2], )
             # TODO and also the sum and difference terms?

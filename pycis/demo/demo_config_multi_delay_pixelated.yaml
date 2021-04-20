@@ -1,5 +1,5 @@
 ---
-# a demo instrument configuration file for pycis.model
+# demo instrument configuration file for pycis.model, for the single_delay_pixelated instrument type
 
 # CAMERA
 # ------
@@ -13,7 +13,7 @@ camera:
   qe: 0.35
   epercount: 0.46
   cam_noise: 2.5  # e-
-  mode: 'mono_polarised'
+  type: 'monochrome_polarised'
 
 # OPTICS
 # ------

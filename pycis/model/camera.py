@@ -2,10 +2,11 @@ import numpy as np
 import xarray as xr
 from pycis.model import LinearPolariser, mueller_product
 
-camera_modes = ['mono',
-                'mono_polarised',
-                'rgb',
-                ]
+camera_types = [
+    'monochrome',
+    'monochrome_polarised',
+    'rgb',
+]
 
 
 class Camera(object):
@@ -14,26 +15,26 @@ class Camera(object):
 
     :param tuple sensor_format: Number of pixels in each dimension (x, y, ).
     :param float pix_size: Pixel size in m.
-    :param int bit_depth: Bit depth sensor.
+    :param int bit_depth: Bit depth of sensor. Currently limited to 16.
     :param float qe: Quantum efficiency or sensor in units e- per photon.
     :param float epercount: Conversion gain of sensor in units e- per count.
     :param float cam_noise: Camera noise standard deviation in units e-.
-    :param str mode: Describes the mode of sensor operation. Currently supported are: 'mono' for monochrome, 'rgb'
-        (untested) for color imaging and 'mono_polarised' for monochrome with a pixelated polariser array (layout of the
-        FLIR Blackfly S camera).
+    :param str type: Describes the mode of sensor operation. Currently supported are: 'monochrome', 'rgb'
+        (untested) for color imaging and 'monochrome_polarised' for monochrome with a pixelated polariser array
+        (currently assume the 2x2 polariser layout of the FLIR Blackfly S).
     """
-    def __init__(self, sensor_format, pixel_size, bit_depth, qe, epercount, cam_noise, mode='mono'):
+    def __init__(self, sensor_format, pixel_size, bit_depth, qe, epercount, cam_noise, type='monochrome'):
         self.sensor_format = sensor_format
         self.pixel_size = pixel_size
         self.bit_depth = bit_depth
         self.qe = qe
         self.epercount = epercount
         self.cam_noise = cam_noise
-        self.mode = mode
+        self.type = type
         self.x, self.y = self.get_pixel_position()
 
-        assert mode in camera_modes
-        if mode == 'mono_polarised':
+        assert type in camera_types
+        if type == 'monochrome_polarised':
             assert sensor_format[0] % 2 == 0
             assert sensor_format[1] % 2 == 0
 
@@ -49,7 +50,7 @@ class Camera(object):
         """
 
         if apply_polarisers is None:
-            if self.mode == 'mono_polarised':
+            if self.type == 'monochrome_polarised':
                 apply_polarisers = True
 
         if apply_polarisers:
@@ -61,7 +62,7 @@ class Camera(object):
         if 'stokes' in spectrum.dims:
             spectrum = spectrum.isel(stokes=0, drop=True)
 
-        if self.mode == 'rgb':
+        if self.type == 'rgb':
             from pycis.tools.color_system import cs_srgb
             signal = cs_srgb.spec_to_rgb(spectrum, )
 
@@ -78,6 +79,7 @@ class Camera(object):
 
             signal = signal / self.epercount
             signal.values = np.digitize(signal.values, np.arange(0, 2 ** self.bit_depth))
+            signal = signal.astype(np.uint16)
 
         return signal
 
@@ -93,7 +95,6 @@ class Camera(object):
         :type y_pixel: float, np.array, xr.DataArray
         :return: x_pos, y_pos, both instances of xr.DataArray
         """
-
         centre_pos = self.pixel_size * np.array(self.sensor_format) / 2
 
         x = (np.arange(self.sensor_format[0]) + 0.5) * self.pixel_size - centre_pos[0]
