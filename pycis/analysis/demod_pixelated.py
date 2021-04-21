@@ -8,7 +8,6 @@ from pycis.model import get_pixelated_phase_mask, get_pixel_idxs, get_superpixel
 
 def demod_single_delay_pixelated(im):
     """
-
     :param im: xr.DataArray image to be demodulation. Must have dimensions 'x' and 'y'.
     :return:
     """
@@ -24,14 +23,10 @@ def demod_single_delay_pixelated(im):
     m3 = im.isel(x=idxs3[0], y=idxs3[1], ).assign_coords({'x': xs, 'y': ys})
     m4 = im.isel(x=idxs4[0], y=idxs4[1], ).assign_coords({'x': xs, 'y': ys})
 
-    # m2 = im[1::2, ::2]
-    # m3 = im[1::2, 1::2]
-    # m4 = im[::2, 1::2]
-
     m = np.arange(4) + 1
     im = xr.concat([m1, m2, m3, m4], dim='m').assign_coords({'m': m, })
     i0 = im.sum(dim='m')
-    phase = np.arctan2(im.sel(m=4) - im.sel(m=2), im.sel(m=3) - im.sel(m=1))
+    phase = np.arctan2(im.sel(m=4) - im.sel(m=2), im.sel(m=1) - im.sel(m=3))
     contrast = 1 / i0 * np.sqrt(8 * np.power(im - i0 / 4, 2, ).sum(dim='m'))
 
     return i0 / 4, phase, contrast

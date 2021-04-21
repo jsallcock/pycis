@@ -257,7 +257,7 @@ class Instrument:
         """
 
         # This method only works for instrument types other than 'mueller'. I'm not sure it would be possible to write a
-        # general function?
+        # general function
         assert self.type != 'mueller'
 
         # calculate the ray angles through the interferometer
@@ -269,7 +269,6 @@ class Instrument:
             else:
                 inc_angle = self.get_inc_angle(self.camera.x, self.camera.y, )
                 azim_angle = self.get_azim_angle(self.camera.x, self.camera.y, self.crystals[0])
-
 
         else:
             inc_angle = self.get_inc_angle(self.camera.x, self.camera.y, )
@@ -283,12 +282,12 @@ class Instrument:
 
         elif self.type == 'single_delay_pixelated':
             # generalise to arbitrary interferometer orientations
-            orientation_delay = -2 * self.polarisers[0].orientation
+            orientation_delay = -2 * radians(self.polarisers[0].orientation)
             delay = self.crystals[0].get_delay(wavelength, inc_angle, azim_angle, ) + orientation_delay
 
         elif self.type == 'multi_delay_pixelated':
             # generalise to arbitrary interferometer orientations
-            orientation_delay = -2 * self.polarisers[0].orientation
+            orientation_delay = -2 * radians(self.polarisers[0].orientation)
             delay_1 = self.crystals[0].get_delay(wavelength, inc_angle, azim_angle, )
             delay_2 = self.crystals[1].get_delay(wavelength, inc_angle, azim_angle, ) + orientation_delay
             delay_sum = delay_1 + delay_2
