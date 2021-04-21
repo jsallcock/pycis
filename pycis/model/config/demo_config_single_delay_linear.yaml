@@ -3,7 +3,7 @@
 
 # CAMERA
 # ------
-# example is FLIR BlackFly S polarised camera
+# example is FLIR BlackFly S
 camera:
   bit_depth: 12
   sensor_format:
@@ -13,7 +13,7 @@ camera:
   qe: 0.35
   epercount: 0.46
   cam_noise: 2.5  # e-
-  type: 'monochrome_polarised'
+  type: 'monochrome'
 
 # OPTICS
 # ------
@@ -31,15 +31,13 @@ focal_length_lens_3: 150.e-3
 interferometer:
 
   LinearPolariser:
-    orientation: 0.
+    orientation: 0
 
   UniaxialCrystal:
-    orientation: 45.
-    cut_angle: 0.
+    orientation: 45
+    cut_angle: 45
     thickness: 6.5e-3
     material: 'a-BBO'
 
-  QuarterWaveplate:
-    orientation: 90.
-
-interferometer_orientation: 0.
+  LinearPolariser:
+    orientation: 0

@@ -1,4 +1,5 @@
 import traceback
+from .paths import root
 
 try:
     from .analysis import *

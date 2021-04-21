@@ -1,4 +1,5 @@
 import sys
+import os
 import yaml
 import numpy as np
 import xarray as xr
@@ -40,17 +41,29 @@ class Instrument:
         self.type = self.get_type()
 
     def parse_config(self, config):
+        """
+        Try loading config as an absolute path to a .yaml file. Failing that, try it as a relative path to a .yaml file
+        from the current working directory. Finally, try looking for config as a .yaml file saved in
+        pycis/model/config/.
+        """
 
-        try:
-            with open(config) as f:
-                config = yaml.load(f, Loader=yaml.FullLoader)
-        except FileNotFoundError:
+        fpaths = [
+            config,
+            os.path.join(os.getcwd(), config),
+            os.path.join(pycis.root, 'model', 'config', config),
+        ]
+        for fpath in fpaths:
             try:
-                with open(os.path.join(os.getcwd(), config)) as f:
-                    config = yaml.safe_load(f, Loader=yaml.FullLoader)
+                with open(fpath) as f:
+                    config = yaml.load(f, Loader=yaml.FullLoader)
+                found = True
             except FileNotFoundError:
-                print('pycis: could not find config file')
-                sys.exit(1)
+                found = False
+
+        if not found:
+            print('pycis: could not find config file')
+            sys.exit(1)
+
         try:
             camera = Camera(**config['camera'])
             optics = [config['focal_length_lens_' + str(i + 1)] for i in range(3)]

@@ -6,5 +6,5 @@ accessed using pycis.model.FilterFromName or else directly using pycis.paths.fil
 
 """
 
-root_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-filters_path = os.path.join(root_path, 'data', 'bandpass_filters')
+root = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+filters_path = os.path.join(root, 'data', 'bandpass_filters')

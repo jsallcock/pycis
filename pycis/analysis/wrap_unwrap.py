@@ -17,7 +17,6 @@ def wrap(phase, units='rad'):
     units_period = {'rad': 2 * np.pi, 'waves': 1, 'fringes': 1}
     assert units in units_period
     period = units_period[units]
-
     return (phase + period / 2) % period - (period / 2)
 
 

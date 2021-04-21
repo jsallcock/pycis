@@ -3,32 +3,36 @@ from numpy.fft import ifft2, ifftshift
 import xarray as xr
 
 from pycis.analysis import make_carrier_window, make_lowpass_window, fft2_im
-from pycis.model import get_pixelated_phase_mask
+from pycis.model import get_pixelated_phase_mask, get_pixel_idxs, get_superpixel_position
 
 
-def demodulate_single_delay_pixelated(img):
+def demod_single_delay_pixelated(im):
     """
 
-    :param img:
+    :param im: xr.DataArray image to be demodulation. Must have dimensions 'x' and 'y'.
     :return:
     """
 
-    img = img.astype(float)  # unsigned integers can cause headaches
+    sensor_format = [len(im.x), len(im.y)]
+    idxs1, idxs2, idxs3, idxs4 = get_pixel_idxs(sensor_format)
+    im = im.astype(float)  # unsigned integers can cause headaches
+    xs, ys = get_superpixel_position(im.x, im.y, )
 
-    # assert 'x' in img.dims and 'y' in img.dims
-    # assert img.dims.index('x') + 1 == img.dims.index('y')
-    img = img.drop(list(img.coords.variables.mapping.keys()))
+    # im = im.drop(list(im.coords.variables.mapping.keys()))
+    m1 = im.isel(x=idxs1[0], y=idxs1[1], ).assign_coords({'x': xs, 'y': ys})
+    m2 = im.isel(x=idxs2[0], y=idxs2[1], ).assign_coords({'x': xs, 'y': ys})
+    m3 = im.isel(x=idxs3[0], y=idxs3[1], ).assign_coords({'x': xs, 'y': ys})
+    m4 = im.isel(x=idxs4[0], y=idxs4[1], ).assign_coords({'x': xs, 'y': ys})
 
-    m1 = img[::2, ::2]
-    m2 = img[1::2, ::2]
-    m3 = img[1::2, 1::2]
-    m4 = img[::2, 1::2]
+    # m2 = im[1::2, ::2]
+    # m3 = im[1::2, 1::2]
+    # m4 = im[::2, 1::2]
 
     m = np.arange(4) + 1
-    img = xr.concat([m1, m2, m3, m4], dim='m').assign_coords({'m': m, })
-    i0 = img.sum(dim='m')
-    phase = np.arctan2(img.sel(m=4) - img.sel(m=2), img.sel(m=3) - img.sel(m=1))
-    contrast = 1 / i0 * np.sqrt(8 * np.power(img - i0 / 4, 2, ).sum(dim='m'))
+    im = xr.concat([m1, m2, m3, m4], dim='m').assign_coords({'m': m, })
+    i0 = im.sum(dim='m')
+    phase = np.arctan2(im.sel(m=4) - im.sel(m=2), im.sel(m=3) - im.sel(m=1))
+    contrast = 1 / i0 * np.sqrt(8 * np.power(im - i0 / 4, 2, ).sum(dim='m'))
 
     return i0 / 4, phase, contrast
 

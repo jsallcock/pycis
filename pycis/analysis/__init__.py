@@ -9,7 +9,7 @@ from .wrap_unwrap import *
 from .mask import *
 from .window import *
 from .end_region_mask import *
-from .demodulate_linear import *
-from .demodulate_pixelated import *
+from .demod_linear import *
+from .demod_pixelated import *
 
 

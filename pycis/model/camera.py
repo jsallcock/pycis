@@ -115,47 +115,20 @@ class Camera(object):
 
         return x, y
 
-    def get_superpixel_position(self):
-        """
-
-        :return:
-        """
-
-        sensor_format_s = np.array(self.sensor_format) / 2
-        pixel_size_s = self.pixel_size * 2
-        centre_pos = pixel_size_s * sensor_format_s / 2
-
-        x = (np.arange(sensor_format_s[0]) + 0.5) * pixel_size_s - centre_pos[0]
-        y = (np.arange(sensor_format_s[1]) + 0.5) * pixel_size_s - centre_pos[1]
-        x = xr.DataArray(x, dims=('x',), coords=(x,), )
-        y = xr.DataArray(y, dims=('y',), coords=(y,), )
-
-        # add superpixel numbers as non-dimension coordinates -- for explicit indexing and plotting
-        x_superpixel_coord = xr.DataArray(np.arange(self.sensor_format[0], ), dims=('x',), coords=(x,), )
-        y_superpixel_coord = xr.DataArray(np.arange(self.sensor_format[1], ), dims=('y',), coords=(y,), )
-        x = x.assign_coords({'x_superpixel': ('x', x_superpixel_coord), }, )
-        y = y.assign_coords({'y_superpixel': ('y', y_superpixel_coord), }, )
-
-        return x, y
-
     def get_mueller_matrix(self, ):
         """
-        If the
-
         :return:
         """
-
-        pix_idxs_x = xr.DataArray(np.arange(0, self.sensor_format[0], 2), dims=('x', ), )
-        pix_idxs_y = xr.DataArray(np.arange(0, self.sensor_format[1], 2), dims=('y', ), )
+        idxs_1, idxs_2, idxs_3, idxs_4 = get_pixel_idxs(self.sensor_format)
 
         mat = np.zeros([self.sensor_format[0], self.sensor_format[1], 4, 4, ])
         dims = ('x', 'y', 'mueller_v', 'mueller_h', )
         mat = xr.DataArray(mat, dims=dims, ).assign_coords({'x': self.x, 'y': self.y, }, )
 
-        mat[pix_idxs_x, pix_idxs_y, ..., ] = LinearPolariser(0).get_mueller_matrix()
-        mat[pix_idxs_x + 1, pix_idxs_y, ..., ] = LinearPolariser(45).get_mueller_matrix()
-        mat[pix_idxs_x + 1, pix_idxs_y + 1, ..., ] = LinearPolariser(90).get_mueller_matrix()
-        mat[pix_idxs_x, pix_idxs_y + 1, ..., ] = LinearPolariser(135).get_mueller_matrix()
+        mat[idxs_1[0], idxs_1[1], ..., ] = LinearPolariser(0).get_mueller_matrix()
+        mat[idxs_2[0], idxs_2[1], ..., ] = LinearPolariser(45).get_mueller_matrix()
+        mat[idxs_3[0], idxs_3[1], ..., ] = LinearPolariser(90).get_mueller_matrix()
+        mat[idxs_4[0], idxs_4[1], ..., ] = LinearPolariser(135).get_mueller_matrix()
 
         return mat
 
@@ -187,6 +160,44 @@ def get_pixelated_phase_mask(sensor_format):
 
     return phase_mask
 
+
+def get_pixel_idxs(sensor_format):
+    """
+    Get indices of pixel numbers, determining the pixelated polariser layout.
+
+    Following the pixel-numbering conventions defined for the FLIR Blackfly S camera in my paper. This may need to be
+    generalised at some point.
+
+    :return: idxs1
+    """
+
+    idxs_x = xr.DataArray(np.arange(0, sensor_format[0], 2), dims=('x',), )
+    idxs_y = xr.DataArray(np.arange(0, sensor_format[1], 2), dims=('y',), )
+
+    idxs1 = idxs_x, idxs_y
+    idxs2 = idxs_x + 1, idxs_y
+    idxs3 = idxs_x + 1, idxs_y + 1
+    idxs4 = idxs_x, idxs_y + 1
+
+    return idxs1, idxs2, idxs3, idxs4
+
+
+def get_superpixel_position(x, y, ):
+    """
+    given pixel positions x and y, return the 2x2 superpixel positions xs and ys
+
+    :return:
+    """
+
+    sensor_format = [len(x), len(y)]
+    pixel_size = float(x[1] - x[0])
+    idxs1, _, _, _ = get_pixel_idxs(sensor_format)
+    xs = x.isel(x=idxs1[0]) + pixel_size / 2
+    ys = y.isel(y=idxs1[1]) + pixel_size / 2
+    xs.attrs = {'units': 'm'}
+    ys.attrs = {'units': 'm'}
+
+    return xs, ys
 
 
 

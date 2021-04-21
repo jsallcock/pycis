@@ -41,5 +41,3 @@ interferometer:
 
   QuarterWaveplate:
     orientation: 90.
-
-interferometer_orientation: 0.

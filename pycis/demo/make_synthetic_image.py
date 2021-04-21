@@ -6,8 +6,7 @@ from pycis import Camera, LinearPolariser, UniaxialCrystal, Instrument
 
 
 # load instrument via config file
-inst = Instrument(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                     'demo_config_single_delay_pixelated.yaml'), )
+inst = Instrument('demo_config_single_delay_pixelated.yaml')
 
 # specify input spectrum -- xr.DataArray with dimensions 'x' and 'y' corresponding to position on the camera's sensor
 # plane, with units in m. And also with dimension 'wavelength' in units m. Spectrum units are ph / m.
