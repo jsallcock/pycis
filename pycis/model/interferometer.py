@@ -178,7 +178,7 @@ class UniaxialCrystal(LinearRetarder):
 
     :param float orientation: Orientation of component fast axis in degrees, relative to the x-axis.
     :param float thickness: Crystal thickness in m.
-    :param float cut_angle: Angle in radians between crystal optic axis and front face.
+    :param float cut_angle: Angle in degrees between crystal optic axis and front face.
     :param str material: Crystal material.
     :param str material_source: Source of Sellmeier coefficients describing dispersion in the crystal. If blank, the
         default material source specified in pycis.model.dispersion
@@ -294,14 +294,14 @@ class SavartPlate(LinearRetarder):
             # explicitly model plate as the combination of two uniaxial crystals
 
             or1 = self.orientation
-            or2 = self.orientation - np.pi / 2
+            or2 = self.orientation - 90
 
             azim_angle1 = azim_angle
             azim_angle2 = azim_angle - np.pi / 2
             t = self.thickness / 2
 
-            crystal_1 = UniaxialCrystal(or1, t, cut_angle=-np.pi / 4, material=self.material)
-            crystal_2 = UniaxialCrystal(or2, t, cut_angle=np.pi / 4, material=self.material)
+            crystal_1 = UniaxialCrystal(or1, t, cut_angle=-45, material=self.material)
+            crystal_2 = UniaxialCrystal(or2, t, cut_angle=45, material=self.material)
 
             delay = crystal_1.get_delay(wavelength, inc_angle, azim_angle1, n_e=n_e, n_o=n_o) - \
                     crystal_2.get_delay(wavelength, inc_angle, azim_angle2, n_e=n_e, n_o=n_o)
@@ -320,7 +320,7 @@ class IdealWaveplate(LinearRetarder):
     """
     Ideal waveplate imparting a given delay to all rays.
 
-    :param float orientation: Orientation of component fast axis in radians, relative to the x-axis.
+    :param float orientation: Orientation of component fast axis in degrees, relative to the x-axis.
     :param float delay: Imparted delay in radians.
     """
     def __init__(self, orientation, delay, ):
