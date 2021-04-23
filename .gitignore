@@ -1,7 +1,7 @@
 *.egg-info
 *.DS_Store
 *__pycache__
-demo/playing.py
+pycis/demo/*.png
 pycis/temp
 pycis/model/config/*
 !pycis/model/config/demo_config_single_delay_linear.yaml

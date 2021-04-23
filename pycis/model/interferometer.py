@@ -188,6 +188,7 @@ class UniaxialCrystal(LinearRetarder):
     def __init__(self, orientation, thickness, cut_angle, material='a-BBO', material_source=None, contrast=1, ):
         super().__init__(orientation, thickness, material=material, material_source=material_source, contrast=contrast, )
         self.cut_angle = cut_angle
+        self.cut_angle_rad = radians(cut_angle)
 
     def get_delay(self, wavelength, inc_angle, azim_angle, n_e=None, n_o=None):
         """
@@ -211,7 +212,7 @@ class UniaxialCrystal(LinearRetarder):
         if n_e is None and n_o is None:
             biref, n_e, n_o = calculate_dispersion(wavelength, self.material, source=self.source)
 
-        args = [wavelength, inc_angle, azim_angle, n_e, n_o, self.cut_angle, self.thickness, ]
+        args = [wavelength, inc_angle, azim_angle, n_e, n_o, self.cut_angle_rad, self.thickness, ]
         return xr.apply_ufunc(_calc_delay_uniaxial_crystal, *args, dask='allowed', )
 
     def get_fringe_frequency(self, wavelength, focal_length, ):
@@ -226,8 +227,8 @@ class UniaxialCrystal(LinearRetarder):
         biref, n_e, n_o = calculate_dispersion(wavelength, self.material, source=self.source)
 
         # derived by first-order approx. of the Veiras formula.
-        factor = (n_o ** 2 - n_e ** 2) * np.sin(self.cut_angle) * np.cos(self.cut_angle) / \
-                 (n_e ** 2 * np.sin(self.cut_angle) ** 2 + n_o ** 2 * np.cos(self.cut_angle) ** 2)
+        factor = (n_o ** 2 - n_e ** 2) * np.sin(self.cut_angle_rad) * np.cos(self.cut_angle_rad) / \
+                 (n_e ** 2 * np.sin(self.cut_angle_rad) ** 2 + n_o ** 2 * np.cos(self.cut_angle_rad) ** 2)
         freq = self.thickness / (wavelength * focal_length) * factor
 
         freq_x = freq * np.cos(self.orientation)
@@ -361,11 +362,9 @@ def _calc_delay_uniaxial_crystal(wavelength, inc_angle, azim_angle, n_e, n_o, cu
     c_cut_angle_2 = np.cos(cut_angle) ** 2
 
     term_1 = np.sqrt(n_o ** 2 - s_inc_angle_2)
-
     term_2 = (n_o ** 2 - n_e ** 2) * \
              (np.sin(cut_angle) * np.cos(cut_angle) * np.cos(azim_angle) * s_inc_angle) / \
              (n_e ** 2 * s_cut_angle_2 + n_o ** 2 * c_cut_angle_2)
-
     term_3 = - n_o * np.sqrt(
         (n_e ** 2 * (n_e ** 2 * s_cut_angle_2 + n_o ** 2 * c_cut_angle_2)) -
         ((n_e ** 2 - (n_e ** 2 - n_o ** 2) * c_cut_angle_2 * np.sin(

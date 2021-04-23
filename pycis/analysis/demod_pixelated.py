@@ -1,7 +1,6 @@
 import numpy as np
 from numpy.fft import ifft2, ifftshift
 import xarray as xr
-
 from pycis.analysis import make_carrier_window, make_lowpass_window, fft2_im
 from pycis.model import get_pixelated_phase_mask, get_pixel_idxs, get_superpixel_position
 

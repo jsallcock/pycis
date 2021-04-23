@@ -3,11 +3,10 @@ import xarray as xr
 import matplotlib.pyplot as plt
 from pycis import Camera, LinearPolariser, UniaxialCrystal, SavartPlate, Instrument
 
-
 """
-This has no use for plasma diagnostics, it just looks nice. 
+This has no use but it looks nice. 
 
-the RGB camera mode hasn't been tested, don't use this for anything that matters!
+the RGB camera type hasn't been tested, don't use this for anything that matters!
 """
 
 
@@ -18,42 +17,35 @@ pixel_size = 6.5e-6
 qe = 0.35
 epercount = 0.46  # [e / count]
 cam_noise = 2.5
-camera = Camera(bit_depth, sensor_format, pixel_size, qe, epercount, cam_noise, mode='rgb')
+camera = Camera(sensor_format, pixel_size, bit_depth, qe, epercount, cam_noise, type='rgb')
 
 # define instrument optics -- just focal lengths right now
-optics = [17e-3, 105e-3, 15e-3, ]
+optics = [17e-3, 105e-3, 25e-3, ]
 
-# define the interferometer
-angle = 90. * np.pi / 180  # an arbitrary rotation angle to be added to all components
+interferometer = [
+    LinearPolariser(0, ),
+    UniaxialCrystal(45, 20e-3, 90, ),
+    LinearPolariser(0, ),
+]
 
-thickness = 7.5e-3
-cut_angle = 0
-contrast = 0.5  # manually set the instrument contrast contribution of this crystal
-uc = UniaxialCrystal(np.pi / 4 + angle, thickness, 90 * np.pi / 180, )
-sp = SavartPlate(np.pi / 4 + angle, thickness / 10, )
-interferometer = [LinearPolariser(0 + angle, ),
-                  sp,
-                  uc,
-                  LinearPolariser(np.pi / 2 + angle, ), ]
+inst = Instrument(camera=camera, optics=optics, interferometer=interferometer, force_mueller=False)
+print(inst.type)
 
-instrument = Instrument(camera, optics, interferometer, force_mueller=False)
-
-wavelength = np.linspace(100e-9, 1000e-9, 100)
+wavelength = np.linspace(400e-9, 750e-9, 400)
 wavelength = xr.DataArray(wavelength, dims=('wavelength', ), coords=(wavelength, ), )
-x, y = camera.get_pixel_position()  # camera method returns the camera's pixel x and y positions as DataArrays
 
-spectrum = xr.ones_like(x * y * wavelength, )
-spectrum /= spectrum.integrate(dim='wavelength')
+spectrum = xr.ones_like(inst.camera.x * inst.camera.y * wavelength, )
+spectrum /= spectrum.integrate(coord='wavelength')
 spectrum *= 5e3
 spectrum = spectrum.chunk({'x': 50, 'y': 50})
 
-igram = instrument.capture(spectrum, clean=True, )
+igram = inst.capture(spectrum, clean=True, )
 
 fig = plt.figure()
 ax = plt.Axes(fig, [0., 0., 1., 1.])
 ax.set_axis_off()
 fig.add_axes(ax)
 
-ax.imshow(igram.values.T)
-plt.savefig('white_light_fringes.png', bbox_inches='tight', pad_inches=0)
+ax.imshow(igram.values.T, vmin=0, )
+plt.savefig('white_light_fringes_aligned_polarisers.png', bbox_inches='tight', pad_inches=0)
 plt.close()
