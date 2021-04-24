@@ -86,7 +86,7 @@
               
             
             
-              <p><span class="caption-text">Table of Contents</span></p>
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../model.html">Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../model.html#indices-and-tables">Indices and tables</a></li>
@@ -162,38 +162,39 @@
 <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
 <span class="kn">from</span> <span class="nn">pycis.model</span> <span class="kn">import</span> <span class="n">LinearPolariser</span><span class="p">,</span> <span class="n">mueller_product</span>
 
-<span class="n">camera_modes</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;mono&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;mono_polarised&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;rgb&#39;</span><span class="p">,</span>
-                <span class="p">]</span>
+<span class="n">camera_types</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;monochrome&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;monochrome_polarised&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;rgb&#39;</span><span class="p">,</span>
+<span class="p">]</span>
 
 
 <div class="viewcode-block" id="Camera"><a class="viewcode-back" href="../../../camera.html#pycis.model.camera.Camera">[docs]</a><span class="k">class</span> <span class="nc">Camera</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Camera class.</span>
 
-<span class="sd">    :param int bit_depth: Bit depth of camera pixels.</span>
 <span class="sd">    :param tuple sensor_format: Number of pixels in each dimension (x, y, ).</span>
 <span class="sd">    :param float pix_size: Pixel size in m.</span>
+<span class="sd">    :param int bit_depth: Bit depth of sensor. Currently limited to 16.</span>
 <span class="sd">    :param float qe: Quantum efficiency or sensor in units e- per photon.</span>
-<span class="sd">    :param float epercount: (float) Conversion gain of sensor in units e- per count.</span>
-<span class="sd">    :param float cam_noise: (float) Camera noise standard deviation in units e-.</span>
-<span class="sd">    :param str mode: Describes the mode of sensor operation. Currently supported are: &#39;mono&#39; for monochrome, &#39;rgb&#39;</span>
-<span class="sd">        (untested) for color imaging and &#39;mono_polarised&#39; for monochrome with a pixelated polariser array (layout of the</span>
-<span class="sd">        FLIR Blackfly S camera).</span>
+<span class="sd">    :param float epercount: Conversion gain of sensor in units e- per count.</span>
+<span class="sd">    :param float cam_noise: Camera noise standard deviation in units e-.</span>
+<span class="sd">    :param str type: Describes the mode of sensor operation. Currently supported are: &#39;monochrome&#39;, &#39;rgb&#39;</span>
+<span class="sd">        (untested) for color imaging and &#39;monochrome_polarised&#39; for monochrome with a pixelated polariser array</span>
+<span class="sd">        (currently assume the 2x2 polariser layout of the FLIR Blackfly S).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bit_depth</span><span class="p">,</span> <span class="n">sensor_format</span><span class="p">,</span> <span class="n">pixel_size</span><span class="p">,</span> <span class="n">qe</span><span class="p">,</span> <span class="n">epercount</span><span class="p">,</span> <span class="n">cam_noise</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;mono&#39;</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span> <span class="o">=</span> <span class="n">pixel_size</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensor_format</span><span class="p">,</span> <span class="n">pixel_size</span><span class="p">,</span> <span class="n">bit_depth</span><span class="p">,</span> <span class="n">qe</span><span class="p">,</span> <span class="n">epercount</span><span class="p">,</span> <span class="n">cam_noise</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;monochrome&#39;</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sensor_format</span> <span class="o">=</span> <span class="n">sensor_format</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span> <span class="o">=</span> <span class="n">pixel_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bit_depth</span> <span class="o">=</span> <span class="n">bit_depth</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">qe</span> <span class="o">=</span> <span class="n">qe</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">epercount</span> <span class="o">=</span> <span class="n">epercount</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cam_noise</span> <span class="o">=</span> <span class="n">cam_noise</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bit_depth</span> <span class="o">=</span> <span class="n">bit_depth</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="nb">type</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pixel_position</span><span class="p">()</span>
 
-        <span class="k">assert</span> <span class="n">mode</span> <span class="ow">in</span> <span class="n">camera_modes</span>
-        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;mono_polarised&#39;</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">type</span> <span class="ow">in</span> <span class="n">camera_types</span>
+        <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;monochrome_polarised&#39;</span><span class="p">:</span>
             <span class="k">assert</span> <span class="n">sensor_format</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span>
             <span class="k">assert</span> <span class="n">sensor_format</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span>
 
@@ -209,7 +210,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">apply_polarisers</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;mono_polarised&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;monochrome_polarised&#39;</span><span class="p">:</span>
                 <span class="n">apply_polarisers</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="k">if</span> <span class="n">apply_polarisers</span><span class="p">:</span>
@@ -221,7 +222,7 @@
         <span class="k">if</span> <span class="s1">&#39;stokes&#39;</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
             <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">stokes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;rgb&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;rgb&#39;</span><span class="p">:</span>
             <span class="kn">from</span> <span class="nn">pycis.tools.color_system</span> <span class="kn">import</span> <span class="n">cs_srgb</span>
             <span class="n">signal</span> <span class="o">=</span> <span class="n">cs_srgb</span><span class="o">.</span><span class="n">spec_to_rgb</span><span class="p">(</span><span class="n">spectrum</span><span class="p">,</span> <span class="p">)</span>
 
@@ -238,6 +239,7 @@
 
             <span class="n">signal</span> <span class="o">=</span> <span class="n">signal</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">epercount</span>
             <span class="n">signal</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">digitize</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">bit_depth</span><span class="p">))</span>
+            <span class="n">signal</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">signal</span></div>
 
@@ -253,17 +255,16 @@
 <span class="sd">        :type y_pixel: float, np.array, xr.DataArray</span>
 <span class="sd">        :return: x_pos, y_pos, both instances of xr.DataArray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="n">centre_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sensor_format</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
 
         <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sensor_format</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span> <span class="o">-</span> <span class="n">centre_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sensor_format</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span> <span class="o">-</span> <span class="n">centre_pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="p">),</span> <span class="n">coords</span><span class="o">=</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">),</span> <span class="p">)</span>
-        <span class="n">y</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,),</span> <span class="n">coords</span><span class="o">=</span><span class="p">(</span><span class="n">y</span><span class="p">,),</span> <span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="p">),</span> <span class="n">coords</span><span class="o">=</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">),</span> <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="s1">&#39;m&#39;</span><span class="p">})</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,),</span> <span class="n">coords</span><span class="o">=</span><span class="p">(</span><span class="n">y</span><span class="p">,),</span> <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="s1">&#39;m&#39;</span><span class="p">})</span>
 
         <span class="c1"># add pixel numbers as non-dimension coordinates -- for explicit indexing and plotting</span>
-        <span class="n">x_pixel_coord</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sensor_format</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">),</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="p">),</span> <span class="n">coords</span><span class="o">=</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">),</span> <span class="p">)</span>
-        <span class="n">y_pixel_coord</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sensor_format</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">),</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="p">),</span> <span class="n">coords</span><span class="o">=</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="p">),</span> <span class="p">)</span>
+        <span class="n">x_pixel_coord</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sensor_format</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">),</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="p">),</span> <span class="n">coords</span><span class="o">=</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">),</span> <span class="p">)</span>
+        <span class="n">y_pixel_coord</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sensor_format</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">),</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="p">),</span> <span class="n">coords</span><span class="o">=</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="p">),</span> <span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">({</span><span class="s1">&#39;x_pixel&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">x_pixel_coord</span><span class="p">),</span> <span class="p">},</span> <span class="p">)</span>
         <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">({</span><span class="s1">&#39;y_pixel&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">y_pixel_coord</span><span class="p">),</span> <span class="p">},</span> <span class="p">)</span>
 
@@ -274,47 +275,20 @@
 
         <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span></div>
 
-<div class="viewcode-block" id="Camera.get_superpixel_position"><a class="viewcode-back" href="../../../camera.html#pycis.model.camera.Camera.get_superpixel_position">[docs]</a>    <span class="k">def</span> <span class="nf">get_superpixel_position</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">sensor_format_s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sensor_format</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
-        <span class="n">pixel_size_s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span> <span class="o">*</span> <span class="mi">2</span>
-        <span class="n">centre_pos</span> <span class="o">=</span> <span class="n">pixel_size_s</span> <span class="o">*</span> <span class="n">sensor_format_s</span> <span class="o">/</span> <span class="mi">2</span>
-
-        <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">sensor_format_s</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">pixel_size_s</span> <span class="o">-</span> <span class="n">centre_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">sensor_format_s</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">pixel_size_s</span> <span class="o">-</span> <span class="n">centre_pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,),</span> <span class="n">coords</span><span class="o">=</span><span class="p">(</span><span class="n">x</span><span class="p">,),</span> <span class="p">)</span>
-        <span class="n">y</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,),</span> <span class="n">coords</span><span class="o">=</span><span class="p">(</span><span class="n">y</span><span class="p">,),</span> <span class="p">)</span>
-
-        <span class="c1"># add superpixel numbers as non-dimension coordinates -- for explicit indexing and plotting</span>
-        <span class="n">x_superpixel_coord</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sensor_format</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">),</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,),</span> <span class="n">coords</span><span class="o">=</span><span class="p">(</span><span class="n">x</span><span class="p">,),</span> <span class="p">)</span>
-        <span class="n">y_superpixel_coord</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sensor_format</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">),</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,),</span> <span class="n">coords</span><span class="o">=</span><span class="p">(</span><span class="n">y</span><span class="p">,),</span> <span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">({</span><span class="s1">&#39;x_superpixel&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">x_superpixel_coord</span><span class="p">),</span> <span class="p">},</span> <span class="p">)</span>
-        <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">({</span><span class="s1">&#39;y_superpixel&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">y_superpixel_coord</span><span class="p">),</span> <span class="p">},</span> <span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span></div>
-
 <div class="viewcode-block" id="Camera.get_mueller_matrix"><a class="viewcode-back" href="../../../camera.html#pycis.model.camera.Camera.get_mueller_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">get_mueller_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        If the</span>
-
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">pix_idxs_x</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sensor_format</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="p">),</span> <span class="p">)</span>
-        <span class="n">pix_idxs_y</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sensor_format</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="p">),</span> <span class="p">)</span>
+        <span class="n">idxs_1</span><span class="p">,</span> <span class="n">idxs_2</span><span class="p">,</span> <span class="n">idxs_3</span><span class="p">,</span> <span class="n">idxs_4</span> <span class="o">=</span> <span class="n">get_pixel_idxs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sensor_format</span><span class="p">)</span>
 
         <span class="n">mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">sensor_format</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">sensor_format</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="p">])</span>
         <span class="n">dims</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;mueller_v&#39;</span><span class="p">,</span> <span class="s1">&#39;mueller_h&#39;</span><span class="p">,</span> <span class="p">)</span>
         <span class="n">mat</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="n">dims</span><span class="p">,</span> <span class="p">)</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">({</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="p">},</span> <span class="p">)</span>
 
-        <span class="n">mat</span><span class="p">[</span><span class="n">pix_idxs_x</span><span class="p">,</span> <span class="n">pix_idxs_y</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="p">]</span> <span class="o">=</span> <span class="n">LinearPolariser</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">get_mueller_matrix</span><span class="p">()</span>
-        <span class="n">mat</span><span class="p">[</span><span class="n">pix_idxs_x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">pix_idxs_y</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="p">]</span> <span class="o">=</span> <span class="n">LinearPolariser</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">get_mueller_matrix</span><span class="p">()</span>
-        <span class="n">mat</span><span class="p">[</span><span class="n">pix_idxs_x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">pix_idxs_y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="p">]</span> <span class="o">=</span> <span class="n">LinearPolariser</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">get_mueller_matrix</span><span class="p">()</span>
-        <span class="n">mat</span><span class="p">[</span><span class="n">pix_idxs_x</span><span class="p">,</span> <span class="n">pix_idxs_y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="p">]</span> <span class="o">=</span> <span class="n">LinearPolariser</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">get_mueller_matrix</span><span class="p">()</span>
+        <span class="n">mat</span><span class="p">[</span><span class="n">idxs_1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">idxs_1</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">...</span><span class="p">,</span> <span class="p">]</span> <span class="o">=</span> <span class="n">LinearPolariser</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">get_mueller_matrix</span><span class="p">()</span>
+        <span class="n">mat</span><span class="p">[</span><span class="n">idxs_2</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">idxs_2</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">...</span><span class="p">,</span> <span class="p">]</span> <span class="o">=</span> <span class="n">LinearPolariser</span><span class="p">(</span><span class="mi">45</span><span class="p">)</span><span class="o">.</span><span class="n">get_mueller_matrix</span><span class="p">()</span>
+        <span class="n">mat</span><span class="p">[</span><span class="n">idxs_3</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">idxs_3</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">...</span><span class="p">,</span> <span class="p">]</span> <span class="o">=</span> <span class="n">LinearPolariser</span><span class="p">(</span><span class="mi">90</span><span class="p">)</span><span class="o">.</span><span class="n">get_mueller_matrix</span><span class="p">()</span>
+        <span class="n">mat</span><span class="p">[</span><span class="n">idxs_4</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">idxs_4</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">...</span><span class="p">,</span> <span class="p">]</span> <span class="o">=</span> <span class="n">LinearPolariser</span><span class="p">(</span><span class="mi">135</span><span class="p">)</span><span class="o">.</span><span class="n">get_mueller_matrix</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="n">mat</span></div>
 
@@ -346,6 +320,44 @@
 
     <span class="k">return</span> <span class="n">phase_mask</span></div>
 
+
+<div class="viewcode-block" id="get_pixel_idxs"><a class="viewcode-back" href="../../../camera.html#pycis.model.camera.get_pixel_idxs">[docs]</a><span class="k">def</span> <span class="nf">get_pixel_idxs</span><span class="p">(</span><span class="n">sensor_format</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get indices of pixel numbers, determining the pixelated polariser layout.</span>
+
+<span class="sd">    Following the pixel-numbering conventions defined for the FLIR Blackfly S camera in my paper. This may need to be</span>
+<span class="sd">    generalised at some point.</span>
+
+<span class="sd">    :return: idxs1</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">idxs_x</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">sensor_format</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,),</span> <span class="p">)</span>
+    <span class="n">idxs_y</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">sensor_format</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,),</span> <span class="p">)</span>
+
+    <span class="n">idxs1</span> <span class="o">=</span> <span class="n">idxs_x</span><span class="p">,</span> <span class="n">idxs_y</span>
+    <span class="n">idxs2</span> <span class="o">=</span> <span class="n">idxs_x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">idxs_y</span>
+    <span class="n">idxs3</span> <span class="o">=</span> <span class="n">idxs_x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">idxs_y</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">idxs4</span> <span class="o">=</span> <span class="n">idxs_x</span><span class="p">,</span> <span class="n">idxs_y</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">idxs1</span><span class="p">,</span> <span class="n">idxs2</span><span class="p">,</span> <span class="n">idxs3</span><span class="p">,</span> <span class="n">idxs4</span></div>
+
+
+<div class="viewcode-block" id="get_superpixel_position"><a class="viewcode-back" href="../../../camera.html#pycis.model.camera.get_superpixel_position">[docs]</a><span class="k">def</span> <span class="nf">get_superpixel_position</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    given pixel positions x and y, return the 2x2 superpixel positions xs and ys</span>
+
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">sensor_format</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)]</span>
+    <span class="n">pixel_size</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">idxs1</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_pixel_idxs</span><span class="p">(</span><span class="n">sensor_format</span><span class="p">)</span>
+    <span class="n">xs</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">idxs1</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">pixel_size</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">ys</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="n">idxs1</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">pixel_size</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">xs</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="s1">&#39;m&#39;</span><span class="p">}</span>
+    <span class="n">ys</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="s1">&#39;m&#39;</span><span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">xs</span><span class="p">,</span> <span class="n">ys</span></div>
 
 
 

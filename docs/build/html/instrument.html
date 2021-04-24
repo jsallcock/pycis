@@ -4,8 +4,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Instrument &mdash; pycis 0.1 documentation</title>
@@ -89,7 +88,7 @@
               
             
             
-              <p><span class="caption-text">Table of Contents</span></p>
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="model.html">Model</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="model.html#conventions">Conventions</a></li>
@@ -178,15 +177,17 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <section id="module-pycis.model.instrument">
+  <div class="section" id="module-pycis.model.instrument">
 <span id="instrument"></span><h1>Instrument<a class="headerlink" href="#module-pycis.model.instrument" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="pycis.model.instrument.Instrument">
-<em class="property">class </em><code class="sig-prename descclassname">pycis.model.instrument.</code><code class="sig-name descname">Instrument</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">camera</span></em>, <em class="sig-param"><span class="n">optics</span></em>, <em class="sig-param"><span class="n">interferometer</span></em>, <em class="sig-param"><span class="n">force_mueller</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">pycis.model.instrument.</code><code class="sig-name descname">Instrument</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">config</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">camera</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">optics</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">interferometer</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">force_mueller</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument" title="Permalink to this definition">¶</a></dt>
 <dd><p>Coherence imaging instrument.</p>
+<p>Generated from either a configuration file, or with the constituent python objects.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<em>str</em>) – path to a .yaml instrument configuration file</p></li>
 <li><p><strong>camera</strong> (<em>pycis.model.Camera</em>) – Instrument camera.</p></li>
 <li><p><strong>optics</strong> (<em>list</em>) – A list of floats, the focal lengths (in m) of the three lenses used in the standard CI
 configuration (see e.g. my thesis or Scott Silburn’s): [f_1, f_2, f_3] where f_1 is the objective lens.</p></li>
@@ -198,17 +199,25 @@ analytical shortcut is available.</p></li>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="pycis.model.instrument.Instrument.get_instrument_type">
-<code class="sig-name descname">get_instrument_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_instrument_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_instrument_type" title="Permalink to this definition">¶</a></dt>
+<dt id="pycis.model.instrument.Instrument.parse_config">
+<code class="sig-name descname">parse_config</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">config</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.parse_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.parse_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try loading config as an absolute path to a .yaml file. Failing that, try it as a relative path to a .yaml file
+from the current working directory. Finally, try looking for config as a .yaml file saved in
+pycis/model/config/.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pycis.model.instrument.Instrument.get_type">
+<code class="sig-name descname">get_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Type of instrument determines how interferogram is calculated.</p>
 <p>Valid instrument types:
 - ‘mueller’: Full Mueller calculation
 - ‘single_delay_linear’
-- ‘single_delay_polarised’
-- ‘multi_delay_polarised’</p>
+- ‘single_delay_pixelated’
+- ‘multi_delay_pixelated’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>instrument type (str)</p>
+<dd class="field-odd"><p>type (str)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -216,7 +225,7 @@ analytical shortcut is available.</p></li>
 <dl class="py method">
 <dt id="pycis.model.instrument.Instrument.get_inc_angle">
 <code class="sig-name descname">get_inc_angle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_inc_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_inc_angle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate incidence angle(s) of ray(s) through the interferometer.</p>
+<dd><p>Calculate incidence angle(s) of ray(s) through the interferometer, in radians.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -233,7 +242,7 @@ analytical shortcut is available.</p></li>
 <dl class="py method">
 <dt id="pycis.model.instrument.Instrument.get_azim_angle">
 <code class="sig-name descname">get_azim_angle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">crystal</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_azim_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_azim_angle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate azimuthal angle(s) of ray(s) through the crystal.</p>
+<dd><p>Calculate azimuthal angle(s) of ray(s) through the crystal, in radians.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -312,7 +321,7 @@ it is assumed that light is unpolarised (i.e. the spec supplied is the S_0 Stoke
 
 </dd></dl>
 
-</section>
+</div>
 
 
            </div>

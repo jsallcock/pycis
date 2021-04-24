@@ -86,7 +86,7 @@
               
             
             
-              <p><span class="caption-text">Table of Contents</span></p>
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../model.html">Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../model.html#indices-and-tables">Indices and tables</a></li>
@@ -199,7 +199,7 @@
         <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">rename</span><span class="p">({</span><span class="s1">&#39;wavelength&#39;</span><span class="p">:</span> <span class="s1">&#39;frequency&#39;</span><span class="p">})</span>
         <span class="n">spectrum</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span> <span class="o">/</span> <span class="n">spectrum</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">]</span>
         <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">sortby</span><span class="p">(</span><span class="s1">&#39;frequency&#39;</span><span class="p">)</span>
-        <span class="n">spectrum</span> <span class="o">/=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="s1">&#39;frequency&#39;</span><span class="p">)</span>
+        <span class="n">spectrum</span> <span class="o">/=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="n">coord</span><span class="o">=</span><span class="s1">&#39;frequency&#39;</span><span class="p">)</span>
 
     <span class="c1"># calculate centre of mass (c.o.m.) frequency if not supplied</span>
     <span class="k">if</span> <span class="n">freq_com</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -250,9 +250,9 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    numerical / analytical test of calculate_coherence() using a modelled Gaussian spectral lineshape</span>
 
-<span class="sd">    It would be nice to turn this into a unit test.</span>
+<span class="sd">    TODO move elsewhere</span>
 
-<span class="sd">    misc. abbreviations:</span>
+<span class="sd">    old. abbreviations:</span>
 <span class="sd">    doc = degree of coherence</span>
 <span class="sd">    wl = wavelength</span>
 <span class="sd">    biref = birefringence</span>
@@ -268,15 +268,16 @@
     <span class="n">wl_sigma</span> <span class="o">=</span> <span class="mf">0.05e-9</span>
     <span class="n">n_sigma</span> <span class="o">=</span> <span class="mi">10</span>
     <span class="n">n_bins</span> <span class="o">=</span> <span class="mi">20000</span>
-    <span class="n">thickness</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">4.48e-3</span><span class="p">,</span>
-                          <span class="mf">6.35e-3</span><span class="p">,</span>
-                          <span class="mf">9.79e-3</span><span class="p">,</span> <span class="p">])</span>  <span class="c1"># waveplate thicknesses to test, in m</span>
+    <span class="n">thickness</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+        <span class="mf">4.48e-3</span><span class="p">,</span>
+        <span class="mf">6.35e-3</span><span class="p">,</span>
+        <span class="mf">9.79e-3</span><span class="p">,</span>
+    <span class="p">])</span>
 
     <span class="c1"># calculate delays at wl_0 for the given waveplate thicknesses</span>
     <span class="n">biref_0</span> <span class="o">=</span> <span class="n">pycis</span><span class="o">.</span><span class="n">calculate_dispersion</span><span class="p">(</span><span class="n">wl_0</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">delay_0</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">thickness</span> <span class="o">*</span> <span class="n">biref_0</span> <span class="o">/</span> <span class="n">wl_0</span><span class="p">)</span>  <span class="c1"># (rad)</span>
     <span class="n">delay_0</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">delay_0</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;delay_0&#39;</span><span class="p">,),</span> <span class="n">coords</span><span class="o">=</span><span class="p">(</span><span class="n">delay_0</span><span class="p">,),</span> <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="s1">&#39;rad&#39;</span><span class="p">})</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">delay_0</span><span class="p">)</span>
 
     <span class="c1"># generate spectrum in frequency-space</span>
     <span class="n">freq_0</span> <span class="o">=</span> <span class="n">c</span> <span class="o">/</span> <span class="n">wl_0</span>

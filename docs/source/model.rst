@@ -1,6 +1,5 @@
 Model
 =====
-
 A framework for modelling CI images built using the `xarray library <http://xarray.pydata.org/en/stable/>`_ (xr) for
 multi-dimensional arrays with labelled dimensions.
 
@@ -14,7 +13,6 @@ frequency.
 
 Conventions
 -----------
-
 + Mueller matrices are xr.DataArray instances with dimensions that include 'mueller_v' and 'mueller_h' (each with length = 4).
 + Stokes vectors are xr.DataArray instances with dimensions that include 'stokes' (with length = 4).
 + The coordinate system is defined with its origin at the centre of the camera sensor, which lies in the xy plane.

@@ -4,8 +4,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Model &mdash; pycis 0.1 documentation</title>
@@ -89,7 +88,7 @@
               
             
             
-              <p><span class="caption-text">Table of Contents</span></p>
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Model</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#conventions">Conventions</a></li>
@@ -176,17 +175,17 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <section id="model">
+  <div class="section" id="model">
 <h1>Model<a class="headerlink" href="#model" title="Permalink to this headline">¶</a></h1>
-<!--<p>A framework for modelling CI images built using the <a class="reference external" href="http://xarray.pydata.org/en/stable/">xarray library</a> (xr) for-->
-<!--multi-dimensional arrays with labelled dimensions.</p>-->
+<p>A framework for modelling CI images built using the <a class="reference external" href="http://xarray.pydata.org/en/stable/">xarray library</a> (xr) for
+multi-dimensional arrays with labelled dimensions.</p>
 <p>The Mueller matrix model makes it simple to model arbitrary interferometer configurations observing
 scenes with arbitrary spectral and polarisation properties.</p>
 <p>For some interferometer layouts there are simple analytical expressions for the interferogram. These analytical
 shortcuts are configured as instrument types in pycis. This functionality makes for faster evaluation and also allows
 for methods that return important instrument parameters like interferometer delay(s) across the image and fringe
 frequency.</p>
-<section id="conventions">
+<div class="section" id="conventions">
 <h2>Conventions<a class="headerlink" href="#conventions" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Mueller matrices are xr.DataArray instances with dimensions that include ‘mueller_v’ and ‘mueller_h’ (each with length = 4).</p></li>
@@ -194,20 +193,20 @@ frequency.</p>
 <li><p>The coordinate system is defined with its origin at the centre of the camera sensor, which lies in the xy plane.</p></li>
 <li><p>S.I. units are used throughout, and all physical angles and phase delay angles are in radians.</p></li>
 </ul>
-</section>
-<section id="geometry-definitions">
+</div>
+<div class="section" id="geometry-definitions">
 <h2>Geometry definitions<a class="headerlink" href="#geometry-definitions" title="Permalink to this headline">¶</a></h2>
-<figure class="align-default">
+<div class="figure align-default">
 <img alt="_images/angles.pdf" src="_images/angles.pdf" />
-</figure>
-</section>
-<section id="optical-layout">
+</div>
+</div>
+<div class="section" id="optical-layout">
 <h2>Optical layout<a class="headerlink" href="#optical-layout" title="Permalink to this headline">¶</a></h2>
-</section>
-<section id="list-of-modules">
+</div>
+<div class="section" id="list-of-modules">
 <h2>List of modules<a class="headerlink" href="#list-of-modules" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
-<p><span class="caption-text">Modules</span></p>
+<p class="caption"><span class="caption-text">Modules</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="interferometer.html">Interferometer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="instrument.html">Instrument</a></li>
@@ -217,15 +216,15 @@ frequency.</p>
 <li class="toctree-l1"><a class="reference internal" href="dispersion.html">Dispersion</a></li>
 </ul>
 </div>
-</section>
-</section>
-<section id="indices-and-tables">
+</div>
+</div>
+<div class="section" id="indices-and-tables">
 <h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
 <li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
 <li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
 </ul>
-</section>
+</div>
 
 
            </div>

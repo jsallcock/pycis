@@ -4,8 +4,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Interferometer &mdash; pycis 0.1 documentation</title>
@@ -89,7 +88,7 @@
               
             
             
-              <p><span class="caption-text">Table of Contents</span></p>
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="model.html">Model</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="model.html#conventions">Conventions</a></li>
@@ -178,7 +177,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <section id="module-pycis.model.interferometer">
+  <div class="section" id="module-pycis.model.interferometer">
 <span id="interferometer"></span><h1>Interferometer<a class="headerlink" href="#module-pycis.model.interferometer" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt id="pycis.model.interferometer.mueller_product">
@@ -203,7 +202,7 @@
 <dd><p>Mueller matrix for frame rotation (anti-clockwise from x-axis).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>angle</strong> (<em>float</em>) – rotation angle in radians.</p>
+<dd class="field-odd"><p><strong>angle</strong> (<em>float</em>) – rotation angle in degrees.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>(xr.DataArray) Frame rotation Mueller matrix.</p>
@@ -232,7 +231,7 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>orientation</strong> (<em>float</em>) – Orientation in radians of the transmission axis relative to the x-axis.</p></li>
+<li><p><strong>orientation</strong> (<em>float</em>) – Orientation in degrees of the transmission axis relative to the x-axis.</p></li>
 <li><p><strong>tx_1</strong> (<em>float</em>) – transmission primary component. [0, 1] - defaults to 1.</p></li>
 <li><p><strong>tx_2</strong> (<em>float</em>) – transmission secondary (orthogonal) component. [0, 1] - defaults to 0.</p></li>
 </ul>
@@ -259,13 +258,13 @@
 <dl class="py class">
 <dt id="pycis.model.interferometer.UniaxialCrystal">
 <em class="property">class </em><code class="sig-prename descclassname">pycis.model.interferometer.</code><code class="sig-name descname">UniaxialCrystal</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">orientation</span></em>, <em class="sig-param"><span class="n">thickness</span></em>, <em class="sig-param"><span class="n">cut_angle</span></em>, <em class="sig-param"><span class="n">material</span><span class="o">=</span><span class="default_value">'a-BBO'</span></em>, <em class="sig-param"><span class="n">material_source</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">contrast</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#UniaxialCrystal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.interferometer.UniaxialCrystal" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plane-parallel uniaxial birefringent crystal.</p>
+<dd><p>Plane-parallel uniaxial birefringent crystal plate.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>orientation</strong> (<em>float</em>) – Orientation of component fast axis in radians, relative to the x-axis.</p></li>
+<li><p><strong>orientation</strong> (<em>float</em>) – Orientation of component fast axis in degrees, relative to the x-axis.</p></li>
 <li><p><strong>thickness</strong> (<em>float</em>) – Crystal thickness in m.</p></li>
-<li><p><strong>cut_angle</strong> (<em>float</em>) – Angle in radians between crystal optic axis and front face.</p></li>
+<li><p><strong>cut_angle</strong> (<em>float</em>) – Angle in degrees between crystal optic axis and front face.</p></li>
 <li><p><strong>material</strong> (<em>str</em>) – Crystal material.</p></li>
 <li><p><strong>material_source</strong> (<em>str</em>) – Source of Sellmeier coefficients describing dispersion in the crystal. If blank, the
 default material source specified in pycis.model.dispersion</p></li>
@@ -320,7 +319,7 @@ between 0 and 1. Simulates the effect of real crystal imperfections.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>orientation</strong> (<em>float</em>) – Orientation of component fast axis in radians, relative to the x-axis.</p></li>
+<li><p><strong>orientation</strong> (<em>float</em>) – Orientation of component fast axis in degrees, relative to the x-axis.</p></li>
 <li><p><strong>thickness</strong> (<em>float</em>) – Total thickness of plate in m.</p></li>
 <li><p><strong>material</strong> (<em>str</em>) – Crystal material.</p></li>
 <li><p><strong>material_source</strong> (<em>str</em>) – Source of Sellmeier coefficients describing dispersion in the crystal. If blank, the
@@ -366,7 +365,7 @@ between 0 and 1. Simulates the effect of real crystal imperfections.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>orientation</strong> (<em>float</em>) – Orientation of component fast axis in radians, relative to the x-axis.</p></li>
+<li><p><strong>orientation</strong> (<em>float</em>) – Orientation of component fast axis in degrees, relative to the x-axis.</p></li>
 <li><p><strong>delay</strong> (<em>float</em>) – Imparted delay in radians.</p></li>
 </ul>
 </dd>
@@ -397,7 +396,7 @@ between 0 and 1. Simulates the effect of real crystal imperfections.</p></li>
 <dd><p>Ideal half-wave plate.</p>
 </dd></dl>
 
-</section>
+</div>
 
 
            </div>
