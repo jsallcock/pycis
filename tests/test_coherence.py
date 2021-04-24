@@ -37,7 +37,7 @@ class TestCoherence(unittest.TestCase):
         for wl, rel_int in zip(wls, rel_ints):
             doc_analytical += rel_int * doc_gaussian(delay, c / wl, sigma_freq)
 
-        spectrum = get_ciii_triplet(temperature, domain='wavelength', nbins=70, )
+        spectrum = get_ciii_triplet(temperature, domain='frequency', nbins=70, )
         doc_numerical = calculate_coherence(spectrum, delay, material=None, freq_com=freq_com, )
 
         assert_almost_equal(doc_numerical.real.data, doc_analytical.real.data, )

@@ -1,9 +1,9 @@
 ---
-# demo instrument configuration file for pycis.model, for the single_delay_pixelated instrument type
+# demo instrument configuration file for pycis.model, for the single_delay_linear instrument type
 
 # CAMERA
 # ------
-# example is FLIR BlackFly S
+# FLIR BlackFly S
 camera:
   bit_depth: 12
   sensor_format:
@@ -17,7 +17,6 @@ camera:
 
 # OPTICS
 # ------
-# Focal lengths (in metres) of lenses. Lens order is front-to-back.
 focal_length_lens_1: 70.e-3
 focal_length_lens_2: 105.e-3
 focal_length_lens_3: 150.e-3
@@ -25,9 +24,6 @@ focal_length_lens_3: 150.e-3
 
 # INTERFEROMETER
 # --------------
-# - component order is front-to-back, first component listed is the first the light hits.
-# - angles are in degrees.
-# - thicknesses are in metres.
 interferometer:
 
   LinearPolariser:

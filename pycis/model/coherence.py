@@ -39,7 +39,7 @@ def calculate_coherence(spectrum, delay, material=None, freq_com=None):
         spectrum = spectrum.rename({'wavelength': 'frequency'})
         spectrum['frequency'] = c / spectrum['frequency']
         spectrum = spectrum.sortby('frequency')
-        spectrum /= spectrum.integrate('frequency')
+        spectrum /= spectrum.integrate(coord='frequency')
 
     # calculate centre of mass (c.o.m.) frequency if not supplied
     if freq_com is None:
@@ -108,15 +108,16 @@ def test_with_gaussian_lineshape():
     wl_sigma = 0.05e-9
     n_sigma = 10
     n_bins = 20000
-    thickness = np.array([4.48e-3,
-                          6.35e-3,
-                          9.79e-3, ])  # waveplate thicknesses to test, in m
+    thickness = np.array([
+        4.48e-3,
+        6.35e-3,
+        9.79e-3,
+    ])
 
     # calculate delays at wl_0 for the given waveplate thicknesses
     biref_0 = pycis.calculate_dispersion(wl_0, material, )[0]
     delay_0 = abs(2 * np.pi * thickness * biref_0 / wl_0)  # (rad)
     delay_0 = xr.DataArray(delay_0, dims=('delay_0',), coords=(delay_0,), attrs={'units': 'rad'})
-    print(delay_0)
 
     # generate spectrum in frequency-space
     freq_0 = c / wl_0
