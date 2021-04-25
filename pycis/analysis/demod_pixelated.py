@@ -13,10 +13,11 @@ def demod_single_delay_pixelated(im):
 
     sensor_format = [len(im.x), len(im.y)]
     idxs1, idxs2, idxs3, idxs4 = get_pixel_idxs(sensor_format)
-    im = im.astype(float)  # unsigned integers can cause headaches
+    im = im.astype(float)
     xs, ys = get_superpixel_position(im.x, im.y, )
 
     # im = im.drop(list(im.coords.variables.mapping.keys()))
+
     m1 = im.isel(x=idxs1[0], y=idxs1[1], ).assign_coords({'x': xs, 'y': ys})
     m2 = im.isel(x=idxs2[0], y=idxs2[1], ).assign_coords({'x': xs, 'y': ys})
     m3 = im.isel(x=idxs3[0], y=idxs3[1], ).assign_coords({'x': xs, 'y': ys})
