@@ -56,7 +56,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'pycis'
-copyright = '2020, Joseph Allcock'
+copyright = '2021, Joseph Allcock'
 author = 'Joseph Allcock'
 
 # The version info for the project you're documenting, acts as replacement for

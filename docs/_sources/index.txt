@@ -19,7 +19,7 @@ Analysis and modelling tools for the Coherence Imaging Spectroscopy (CIS) plasma
 
 
 
-Indices and tables
+Indicessss and tables
 ==================
 
 * :ref:`genindex`

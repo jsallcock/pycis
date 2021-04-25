@@ -40,7 +40,7 @@ List of modules
    dispersion
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`
