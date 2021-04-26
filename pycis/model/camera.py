@@ -192,9 +192,13 @@ def get_superpixel_position(x, y, ):
     sensor_format = [len(x), len(y)]
     pixel_size = float(x[1] - x[0])
     idxs1, _, _, _ = get_pixel_idxs(sensor_format)
-    xs = x.isel(x=idxs1[0]) + pixel_size / 2
-    ys = y.isel(y=idxs1[1]) + pixel_size / 2
+
+    xs = x.isel(x=idxs1[0]).values + pixel_size / 2
+    xs = xr.DataArray(xs, coords=(xs, ), dims=('x', ))
     xs.attrs = {'units': 'm'}
+
+    ys = y.isel(y=idxs1[1]).values + pixel_size / 2
+    ys = xr.DataArray(ys, coords=(ys, ), dims=('y', ))
     ys.attrs = {'units': 'm'}
 
     return xs, ys

@@ -157,7 +157,8 @@ class Instrument:
         :type y: float, xr.DataArray
         :return: (float, xr.DataArray) Incidence angle(s) in radians.
         """
-        return xr.apply_ufunc(_get_inc_angle, x, y, self.optics[2], dask='allowed', )
+        # return xr.apply_ufunc(_get_inc_angle, x, y, self.optics[2], dask='allowed', )
+        return np.arctan2((x ** 2 + y ** 2) ** 0.5, self.optics[2], )
 
     def get_azim_angle(self, x, y, crystal):
         """
@@ -170,7 +171,8 @@ class Instrument:
         :param pycis.model.OrientableComponent crystal: Crystal component.
         :return: (float, xr.DataArray) Azimuthal angle(s) in radians.
         """
-        return xr.apply_ufunc(_get_azim_angle, x, y, radians(crystal.orientation), dask='allowed', )
+        # return xr.apply_ufunc(_get_azim_angle, x, y, radians(crystal.orientation), dask='allowed', )
+        return np.arctan2(y, x) + np.pi - radians(crystal.orientation)
 
     def capture(self, spectrum, clean=False):
         """
@@ -246,7 +248,7 @@ class Instrument:
 
         return total_matrix
 
-    def get_delay(self, wavelength, ):
+    def get_delay(self, wavelength, x=None, y=None):
         """
         Calculate the interferometer delay(s) at the given wavelength(s).
 
@@ -256,24 +258,18 @@ class Instrument:
         :return: (xr.DataArray) Interferometer delay(s) in radians.
         """
 
-        # This method only works for instrument types other than 'mueller'. I'm not sure it would be possible to write a
-        # general function
+        # not sure it would be possible to write a general function for this
         assert self.type != 'mueller'
 
-        # calculate the ray angles through the interferometer
-        if hasattr(wavelength, 'coords'):
-            if 'x' in wavelength.coords.keys() and 'y' in wavelength.coords.keys():
-                inc_angle = self.get_inc_angle(wavelength.x, wavelength.y)
-                azim_angle = self.get_azim_angle(wavelength.x, wavelength.y, self.crystals[0])
+        # calculate ray angles through interferometer
+        if x is None:
+            x = self.camera.x
+        if y is None:
+            y = self.camera.y
+        inc_angle = self.get_inc_angle(x, y, )
+        azim_angle = self.get_azim_angle(x, y, self.crystals[0])
 
-            else:
-                inc_angle = self.get_inc_angle(self.camera.x, self.camera.y, )
-                azim_angle = self.get_azim_angle(self.camera.x, self.camera.y, self.crystals[0])
-
-        else:
-            inc_angle = self.get_inc_angle(self.camera.x, self.camera.y, )
-            azim_angle = self.get_azim_angle(self.camera.x, self.camera.y, self.crystals[0])
-
+        # calculation depends on instrument type
         if self.type == 'single_delay_linear':
             # add delay contribution due to each crystal
             delay = 0
@@ -329,11 +325,11 @@ class Instrument:
 
 
 
-@vectorize([f8(f8, f8, f8, ), ], nopython=True, fastmath=True, cache=True, )
-def _get_inc_angle(x, y, f_3):
-    return np.arctan2((x ** 2 + y ** 2) ** 0.5, f_3, )
+# @vectorize([f8(f8, f8, f8, ), ], nopython=True, fastmath=False, cache=False, )
+# def _get_inc_angle(x, y, f_3):
+#     return np.arctan2((x ** 2 + y ** 2) ** 0.5, f_3, )
 
 
-@vectorize([f8(f8, f8, f8, ), ], nopython=True, fastmath=True, cache=True, )
-def _get_azim_angle(x, y, crystal_orientation, ):
-    return np.arctan2(y, x) + np.pi - crystal_orientation
+# @vectorize([f8(f8, f8, f8, ), ], nopython=True, fastmath=False, cache=False, )
+# def _get_azim_angle(x, y, crystal_orientation, ):
+#     return np.arctan2(y, x) + np.pi - crystal_orientation

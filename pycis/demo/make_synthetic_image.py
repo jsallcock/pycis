@@ -9,7 +9,7 @@ inst = Instrument('demo_config_single_delay_pixelated.yaml')
 
 # specify input spectrum -- xr.DataArray with dimensions 'x' and 'y' corresponding to position on the camera's sensor
 # plane, with units in m. And also with dimension 'wavelength' in units m. Spectrum units are ph / m.
-wavelength = np.linspace(460e-9, 460.05e-9, 50)
+wavelength = np.linspace(460e-9, 460.05e-9, 5)
 wavelength = xr.DataArray(wavelength, dims=('wavelength', ), coords=(wavelength, ), )
 
 spectrum = xr.ones_like(inst.camera.x * inst.camera.y * wavelength, )
