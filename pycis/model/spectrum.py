@@ -7,7 +7,7 @@ functions for generating example spectra -- mostly for testing.
 def get_spectrum_delta(wl0, ph, ):
     """
     :param float wavelength: in metres.
-    :param float ph:
+    :param float ph: total photon fluence
     :return:
     """
     dwl = 1e-13
@@ -62,7 +62,3 @@ def get_spectrum_ciii_triplet(temperature, domain='frequency', nbins=1000):
         return spectrum
     else:
         raise Exception('input not understood')
-
-
-if __name__ == '__main__':
-    sp = get_spectrum_delta(465e-9, 1.e4)
