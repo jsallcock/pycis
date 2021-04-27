@@ -29,15 +29,17 @@ focal_length_lens_3: 150.e-3
 # - angles are in degrees.
 # - thicknesses are in metres.
 interferometer:
+
   - LinearPolariser:
       orientation: 0.
+
   - UniaxialCrystal:
       orientation: 45.
       cut_angle: 0.
       thickness: 6.5e-3
       material: 'a-BBO'
+
   - QuarterWaveplate:
       orientation: 90.
 
-# this just adds a constant angle to all interometer components
-interferometer_orientation: 0.
+interferometer_orientation: 0

@@ -25,15 +25,18 @@ focal_length_lens_3: 150.e-3
 # INTERFEROMETER
 # --------------
 interferometer:
+
   - LinearPolariser:
       orientation: 0
+
   - UniaxialCrystal:
       orientation: 45
       cut_angle: 45
       thickness: 6.5e-3
       material: 'a-BBO'
+
   - LinearPolariser:
       orientation: 0
 
 # this just adds a constant angle to all interometer components
-interferometer_orientation: 0.
+interferometer_orientation: 0

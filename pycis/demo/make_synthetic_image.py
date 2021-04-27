@@ -14,7 +14,9 @@ fig = plt.figure(figsize=(10, 3.5, ))
 axes = fig.subplots(1, 2)
 
 for ax, inst_type in zip(axes, inst_types):
+    print(inst_type)
     inst = Instrument('demo_config_' + inst_type + '.yaml')
+    print(inst.type)
 
     # specify input spectrum -- xr.DataArray with dimensions 'x' and 'y' corresponding to position on the camera's sensor
     # plane, with units in m. And also with dimension 'wavelength' in units m. Spectrum units are ph / m.

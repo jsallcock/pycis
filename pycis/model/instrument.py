@@ -36,8 +36,8 @@ class Instrument:
 
         self.force_mueller = force_mueller
         self.input_checks()
-        self.crystals = [co for co in self.interferometer if isinstance(co, LinearRetarder)]
-        self.polarisers = [co for co in self.interferometer if isinstance(co, LinearPolariser)]
+        self.crystals = [c for c in self.interferometer if isinstance(c, LinearRetarder)]
+        self.polarisers = [c for c in self.interferometer if isinstance(c, LinearPolariser)]
         self.type = self.get_type()
 
     def parse_config(self, config):
@@ -67,7 +67,6 @@ class Instrument:
         try:
             camera = Camera(**config['camera'])
             optics = [config['focal_length_lens_' + str(i + 1)] for i in range(3)]
-
             ic = config['interferometer']
             interferometer = [getattr(pycis, [*ic[i]][0])(**[*ic[i].values()][0]) for i in range(3)]
 
