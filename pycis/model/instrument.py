@@ -181,8 +181,10 @@ class Instrument:
         Capture image of given spectrum.
 
         :param spectrum: (xr.DataArray) photon fluence spectrum with units of ph / m [hitting the pixel area during
-            exposure time] and with dimensions 'wavelength', 'x', 'y' and (optionally) 'stokes'. If no stokes dim then
-            it is assumed that light is unpolarised (i.e. the spec supplied is the S_0 Stokes parameter only).
+            exposure time] and with dimensions 'wavelength' and, optionally, 'x', 'y' and 'stokes'. Xarray broadcasting
+            rules apply to the spatial dimensions: if 'x' or 'y' are not in spectrum.dims then it is assumed that the
+            incident spectrum is uniform across pixels. However, if there is no 'stokes' dimension then it is assumed
+            that light is unpolarised (i.e. the spectrum supplied is the S_0 Stokes parameter only).
         :param bool clean: False to add realistic image noise, passed to self.camera.capture()
         :return: (xr.DataArray) image in units of camera counts.
         """

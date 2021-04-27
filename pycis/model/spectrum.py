@@ -1,9 +1,23 @@
 import numpy as np
 import xarray as xr
-from scipy.constants import c, atomic_mass, e
+"""
+functions for generating example spectra -- mostly for testing.
+"""
+
+def get_spectrum_delta(wl0, ph, ):
+    """
+    :param float wavelength: in metres.
+    :param float ph:
+    :return:
+    """
+    dwl = 1e-13
+    wavelength = np.linspace(wl0 - dwl, wl0 + dwl, 3)
+    wavelength = xr.DataArray(wavelength, coords=(wavelength, ), dims=('wavelength', ), )
+    spectrum = xr.DataArray([0., 1., 0.], coords=(wavelength, ), dims=('wavelength', ))
+    return spectrum * ph / spectrum.integrate(coord='wavelength')
 
 
-def get_ciii_triplet(temperature, domain='frequency', nbins=1000):
+def get_spectrum_ciii_triplet(temperature, domain='frequency', nbins=1000):
     """
     return area-normalised spectrum of the Doppler-broadened C III triplet at 464.9 nm.
 
@@ -48,3 +62,7 @@ def get_ciii_triplet(temperature, domain='frequency', nbins=1000):
         return spectrum
     else:
         raise Exception('input not understood')
+
+
+if __name__ == '__main__':
+    sp = get_spectrum_delta(465e-9, 1.e4)
