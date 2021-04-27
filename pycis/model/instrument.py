@@ -69,7 +69,10 @@ class Instrument:
             optics = [config['focal_length_lens_' + str(i + 1)] for i in range(3)]
 
             ic = config['interferometer']
-            interferometer = [getattr(pycis.model, name)(**args) for name, args in zip(ic.keys(), ic.values())]
+            interferometer = [getattr(pycis, [*ic[i]][0])(**[*ic[i].values()][0]) for i in range(3)]
+
+            for component in interferometer:
+                component.orientation += config['interferometer_orientation']
 
         except:
             print('pycis: could not interpret config file')

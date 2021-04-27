@@ -1,7 +1,8 @@
 pycis/model/config/
 ===================
 
-- This directory is searched for a matching .yaml config files when pycis.Instrument is instantiated.
+- This directory is searched for a matching .yaml config files when pycis.Instrument is instantiated with the kwarg 
+  config.
 
 - Example config files are provided.
 
