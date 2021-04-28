@@ -91,21 +91,14 @@
               <p class="caption"><span class="caption-text">Table of Contents</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="model.html">Model</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="model.html#conventions">Conventions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="model.html#geometry-definitions">Geometry definitions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="model.html#optical-layout">Optical layout</a></li>
-<li class="toctree-l2 current"><a class="reference internal" href="model.html#list-of-modules">List of modules</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="interferometer.html">Interferometer</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Instrument</a></li>
-<li class="toctree-l3"><a class="reference internal" href="camera.html">Camera</a></li>
-<li class="toctree-l3"><a class="reference internal" href="camera.html#pixelated-polariser">Pixelated Polariser</a></li>
-<li class="toctree-l3"><a class="reference internal" href="coherence.html">Coherence</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dispersion.html">Dispersion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interferometer.html">Interferometer</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Instrument</a></li>
+<li class="toctree-l2"><a class="reference internal" href="camera.html">Camera</a></li>
+<li class="toctree-l2"><a class="reference internal" href="camera.html#pixelated-polariser">Pixelated Polariser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coherence.html">Coherence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dispersion.html">Dispersion</a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="model.html#indices-and-tables">Indices and tables</a></li>
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 </ul>
@@ -248,11 +241,47 @@ pycis/model/config/.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre x position(s) in sensor plane in m.</p></li>
 <li><p><strong>y</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre y position(s) in sensor plane in m.</p></li>
-<li><p><strong>crystal</strong> (<em>pycis.model.OrientableComponent</em>) – Crystal component.</p></li>
+<li><p><strong>crystal</strong> (<em>pycis.OrientableComponent</em>) – Crystal component.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>(float, xr.DataArray) Azimuthal angle(s) in radians.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pycis.model.instrument.Instrument.get_mueller_matrix">
+<code class="sig-name descname">get_mueller_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wavelength</span></em>, <em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_mueller_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_mueller_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate total Mueller matrix for the interferometer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>wavelength</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Wavelength in units m, can be a float or an xr.DataArray with dimensions including ‘x’ and ‘y’.</p></li>
+<li><p><strong>x</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre x position(s) in sensor plane in m.</p></li>
+<li><p><strong>y</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre y position(s) in sensor plane in m.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(xr.DataArray) Mueller matrix.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pycis.model.instrument.Instrument.get_delay">
+<code class="sig-name descname">get_delay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wavelength</span></em>, <em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_delay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the interferometer delay(s) at the given wavelength(s).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>wavelength</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Wavelength in units m, can be a float or an xr.DataArray with dimensions including ‘x’ and ‘y’.</p></li>
+<li><p><strong>x</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre x position(s) in sensor plane in m.</p></li>
+<li><p><strong>y</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre y position(s) in sensor plane in m.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(xr.DataArray) Interferometer delay(s) in radians.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -265,42 +294,15 @@ pycis/model/config/.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>spectrum</strong> – (xr.DataArray) photon fluence spectrum with units of ph / m [hitting the pixel area during
-exposure time] and with dimensions ‘wavelength’, ‘x’, ‘y’ and (optionally) ‘stokes’. If no stokes dim then
-it is assumed that light is unpolarised (i.e. the spec supplied is the S_0 Stokes parameter only).</p></li>
+exposure time] and with dimensions ‘wavelength’ and, optionally, ‘x’, ‘y’ and ‘stokes’. Xarray broadcasting
+rules apply to the spatial dimensions: if ‘x’ or ‘y’ are not in spectrum.dims then it is assumed that the
+incident spectrum is uniform across pixels. However, if there is no ‘stokes’ dimension then it is assumed
+that light is unpolarised (i.e. the spectrum supplied is the S_0 Stokes parameter only).</p></li>
 <li><p><strong>clean</strong> (<em>bool</em>) – False to add realistic image noise, passed to self.camera.capture()</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>(xr.DataArray) image in units of camera counts.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pycis.model.instrument.Instrument.get_mueller_matrix">
-<code class="sig-name descname">get_mueller_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spectrum</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_mueller_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_mueller_matrix" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate total Mueller matrix for the interferometer.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>spectrum</strong> (<em>xr.DataArray</em>) – See ‘spectrum’ argument for instrument.capture.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>(xr.DataArray) Mueller matrix.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pycis.model.instrument.Instrument.get_delay">
-<code class="sig-name descname">get_delay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wavelength</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_delay" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the interferometer delay(s) at the given wavelength(s).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>wavelength</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Wavelength in units m, can be a float or an xr.DataArray with dimensions including ‘x’ and
-‘y’.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>(xr.DataArray) Interferometer delay(s) in radians.</p>
 </dd>
 </dl>
 </dd></dl>
