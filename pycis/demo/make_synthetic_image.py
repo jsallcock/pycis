@@ -14,8 +14,9 @@ fig = plt.figure(figsize=(10, 3.5, ))
 axes = fig.subplots(1, 2)
 
 for ax, inst_type in zip(axes, inst_types):
-
+    print(inst_type)
     inst = Instrument('demo_config_' + inst_type + '.yaml')
+    print(inst.type)
     spectrum = get_spectrum_delta(465e-9, 5e3)
     igram = inst.capture(spectrum, )
 

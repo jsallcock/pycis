@@ -24,9 +24,9 @@ wavelength = np.linspace(460e-9, 460.05e-9, 20)
 wavelength = xr.DataArray(wavelength, dims=('wavelength',), coords=(wavelength,), )
 x, y = camera.get_pixel_position()
 
-spectrum = xr.ones_like(x * y * wavelength, )
+spectrum = xr.ones_like(wavelength, )
 spectrum /= spectrum.integrate(coord='wavelength')
-spectrum *= 5e3
+spectrum *= 1e3
 
 
 class TestInstrument(unittest.TestCase):
