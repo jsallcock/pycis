@@ -149,74 +149,65 @@ class Instrument:
 
         return itype
 
-    def get_inc_angle(self, x=None, y=None):
+    def get_inc_angle(self, x, y):
         """
         Calculate incidence angle(s) of ray(s) through the interferometer, in radians.
 
-        :param x: Pixel centre x position(s) in sensor plane in m. If not supplied, taken from self.camera.x.
+        :param x: Pixel centre x position(s) in sensor plane in m.
         :type x: float, xr.DataArray
-        :param y: Pixel centre y position(s) in sensor plane in m. If not supplied, taken from self.camera.y.
+        :param y: Pixel centre y position(s) in sensor plane in m.
         :type y: float, xr.DataArray
         :return: (float, xr.DataArray) Incidence angle(s) in radians.
         """
         # return xr.apply_ufunc(_get_inc_angle, x, y, self.optics[2], dask='allowed', )
-        if x is None:
-            x = self.camera.x
-        if y is None:
-            y = self.camera.y
         return np.arctan2((x ** 2 + y ** 2) ** 0.5, self.optics[2], )
 
-    def get_azim_angle(self, crystal, x=None, y=None, ):
+    def get_azim_angle(self, x, y, crystal):
         """
         Calculate azimuthal angle(s) of ray(s) through the crystal, in radians.
 
-        :param pycis.OrientableComponent crystal: Crystal component.
-        :param x: Pixel centre x position(s) in sensor plane in m. If not supplied, taken from self.camera.x.
+        :param x: Pixel centre x position(s) in sensor plane in m.
         :type x: float, xr.DataArray
-        :param y: Pixel centre y position(s) in sensor plane in m. If not supplied, taken from self.camera.y.
+        :param y: Pixel centre y position(s) in sensor plane in m.
         :type y: float, xr.DataArray
+        :param pycis.OrientableComponent crystal: Crystal component.
 
         :return: (float, xr.DataArray) Azimuthal angle(s) in radians.
         """
-        if x is None:
-            x = self.camera.x
-        if y is None:
-            y = self.camera.y
         return np.arctan2(y, x) + np.pi - radians(crystal.orientation)
         # return xr.apply_ufunc(_get_azim_angle, x, y, radians(crystal.orientation), dask='allowed', )
 
-    def get_mueller_matrix(self, wavelength, x=None, y=None):
+    def get_mueller_matrix(self, wavelength, x, y):
         """
         Calculate total Mueller matrix for the interferometer.
 
         :param wavelength: Wavelength in units m, can be a float or an xr.DataArray with dimensions including 'x' and 'y'.
         :type wavelength: float, xr.DataArray
-        :param x: Pixel centre x position(s) in sensor plane in m. If not supplied, taken from self.camera.x.
+        :param x: Pixel centre x position(s) in sensor plane in m.
         :type x: float, xr.DataArray
-        :param y: Pixel centre y position(s) in sensor plane in m. If not supplied, taken from self.camera.y.
+        :param y: Pixel centre y position(s) in sensor plane in m.
         :type y: float, xr.DataArray
         :return: (xr.DataArray) Mueller matrix.
         """
 
-        inc_angle = self.get_inc_angle(x=x, y=y)
+        inc_angle = self.get_inc_angle(x, y)
         mat_total = xr.DataArray(np.identity(4), dims=('mueller_v', 'mueller_h'), )
 
         for component in self.interferometer:
-            azim_angle = self.get_azim_angle(component, x=x, y=y,)
+            azim_angle = self.get_azim_angle(x, y, component)
             mat_component = component.get_mueller_matrix(wavelength, inc_angle, azim_angle)
             mat_total = mueller_product(mat_component, mat_total)
-
         return mat_total
 
-    def get_delay(self, wavelength, x=None, y=None):
+    def get_delay(self, wavelength, x, y):
         """
         Calculate the interferometer delay(s) at the given wavelength(s).
 
         :param wavelength: Wavelength in units m, can be a float or an xr.DataArray with dimensions including 'x' and 'y'.
         :type wavelength: float, xr.DataArray
-        :param x: Pixel centre x position(s) in sensor plane in m. If not supplied, taken from self.camera.x.
+        :param x: Pixel centre x position(s) in sensor plane in m.
         :type x: float, xr.DataArray
-        :param y: Pixel centre y position(s) in sensor plane in m. If not supplied, taken from self.camera.y.
+        :param y: Pixel centre y position(s) in sensor plane in m.
         :type y: float, xr.DataArray
         :return: (xr.DataArray) Interferometer delay(s) in radians.
         """
@@ -224,8 +215,8 @@ class Instrument:
         # not sure it would be possible to write a general function for this
         assert self.type != 'mueller'
 
-        inc_angle = self.get_inc_angle(x=x, y=y, )
-        azim_angle = self.get_azim_angle(self.crystals[0], x=x, y=y, )
+        inc_angle = self.get_inc_angle(x, y)
+        azim_angle = self.get_azim_angle(x, y, self.crystals[0])
 
         # calculation depends on instrument type
         if self.type == 'single_delay_linear':
@@ -266,6 +257,16 @@ class Instrument:
         :return: (xr.DataArray) image in units of camera counts.
         """
 
+        if 'x' in spectrum.dims:
+            x = spectrum.x
+        else:
+            x = self.camera.x
+
+        if 'y' in spectrum.dims:
+            y = spectrum.y
+        else:
+            y = self.camera.y
+
         if self.type == 'mueller':
             # do the full Mueller matrix calculation
 
@@ -273,12 +274,12 @@ class Instrument:
                 a0 = xr.zeros_like(spectrum)
                 spectrum = xr.combine_nested([spectrum, a0, a0, a0], concat_dim=('stokes',))
 
-            mueller_matrix_total = self.get_mueller_matrix(spectrum.wavelength)
+            mueller_matrix_total = self.get_mueller_matrix(spectrum.wavelength, x, y)
             spectrum = mueller_product(mueller_matrix_total, spectrum)
             apply_polarisers = None
 
         else:
-            delay = self.get_delay(spectrum.wavelength)
+            delay = self.get_delay(spectrum.wavelength, x, y)
             apply_polarisers = False
 
             if self.type == 'single_delay_linear' and 'stokes' not in spectrum.dims:

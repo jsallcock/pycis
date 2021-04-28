@@ -87,7 +87,7 @@ class TestInstrument(unittest.TestCase):
         camera.type = 'monochrome_polarised'
 
         interferometer = [LinearPolariser(0 + angle, ),
-                          UniaxialCrystal(45 + angle, 5e-3, np.pi / 4, contrast=0.5, ),
+                          UniaxialCrystal(45 + angle, 5e-3, 45, contrast=0.5, ),
                           LinearPolariser(0 + angle, ),
                           UniaxialCrystal(45 + angle, 5e-3, 0, contrast=0.5, ),
                           QuarterWaveplate(90 + angle, )

@@ -185,8 +185,7 @@ class UniaxialCrystal(LinearRetarder):
     :param float contrast: An arbitrary contrast degradation factor for the retarder, independent of ray path. Value
         between 0 and 1. Simulates the effect of real crystal imperfections.
     """
-    def __init__(self, orientation, thickness, cut_angle, material='a-BBO', material_source=None, contrast=1,
-                 tilt_para=0, tilt_perp=0, ):
+    def __init__(self, orientation, thickness, cut_angle, material='a-BBO', material_source=None, contrast=1, ):
         super().__init__(orientation, thickness, material=material, material_source=material_source, contrast=contrast, )
         self.cut_angle = cut_angle
         self.cut_angle_rad = radians(cut_angle)
