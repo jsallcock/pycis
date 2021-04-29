@@ -35,7 +35,7 @@ class Instrument:
             self.interferometer = interferometer
 
         self.force_mueller = force_mueller
-        self.input_checks()
+        self.check_inputs()
         self.crystals = [c for c in self.interferometer if isinstance(c, LinearRetarder)]
         self.polarisers = [c for c in self.interferometer if isinstance(c, LinearPolariser)]
         self.type = self.get_type()
@@ -62,7 +62,7 @@ class Instrument:
 
         if not found:
             print('pycis: could not find config file')
-            sys.exit(1)
+            raise FileNotFoundError
 
         try:
             camera = Camera(**config['camera'])
@@ -75,11 +75,11 @@ class Instrument:
 
         except:
             print('pycis: could not interpret config file')
-            sys.exit(1)
+            raise FileNotFoundError
 
         return camera, optics, interferometer
 
-    def input_checks(self):
+    def check_inputs(self):
         assert isinstance(self.camera, Camera)
         assert isinstance(self.optics, list)
         assert all(isinstance(co, Component) for co in self.interferometer)
@@ -97,7 +97,10 @@ class Instrument:
         :return: type (str)
         """
 
-        itype = None
+        if self.force_mueller:
+            return 'mueller'
+
+        type = None
         if self.camera.type == 'monochrome_polarised':
 
             # single-delay polarised
@@ -114,7 +117,7 @@ class Instrument:
                     conditions_met.append(isclose(component.orientation - self.polarisers[0].orientation, rel_or))
 
                 if all(conditions_met):
-                    itype = 'single_delay_pixelated'
+                    type = 'single_delay_pixelated'
 
             # multi-delay polarised
             elif len(self.interferometer) == 5:
@@ -130,7 +133,7 @@ class Instrument:
                     conditions_met.append(isclose(component.orientation - self.polarisers[0].orientation, rel_or))
 
                 if all(conditions_met):
-                    itype = 'multi_delay_pixelated'
+                    type = 'multi_delay_pixelated'
 
         # are there two polarisers, at the front and back of the interferometer?
         elif len(self.polarisers) == 2 and (isinstance(self.interferometer[0], LinearPolariser) and
@@ -142,14 +145,27 @@ class Instrument:
             conditions_met = [pol_1_orientation == pol_2_orientation, ] + \
                              [isclose(crys.orientation - pol_1_orientation, 45) for crys in self.crystals]
             if all(conditions_met):
-                itype = 'single_delay_linear'
+                type = 'single_delay_linear'
 
-        if itype is None or self.force_mueller:
-            itype = 'mueller'
+        if type is None:
+            type = 'mueller'
 
-        return itype
+        return type
 
-    def get_inc_angle(self, x, y):
+    # def get_inc_angle(self, x, y):
+    #     """
+    #     Calculate incidence angle(s) of ray(s) through the interferometer, in radians.
+    #
+    #     :param x: Pixel centre x position(s) in sensor plane in m.
+    #     :type x: float, xr.DataArray
+    #     :param y: Pixel centre y position(s) in sensor plane in m.
+    #     :type y: float, xr.DataArray
+    #     :return: (float, xr.DataArray) Incidence angle(s) in radians.
+    #     """
+    #     # return xr.apply_ufunc(_get_inc_angle, x, y, self.optics[2], dask='allowed', )
+    #     return np.arctan2((x ** 2 + y ** 2) ** 0.5, self.optics[2], )
+
+    def get_inc_angle(self, x, y, component):
         """
         Calculate incidence angle(s) of ray(s) through the interferometer, in radians.
 
@@ -157,12 +173,17 @@ class Instrument:
         :type x: float, xr.DataArray
         :param y: Pixel centre y position(s) in sensor plane in m.
         :type y: float, xr.DataArray
+        :param pycis.Component component: Interferometer component.
         :return: (float, xr.DataArray) Incidence angle(s) in radians.
         """
-        # return xr.apply_ufunc(_get_inc_angle, x, y, self.optics[2], dask='allowed', )
-        return np.arctan2((x ** 2 + y ** 2) ** 0.5, self.optics[2], )
 
-    def get_azim_angle(self, x, y, crystal):
+        x0 = self.optics[2] * np.tan(radians(component.tilt_x))
+        y0 = self.optics[2] * np.tan(radians(component.tilt_y))
+
+        # return xr.apply_ufunc(_get_inc_angle, x, y, self.optics[2], dask='allowed', )
+        return np.arctan2(((x - x0) ** 2 + (y - y0) ** 2) ** 0.5, self.optics[2], )
+
+    def get_azim_angle(self, x, y, component):
         """
         Calculate azimuthal angle(s) of ray(s) through the crystal, in radians.
 
@@ -170,30 +191,30 @@ class Instrument:
         :type x: float, xr.DataArray
         :param y: Pixel centre y position(s) in sensor plane in m.
         :type y: float, xr.DataArray
-        :param pycis.OrientableComponent crystal: Crystal component.
+        :param pycis.OrientableComponent component: Interferometer component.
 
         :return: (float, xr.DataArray) Azimuthal angle(s) in radians.
         """
-        return np.arctan2(y, x) + np.pi - radians(crystal.orientation)
+        return np.arctan2(y, x) + np.pi - radians(component.orientation)
         # return xr.apply_ufunc(_get_azim_angle, x, y, radians(crystal.orientation), dask='allowed', )
 
     def get_mueller_matrix(self, wavelength, x, y):
         """
         Calculate total Mueller matrix for the interferometer.
 
-        :param wavelength: Wavelength in units m, can be a float or an xr.DataArray with dimensions including 'x' and 'y'.
-        :type wavelength: float, xr.DataArray
+        :param wavelength: Wavelength in m. I
+        :type wavelength: float, xarray.DataArray
         :param x: Pixel centre x position(s) in sensor plane in m.
-        :type x: float, xr.DataArray
+        :type x: float, xarray.DataArray
         :param y: Pixel centre y position(s) in sensor plane in m.
-        :type y: float, xr.DataArray
+        :type y: float, xarray.DataArray
         :return: (xr.DataArray) Mueller matrix.
         """
 
-        inc_angle = self.get_inc_angle(x, y)
         mat_total = xr.DataArray(np.identity(4), dims=('mueller_v', 'mueller_h'), )
 
         for component in self.interferometer:
+            inc_angle = self.get_inc_angle(x, y, component)
             azim_angle = self.get_azim_angle(x, y, component)
             mat_component = component.get_mueller_matrix(wavelength, inc_angle, azim_angle)
             mat_total = mueller_product(mat_component, mat_total)
@@ -203,19 +224,19 @@ class Instrument:
         """
         Calculate the interferometer delay(s) at the given wavelength(s).
 
-        :param wavelength: Wavelength in units m, can be a float or an xr.DataArray with dimensions including 'x' and 'y'.
-        :type wavelength: float, xr.DataArray
+        :param wavelength: Wavelength in m. If xarray.DataArray, must have dimension name 'wavelength'.
+        :type wavelength: float, xarray.DataArray
         :param x: Pixel centre x position(s) in sensor plane in m.
-        :type x: float, xr.DataArray
+        :type x: float, xarray.DataArray
         :param y: Pixel centre y position(s) in sensor plane in m.
-        :type y: float, xr.DataArray
+        :type y: float, xarray.DataArray
         :return: (xr.DataArray) Interferometer delay(s) in radians.
         """
 
         # not sure it would be possible to write a general function for this
         assert self.type != 'mueller'
 
-        inc_angle = self.get_inc_angle(x, y)
+        inc_angle = self.get_inc_angle(x, y, self.crystals[0])
         azim_angle = self.get_azim_angle(x, y, self.crystals[0])
 
         # calculation depends on instrument type
@@ -248,13 +269,13 @@ class Instrument:
         """
         Capture image of given spectrum.
 
-        :param spectrum: (xr.DataArray) photon fluence spectrum with units of ph / m [hitting the pixel area during
+        :param spectrum: (xarray.DataArray) photon fluence spectrum with units of ph / m [hitting the pixel area during
             exposure time] and with dimensions 'wavelength' and, optionally, 'x', 'y' and 'stokes'. Xarray broadcasting
             rules apply to the spatial dimensions: if 'x' or 'y' are not in spectrum.dims then it is assumed that the
             incident spectrum is uniform across pixels. However, if there is no 'stokes' dimension then it is assumed
             that light is unpolarised (i.e. the spectrum supplied is the S_0 Stokes parameter only).
         :param bool clean: False to add realistic image noise, passed to self.camera.capture()
-        :return: (xr.DataArray) image in units of camera counts.
+        :return: (xarray.DataArray) image in units of camera counts.
         """
 
         if 'x' in spectrum.dims:

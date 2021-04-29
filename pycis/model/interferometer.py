@@ -80,8 +80,8 @@ class OrientableComponent(Component):
     """
     Base class for interferometer component with orientation-dependent behaviour.
     """
-    def __init__(self, orientation, ):
-        super().__init__()
+    def __init__(self, orientation=0, **kwargs):
+        super().__init__(**kwargs)
         self.orientation = orientation
 
     def orient(self, matrix):
@@ -96,7 +96,18 @@ class OrientableComponent(Component):
         return mueller_product(rotation_matrix(-self.orientation), matrix_i)
 
 
-class LinearPolariser(OrientableComponent, ):
+class TiltableComponent(Component):
+    """
+    Base class for interferometer component with tilt-dependent behaviour.
+    """
+
+    def __init__(self, tilt_x=0, tilt_y=0, **kwargs):
+        super().__init__(**kwargs)
+        self.tilt_x = tilt_x
+        self.tilt_y = tilt_y
+
+
+class LinearPolariser(OrientableComponent, TiltableComponent):
     """
     Linear polariser.
 
@@ -104,8 +115,8 @@ class LinearPolariser(OrientableComponent, ):
     :param float tx_1: transmission primary component. [0, 1] - defaults to 1.
     :param float tx_2: transmission secondary (orthogonal) component. [0, 1] - defaults to 0.
     """
-    def __init__(self, orientation, tx_1=1, tx_2=0, ):
-        super().__init__(orientation, )
+    def __init__(self, tx_1=1, tx_2=0, **kwargs):
+        super().__init__(**kwargs)
 
         assert 0 <= tx_1 <= 1
         assert 0 <= tx_2 <= 1
@@ -128,16 +139,12 @@ class LinearPolariser(OrientableComponent, ):
         return self.orient(1 / 2 * xr.DataArray(m, dims=('mueller_v', 'mueller_h'), ))
 
 
-class LinearRetarder(OrientableComponent):
+class LinearRetarder(OrientableComponent, TiltableComponent):
     """
     Base class for a general linear retarder.
     """
-    def __init__(self, orientation, thickness, material='a-BBO', material_source=None, contrast=1, ):
-        super().__init__(orientation, )
-
-        self.thickness = thickness
-        self.material = material
-        self.source = material_source
+    def __init__(self, contrast=1, **kwargs):
+        super().__init__(**kwargs)
         self.contrast = contrast
 
     def get_mueller_matrix(self, *args, **kwargs):
@@ -185,24 +192,29 @@ class UniaxialCrystal(LinearRetarder):
     :param float contrast: An arbitrary contrast degradation factor for the retarder, independent of ray path. Value
         between 0 and 1. Simulates the effect of real crystal imperfections.
     """
-    def __init__(self, orientation, thickness, cut_angle, material='a-BBO', material_source=None, contrast=1, ):
-        super().__init__(orientation, thickness, material=material, material_source=material_source, contrast=contrast, )
+    def __init__(self, thickness, cut_angle, material='a-BBO', material_source=None, **kwargs):
+        super().__init__(**kwargs)
+
+        self.thickness = thickness
         self.cut_angle = cut_angle
-        self.cut_angle_rad = radians(cut_angle)
+        self.material = material
+        self.material_source = material_source
+
+        self.cut_angle_r = radians(cut_angle)
 
     def get_delay(self, wavelength, inc_angle, azim_angle, n_e=None, n_o=None):
         """
         Calculate imparted delay in radians.
 
         :param wavelength: Wavelength in m.
-        :type wavelength: float, xr.DataArray
+        :type wavelength: float, xarray.DataArray
         :param inc_angle: Ray incidence angle(s) in radians.
-        :type inc_angle: float, xr.DataArray
+        :type inc_angle: float, xarray.DataArray
         :param azim_angle: Ray azimuthal angle(s) in radians.
-        :type azim_angle: float, xr.DataArray
+        :type azim_angle: float, xarray.DataArray
         :param float n_e: Manually set extraordinary refractive index (e.g. for fitting).
         :param float n_o: Manually set ordinary refractive index (e.g. for fitting).
-        :return: (float, xr.DataArray) Imparted delay in radians.
+        :return: (float, xarray.DataArray) Imparted delay in radians.
         """
 
         # Veiras defines optical path difference as OPL_o - OPL_e ie. +ve phase indicates a delayed extraordinary
@@ -210,9 +222,9 @@ class UniaxialCrystal(LinearRetarder):
 
         # if refractive indices have not been manually set, calculate
         if n_e is None and n_o is None:
-            biref, n_e, n_o = calculate_dispersion(wavelength, self.material, source=self.source)
+            biref, n_e, n_o = calculate_dispersion(wavelength, self.material, source=self.material_source)
 
-        args = [wavelength, inc_angle, azim_angle, n_e, n_o, self.cut_angle_rad, self.thickness, ]
+        args = [wavelength, inc_angle, azim_angle, n_e, n_o, self.cut_angle_r, self.thickness, ]
         return xr.apply_ufunc(_calc_delay_uniaxial_crystal, *args, dask='allowed', )
 
     def get_fringe_frequency(self, wavelength, focal_length, ):
@@ -227,8 +239,8 @@ class UniaxialCrystal(LinearRetarder):
         biref, n_e, n_o = calculate_dispersion(wavelength, self.material, source=self.source)
 
         # derived by first-order approx. of the Veiras formula.
-        factor = (n_o ** 2 - n_e ** 2) * np.sin(self.cut_angle_rad) * np.cos(self.cut_angle_rad) / \
-                 (n_e ** 2 * np.sin(self.cut_angle_rad) ** 2 + n_o ** 2 * np.cos(self.cut_angle_rad) ** 2)
+        factor = (n_o ** 2 - n_e ** 2) * np.sin(self.cut_angle_r) * np.cos(self.cut_angle_r) / \
+                 (n_e ** 2 * np.sin(self.cut_angle_r) ** 2 + n_o ** 2 * np.cos(self.cut_angle_r) ** 2)
         freq = self.thickness / (wavelength * focal_length) * factor
 
         freq_x = freq * np.cos(self.orientation)
@@ -250,8 +262,12 @@ class SavartPlate(LinearRetarder):
         between 0 and 1. Simulates the effect of real crystal imperfections.
     :param str mode: Determines how impartedd delay is calculated: 'francon' (approx.) or 'veiras' (exact).
     """
-    def __init__(self, orientation, thickness, material='a-BBO', material_source=None, contrast=1, mode='francon', ):
-        super().__init__(orientation, thickness, material=material, material_source=material_source, contrast=contrast, )
+    def __init__(self, thickness, material='a-BBO', material_source=None, mode='francon', **kwargs):
+        super().__init__(**kwargs)
+
+        self.thickness = thickness
+        self.material = material
+        self.material_source = material_source,
         self.mode = mode
 
     def get_delay(self, wavelength, inc_angle, azim_angle, n_e=None, n_o=None):
@@ -323,9 +339,8 @@ class IdealWaveplate(LinearRetarder):
     :param float orientation: Orientation of component fast axis in degrees, relative to the x-axis.
     :param float delay: Imparted delay in radians.
     """
-    def __init__(self, orientation, delay, ):
-        thickness = 1.  # this value is arbitrary since delay is set
-        super().__init__(orientation, thickness, )
+    def __init__(self, delay, **kwargs):
+        super().__init__(**kwargs)
         self.delay = delay
 
     def get_delay(self, *args, **kwargs):
@@ -340,9 +355,9 @@ class QuarterWaveplate(IdealWaveplate):
     """
     Ideal quarter-wave plate.
     """
-    def __init__(self, orientation, ):
-        ideal_delay = np.pi / 2
-        super().__init__(orientation, ideal_delay, )
+    def __init__(self, **kwargs):
+        delay = np.pi / 2
+        super().__init__(delay, **kwargs)
 
 
 class HalfWaveplate(IdealWaveplate):
@@ -350,8 +365,8 @@ class HalfWaveplate(IdealWaveplate):
     Ideal half-wave plate.
     """
     def __init__(self, orientation, ):
-        ideal_delay = np.pi
-        super().__init__(orientation, ideal_delay, )
+        delay = np.pi
+        super().__init__(delay, **kwargs)
 
 
 @vectorize([f8(f8, f8, f8, f8, f8, f8, f8), ], nopython=True, fastmath=True, cache=True, )

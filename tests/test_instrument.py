@@ -24,13 +24,13 @@ wavelength = np.linspace(460e-9, 460.05e-9, 20)
 wavelength = xr.DataArray(wavelength, dims=('wavelength',), coords=(wavelength,), )
 x, y = camera.get_pixel_position()
 
-spectrum = xr.ones_like(wavelength, )
+spectrum = xr.ones_like(wavelength * x * y, )
 spectrum /= spectrum.integrate(coord='wavelength')
 spectrum *= 1e3
 
 
 class TestInstrument(unittest.TestCase):
-    def test_single_delay_linear(self, ):
+    def test_single_delay_linear_versus_mueller(self, ):
         """
         Test that the output of the 'single_delay_linear' instrument_type is the same as for the full Mueller matrix
         calculation
@@ -38,10 +38,19 @@ class TestInstrument(unittest.TestCase):
         """
         camera.type = 'monochrome'
 
-        interferometer = [LinearPolariser(0 + angle, ),
-                          UniaxialCrystal(45 + angle, 5e-3, 45, contrast=0.5, ),
-                          LinearPolariser(0 + angle, ),
-                          ]
+        interferometer = [
+            LinearPolariser(
+                orientation=0 + angle,
+            ),
+            UniaxialCrystal(
+                thickness=5e-3,
+                cut_angle=45,
+                orientation=45 + angle
+            ),
+            LinearPolariser(
+                orientation=0 + angle,
+            ),
+        ]
 
         inst = Instrument(camera=camera, optics=optics, interferometer=interferometer, force_mueller=False)
         inst_fm = Instrument(camera=camera, optics=optics, interferometer=interferometer, force_mueller=True)
@@ -54,7 +63,7 @@ class TestInstrument(unittest.TestCase):
 
         assert_almost_equal(igram.values, igram_fm.values)
 
-    def test_single_delay_pixelated(self, ):
+    def test_single_delay_pixelated_versus_mueller(self, ):
         """
         Test that the output of the 'single_delay_polarised' instrument_type is the same as for the full Mueller matrix
         calculation
@@ -62,10 +71,19 @@ class TestInstrument(unittest.TestCase):
         """
         camera.type = 'monochrome_polarised'
 
-        interferometer = [LinearPolariser(0 + angle),
-                          UniaxialCrystal(45 + angle, 5e-3, 0, contrast=0.5, ),
-                          QuarterWaveplate(90 + angle, )
-                          ]
+        interferometer = [
+            LinearPolariser(
+                orientation=0 + angle
+            ),
+            UniaxialCrystal(
+                thickness=5e-3,
+                cut_angle=0,
+                orientation=45 + angle,
+            ),
+            QuarterWaveplate(
+                orientation=90 + angle,
+            )
+        ]
 
         inst = Instrument(camera=camera, optics=optics, interferometer=interferometer, force_mueller=False)
         inst_fm = Instrument(camera=camera, optics=optics, interferometer=interferometer, force_mueller=True)
@@ -78,7 +96,7 @@ class TestInstrument(unittest.TestCase):
 
         assert_almost_equal(igram.values, igram_fm.values)
 
-    def test_multi_delay_pixelated(self, ):
+    def test_multi_delay_pixelated_versus_mueller(self, ):
         """
         Test that the output of the 'multi_delay_polarised' instrument_type is the same as for the full Mueller matrix
         calculation
@@ -86,11 +104,26 @@ class TestInstrument(unittest.TestCase):
         """
         camera.type = 'monochrome_polarised'
 
-        interferometer = [LinearPolariser(0 + angle, ),
-                          UniaxialCrystal(45 + angle, 5e-3, 45, contrast=0.5, ),
-                          LinearPolariser(0 + angle, ),
-                          UniaxialCrystal(45 + angle, 5e-3, 0, contrast=0.5, ),
-                          QuarterWaveplate(90 + angle, )
+        interferometer = [
+            LinearPolariser(
+                orientation=0 + angle,
+            ),
+            UniaxialCrystal(
+                orientation=45 + angle,
+                thickness=5e-3,
+                cut_angle=45,
+            ),
+            LinearPolariser(
+                orientation=0 + angle,
+            ),
+            UniaxialCrystal(
+                orientation=45 + angle,
+                thickness=5e-3,
+                cut_angle=0,
+            ),
+            QuarterWaveplate(
+                orientation=90 + angle,
+            )
                           ]
 
         instrument = Instrument(camera=camera, optics=optics, interferometer=interferometer, force_mueller=False)

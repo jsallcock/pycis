@@ -125,10 +125,10 @@ class Camera(object):
         dims = ('x', 'y', 'mueller_v', 'mueller_h', )
         mat = xr.DataArray(mat, dims=dims, ).assign_coords({'x': self.x, 'y': self.y, }, )
 
-        mat[idxs_1[0], idxs_1[1], ..., ] = LinearPolariser(0).get_mueller_matrix()
-        mat[idxs_2[0], idxs_2[1], ..., ] = LinearPolariser(45).get_mueller_matrix()
-        mat[idxs_3[0], idxs_3[1], ..., ] = LinearPolariser(90).get_mueller_matrix()
-        mat[idxs_4[0], idxs_4[1], ..., ] = LinearPolariser(135).get_mueller_matrix()
+        mat[idxs_1[0], idxs_1[1], ..., ] = LinearPolariser(orientation=0).get_mueller_matrix()
+        mat[idxs_2[0], idxs_2[1], ..., ] = LinearPolariser(orientation=45).get_mueller_matrix()
+        mat[idxs_3[0], idxs_3[1], ..., ] = LinearPolariser(orientation=90).get_mueller_matrix()
+        mat[idxs_4[0], idxs_4[1], ..., ] = LinearPolariser(orientation=135).get_mueller_matrix()
 
         return mat
 
