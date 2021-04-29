@@ -3,4 +3,4 @@ Interferometer
 
 .. automodule:: pycis.model.interferometer
     :members:
-    :exclude-members: Component, OrientableComponent, LinearRetarder
+    :exclude-members: Component, OrientableComponent, TiltableComponent, LinearRetarder

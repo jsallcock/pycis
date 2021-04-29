@@ -85,8 +85,13 @@ class TestInstrument(unittest.TestCase):
             )
         ]
 
-        inst = Instrument(camera=camera, optics=optics, interferometer=interferometer, force_mueller=False)
-        inst_fm = Instrument(camera=camera, optics=optics, interferometer=interferometer, force_mueller=True)
+        kwargs = {
+            'camera': camera,
+            'optics': optics,
+            'interferometer': interferometer,
+        }
+        inst = Instrument(**kwargs, force_mueller=False)
+        inst_fm = Instrument(**kwargs, force_mueller=True)
 
         self.assertEqual(inst.type, 'single_delay_pixelated')
         self.assertEqual(inst_fm.type, 'mueller')

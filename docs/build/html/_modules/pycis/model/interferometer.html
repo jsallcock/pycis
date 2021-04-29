@@ -255,7 +255,7 @@
         <span class="k">return</span> <span class="n">mueller_product</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">orientation</span><span class="p">),</span> <span class="n">matrix_i</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="TiltableComponent"><a class="viewcode-back" href="../../../interferometer.html#pycis.model.interferometer.TiltableComponent">[docs]</a><span class="k">class</span> <span class="nc">TiltableComponent</span><span class="p">(</span><span class="n">Component</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">TiltableComponent</span><span class="p">(</span><span class="n">Component</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Base class for interferometer component with tilt-dependent behaviour.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -263,7 +263,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tilt_x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">tilt_y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tilt_x</span> <span class="o">=</span> <span class="n">tilt_x</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tilt_y</span> <span class="o">=</span> <span class="n">tilt_y</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tilt_y</span> <span class="o">=</span> <span class="n">tilt_y</span>
 
 
 <div class="viewcode-block" id="LinearPolariser"><a class="viewcode-back" href="../../../interferometer.html#pycis.model.interferometer.LinearPolariser">[docs]</a><span class="k">class</span> <span class="nc">LinearPolariser</span><span class="p">(</span><span class="n">OrientableComponent</span><span class="p">,</span> <span class="n">TiltableComponent</span><span class="p">):</span>
@@ -342,9 +342,9 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Plane-parallel uniaxial birefringent crystal plate.</span>
 
-<span class="sd">    :param float orientation: Orientation of component fast axis in degrees, relative to the x-axis.</span>
 <span class="sd">    :param float thickness: Crystal thickness in m.</span>
 <span class="sd">    :param float cut_angle: Angle in degrees between crystal optic axis and front face.</span>
+<span class="sd">    :param float orientation: Orientation of component fast axis in degrees, from positive x-axis towards positive y-axis.</span>
 <span class="sd">    :param str material: Crystal material.</span>
 <span class="sd">    :param str material_source: Source of Sellmeier coefficients describing dispersion in the crystal. If blank, the</span>
 <span class="sd">        default material source specified in pycis.model.dispersion</span>

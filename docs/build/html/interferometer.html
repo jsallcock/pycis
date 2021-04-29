@@ -218,12 +218,6 @@
 </dd></dl>
 
 <dl class="py class">
-<dt id="pycis.model.interferometer.TiltableComponent">
-<em class="property">class </em><code class="sig-prename descclassname">pycis.model.interferometer.</code><code class="sig-name descname">TiltableComponent</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tilt_x</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">tilt_y</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#TiltableComponent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.interferometer.TiltableComponent" title="Permalink to this definition">¶</a></dt>
-<dd><p>Base class for interferometer component with tilt-dependent behaviour.</p>
-</dd></dl>
-
-<dl class="py class">
 <dt id="pycis.model.interferometer.LinearPolariser">
 <em class="property">class </em><code class="sig-prename descclassname">pycis.model.interferometer.</code><code class="sig-name descname">LinearPolariser</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tx_1</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">tx_2</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#LinearPolariser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.interferometer.LinearPolariser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Linear polariser.</p>
@@ -261,9 +255,9 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>orientation</strong> (<em>float</em>) – Orientation of component fast axis in degrees, relative to the x-axis.</p></li>
 <li><p><strong>thickness</strong> (<em>float</em>) – Crystal thickness in m.</p></li>
 <li><p><strong>cut_angle</strong> (<em>float</em>) – Angle in degrees between crystal optic axis and front face.</p></li>
+<li><p><strong>orientation</strong> (<em>float</em>) – Orientation of component fast axis in degrees, from positive x-axis towards positive y-axis.</p></li>
 <li><p><strong>material</strong> (<em>str</em>) – Crystal material.</p></li>
 <li><p><strong>material_source</strong> (<em>str</em>) – Source of Sellmeier coefficients describing dispersion in the crystal. If blank, the
 default material source specified in pycis.model.dispersion</p></li>

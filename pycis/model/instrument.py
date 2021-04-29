@@ -176,10 +176,8 @@ class Instrument:
         :param pycis.Component component: Interferometer component.
         :return: (float, xr.DataArray) Incidence angle(s) in radians.
         """
-
         x0 = self.optics[2] * np.tan(radians(component.tilt_x))
         y0 = self.optics[2] * np.tan(radians(component.tilt_y))
-
         # return xr.apply_ufunc(_get_inc_angle, x, y, self.optics[2], dask='allowed', )
         return np.arctan2(((x - x0) ** 2 + (y - y0) ** 2) ** 0.5, self.optics[2], )
 
@@ -195,7 +193,9 @@ class Instrument:
 
         :return: (float, xr.DataArray) Azimuthal angle(s) in radians.
         """
-        return np.arctan2(y, x) + np.pi - radians(component.orientation)
+        x0 = self.optics[2] * np.tan(radians(component.tilt_x))
+        y0 = self.optics[2] * np.tan(radians(component.tilt_y))
+        return np.arctan2(y - y0, x - x0) + np.pi - radians(component.orientation)
         # return xr.apply_ufunc(_get_azim_angle, x, y, radians(crystal.orientation), dask='allowed', )
 
     def get_mueller_matrix(self, wavelength, x, y):

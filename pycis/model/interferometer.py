@@ -183,9 +183,9 @@ class UniaxialCrystal(LinearRetarder):
     """
     Plane-parallel uniaxial birefringent crystal plate.
 
-    :param float orientation: Orientation of component fast axis in degrees, relative to the x-axis.
     :param float thickness: Crystal thickness in m.
     :param float cut_angle: Angle in degrees between crystal optic axis and front face.
+    :param float orientation: Orientation of component fast axis in degrees, from positive x-axis towards positive y-axis.
     :param str material: Crystal material.
     :param str material_source: Source of Sellmeier coefficients describing dispersion in the crystal. If blank, the
         default material source specified in pycis.model.dispersion
