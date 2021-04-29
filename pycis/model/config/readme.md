@@ -1,10 +1,10 @@
 pycis/model/config/
 ===================
 
-Config files make it easier to 
+.yaml config files can be used to quickly instantiate pycis.Instrument.
 
 - This directory is searched for a matching .yaml config files when pycis.Instrument is instantiated with the kwarg 
-  config.
+  'config'.
 
 - Example config files are provided.
 
