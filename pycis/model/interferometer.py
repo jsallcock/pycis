@@ -107,7 +107,7 @@ class TiltableComponent(Component):
         self.tilt_y = tilt_y
 
 
-class LinearPolariser(OrientableComponent, TiltableComponent):
+class LinearPolariser(OrientableComponent):
     """
     Linear polariser.
 

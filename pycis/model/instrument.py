@@ -152,19 +152,6 @@ class Instrument:
 
         return type
 
-    # def get_inc_angle(self, x, y):
-    #     """
-    #     Calculate incidence angle(s) of ray(s) through the interferometer, in radians.
-    #
-    #     :param x: Pixel centre x position(s) in sensor plane in m.
-    #     :type x: float, xr.DataArray
-    #     :param y: Pixel centre y position(s) in sensor plane in m.
-    #     :type y: float, xr.DataArray
-    #     :return: (float, xr.DataArray) Incidence angle(s) in radians.
-    #     """
-    #     # return xr.apply_ufunc(_get_inc_angle, x, y, self.optics[2], dask='allowed', )
-    #     return np.arctan2((x ** 2 + y ** 2) ** 0.5, self.optics[2], )
-
     def get_inc_angle(self, x, y, component):
         """
         Calculate incidence angle(s) of ray(s) through the interferometer, in radians.
@@ -176,9 +163,12 @@ class Instrument:
         :param pycis.Component component: Interferometer component.
         :return: (float, xr.DataArray) Incidence angle(s) in radians.
         """
-        x0 = self.optics[2] * np.tan(radians(component.tilt_x))
-        y0 = self.optics[2] * np.tan(radians(component.tilt_y))
-        # return xr.apply_ufunc(_get_inc_angle, x, y, self.optics[2], dask='allowed', )
+        if isinstance(component, pycis.TiltableComponent):
+            x0 = self.optics[2] * np.tan(radians(component.tilt_x))
+            y0 = self.optics[2] * np.tan(radians(component.tilt_y))
+        else:
+            x0 = 0
+            y0 = 0
         return np.arctan2(((x - x0) ** 2 + (y - y0) ** 2) ** 0.5, self.optics[2], )
 
     def get_azim_angle(self, x, y, component):
@@ -193,10 +183,13 @@ class Instrument:
 
         :return: (float, xr.DataArray) Azimuthal angle(s) in radians.
         """
-        x0 = self.optics[2] * np.tan(radians(component.tilt_x))
-        y0 = self.optics[2] * np.tan(radians(component.tilt_y))
+        if isinstance(component, pycis.TiltableComponent):
+            x0 = self.optics[2] * np.tan(radians(component.tilt_x))
+            y0 = self.optics[2] * np.tan(radians(component.tilt_y))
+        else:
+            x0 = 0
+            y0 = 0
         return np.arctan2(y - y0, x - x0) + np.pi - radians(component.orientation)
-        # return xr.apply_ufunc(_get_azim_angle, x, y, radians(crystal.orientation), dask='allowed', )
 
     def get_mueller_matrix(self, wavelength, x, y):
         """
