@@ -217,13 +217,14 @@ pycis/model/config/.</p>
 
 <dl class="py method">
 <dt id="pycis.model.instrument.Instrument.get_inc_angle">
-<code class="sig-name descname">get_inc_angle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_inc_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_inc_angle" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_inc_angle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">component</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_inc_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_inc_angle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate incidence angle(s) of ray(s) through the interferometer, in radians.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre x position(s) in sensor plane in m.</p></li>
 <li><p><strong>y</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre y position(s) in sensor plane in m.</p></li>
+<li><p><strong>component</strong> (<em>pycis.Component</em>) – Interferometer component.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -234,14 +235,14 @@ pycis/model/config/.</p>
 
 <dl class="py method">
 <dt id="pycis.model.instrument.Instrument.get_azim_angle">
-<code class="sig-name descname">get_azim_angle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">crystal</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_azim_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_azim_angle" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_azim_angle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">component</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_azim_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_azim_angle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate azimuthal angle(s) of ray(s) through the crystal, in radians.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre x position(s) in sensor plane in m.</p></li>
 <li><p><strong>y</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre y position(s) in sensor plane in m.</p></li>
-<li><p><strong>crystal</strong> (<em>pycis.OrientableComponent</em>) – Crystal component.</p></li>
+<li><p><strong>component</strong> (<em>pycis.OrientableComponent</em>) – Interferometer component.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -257,9 +258,9 @@ pycis/model/config/.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>wavelength</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Wavelength in units m, can be a float or an xr.DataArray with dimensions including ‘x’ and ‘y’.</p></li>
-<li><p><strong>x</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre x position(s) in sensor plane in m.</p></li>
-<li><p><strong>y</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre y position(s) in sensor plane in m.</p></li>
+<li><p><strong>wavelength</strong> (<em>float</em><em>, </em><em>xarray.DataArray</em>) – Wavelength in m. I</p></li>
+<li><p><strong>x</strong> (<em>float</em><em>, </em><em>xarray.DataArray</em>) – Pixel centre x position(s) in sensor plane in m.</p></li>
+<li><p><strong>y</strong> (<em>float</em><em>, </em><em>xarray.DataArray</em>) – Pixel centre y position(s) in sensor plane in m.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -275,9 +276,9 @@ pycis/model/config/.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>wavelength</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Wavelength in units m, can be a float or an xr.DataArray with dimensions including ‘x’ and ‘y’.</p></li>
-<li><p><strong>x</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre x position(s) in sensor plane in m.</p></li>
-<li><p><strong>y</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre y position(s) in sensor plane in m.</p></li>
+<li><p><strong>wavelength</strong> (<em>float</em><em>, </em><em>xarray.DataArray</em>) – Wavelength in m. If xarray.DataArray, must have dimension name ‘wavelength’.</p></li>
+<li><p><strong>x</strong> (<em>float</em><em>, </em><em>xarray.DataArray</em>) – Pixel centre x position(s) in sensor plane in m.</p></li>
+<li><p><strong>y</strong> (<em>float</em><em>, </em><em>xarray.DataArray</em>) – Pixel centre y position(s) in sensor plane in m.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -293,7 +294,7 @@ pycis/model/config/.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>spectrum</strong> – (xr.DataArray) photon fluence spectrum with units of ph / m [hitting the pixel area during
+<li><p><strong>spectrum</strong> – (xarray.DataArray) photon fluence spectrum with units of ph / m [hitting the pixel area during
 exposure time] and with dimensions ‘wavelength’ and, optionally, ‘x’, ‘y’ and ‘stokes’. Xarray broadcasting
 rules apply to the spatial dimensions: if ‘x’ or ‘y’ are not in spectrum.dims then it is assumed that the
 incident spectrum is uniform across pixels. However, if there is no ‘stokes’ dimension then it is assumed
@@ -302,7 +303,7 @@ that light is unpolarised (i.e. the spectrum supplied is the S_0 Stokes paramete
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>(xr.DataArray) image in units of camera counts.</p>
+<dd class="field-even"><p>(xarray.DataArray) image in units of camera counts.</p>
 </dd>
 </dl>
 </dd></dl>

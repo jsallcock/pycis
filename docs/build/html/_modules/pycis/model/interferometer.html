@@ -239,8 +239,8 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Base class for interferometer component with orientation-dependent behaviour.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">orientation</span> <span class="o">=</span> <span class="n">orientation</span>
 
     <span class="k">def</span> <span class="nf">orient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">matrix</span><span class="p">):</span>
@@ -255,7 +255,18 @@
         <span class="k">return</span> <span class="n">mueller_product</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">orientation</span><span class="p">),</span> <span class="n">matrix_i</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="LinearPolariser"><a class="viewcode-back" href="../../../interferometer.html#pycis.model.interferometer.LinearPolariser">[docs]</a><span class="k">class</span> <span class="nc">LinearPolariser</span><span class="p">(</span><span class="n">OrientableComponent</span><span class="p">,</span> <span class="p">):</span>
+<div class="viewcode-block" id="TiltableComponent"><a class="viewcode-back" href="../../../interferometer.html#pycis.model.interferometer.TiltableComponent">[docs]</a><span class="k">class</span> <span class="nc">TiltableComponent</span><span class="p">(</span><span class="n">Component</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for interferometer component with tilt-dependent behaviour.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tilt_x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">tilt_y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tilt_x</span> <span class="o">=</span> <span class="n">tilt_x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tilt_y</span> <span class="o">=</span> <span class="n">tilt_y</span></div>
+
+
+<div class="viewcode-block" id="LinearPolariser"><a class="viewcode-back" href="../../../interferometer.html#pycis.model.interferometer.LinearPolariser">[docs]</a><span class="k">class</span> <span class="nc">LinearPolariser</span><span class="p">(</span><span class="n">OrientableComponent</span><span class="p">,</span> <span class="n">TiltableComponent</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Linear polariser.</span>
 
@@ -263,8 +274,8 @@
 <span class="sd">    :param float tx_1: transmission primary component. [0, 1] - defaults to 1.</span>
 <span class="sd">    :param float tx_2: transmission secondary (orthogonal) component. [0, 1] - defaults to 0.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="n">tx_1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">tx_2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">orientation</span><span class="p">,</span> <span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tx_1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">tx_2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">tx_1</span> <span class="o">&lt;=</span> <span class="mi">1</span>
         <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">tx_2</span> <span class="o">&lt;=</span> <span class="mi">1</span>
@@ -287,16 +298,12 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">orient</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;mueller_v&#39;</span><span class="p">,</span> <span class="s1">&#39;mueller_h&#39;</span><span class="p">),</span> <span class="p">))</span></div></div>
 
 
-<span class="k">class</span> <span class="nc">LinearRetarder</span><span class="p">(</span><span class="n">OrientableComponent</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">LinearRetarder</span><span class="p">(</span><span class="n">OrientableComponent</span><span class="p">,</span> <span class="n">TiltableComponent</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Base class for a general linear retarder.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="n">thickness</span><span class="p">,</span> <span class="n">material</span><span class="o">=</span><span class="s1">&#39;a-BBO&#39;</span><span class="p">,</span> <span class="n">material_source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">contrast</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">orientation</span><span class="p">,</span> <span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">thickness</span> <span class="o">=</span> <span class="n">thickness</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">material</span> <span class="o">=</span> <span class="n">material</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="n">material_source</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">contrast</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">contrast</span> <span class="o">=</span> <span class="n">contrast</span>
 
     <span class="k">def</span> <span class="nf">get_mueller_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -344,24 +351,29 @@
 <span class="sd">    :param float contrast: An arbitrary contrast degradation factor for the retarder, independent of ray path. Value</span>
 <span class="sd">        between 0 and 1. Simulates the effect of real crystal imperfections.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="n">thickness</span><span class="p">,</span> <span class="n">cut_angle</span><span class="p">,</span> <span class="n">material</span><span class="o">=</span><span class="s1">&#39;a-BBO&#39;</span><span class="p">,</span> <span class="n">material_source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">contrast</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">orientation</span><span class="p">,</span> <span class="n">thickness</span><span class="p">,</span> <span class="n">material</span><span class="o">=</span><span class="n">material</span><span class="p">,</span> <span class="n">material_source</span><span class="o">=</span><span class="n">material_source</span><span class="p">,</span> <span class="n">contrast</span><span class="o">=</span><span class="n">contrast</span><span class="p">,</span> <span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thickness</span><span class="p">,</span> <span class="n">cut_angle</span><span class="p">,</span> <span class="n">material</span><span class="o">=</span><span class="s1">&#39;a-BBO&#39;</span><span class="p">,</span> <span class="n">material_source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">thickness</span> <span class="o">=</span> <span class="n">thickness</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cut_angle</span> <span class="o">=</span> <span class="n">cut_angle</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cut_angle_rad</span> <span class="o">=</span> <span class="n">radians</span><span class="p">(</span><span class="n">cut_angle</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">material</span> <span class="o">=</span> <span class="n">material</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">material_source</span> <span class="o">=</span> <span class="n">material_source</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cut_angle_r</span> <span class="o">=</span> <span class="n">radians</span><span class="p">(</span><span class="n">cut_angle</span><span class="p">)</span>
 
 <div class="viewcode-block" id="UniaxialCrystal.get_delay"><a class="viewcode-back" href="../../../interferometer.html#pycis.model.interferometer.UniaxialCrystal.get_delay">[docs]</a>    <span class="k">def</span> <span class="nf">get_delay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">,</span> <span class="n">inc_angle</span><span class="p">,</span> <span class="n">azim_angle</span><span class="p">,</span> <span class="n">n_e</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_o</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate imparted delay in radians.</span>
 
 <span class="sd">        :param wavelength: Wavelength in m.</span>
-<span class="sd">        :type wavelength: float, xr.DataArray</span>
+<span class="sd">        :type wavelength: float, xarray.DataArray</span>
 <span class="sd">        :param inc_angle: Ray incidence angle(s) in radians.</span>
-<span class="sd">        :type inc_angle: float, xr.DataArray</span>
+<span class="sd">        :type inc_angle: float, xarray.DataArray</span>
 <span class="sd">        :param azim_angle: Ray azimuthal angle(s) in radians.</span>
-<span class="sd">        :type azim_angle: float, xr.DataArray</span>
+<span class="sd">        :type azim_angle: float, xarray.DataArray</span>
 <span class="sd">        :param float n_e: Manually set extraordinary refractive index (e.g. for fitting).</span>
 <span class="sd">        :param float n_o: Manually set ordinary refractive index (e.g. for fitting).</span>
-<span class="sd">        :return: (float, xr.DataArray) Imparted delay in radians.</span>
+<span class="sd">        :return: (float, xarray.DataArray) Imparted delay in radians.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Veiras defines optical path difference as OPL_o - OPL_e ie. +ve phase indicates a delayed extraordinary</span>
@@ -369,9 +381,9 @@
 
         <span class="c1"># if refractive indices have not been manually set, calculate</span>
         <span class="k">if</span> <span class="n">n_e</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">n_o</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">biref</span><span class="p">,</span> <span class="n">n_e</span><span class="p">,</span> <span class="n">n_o</span> <span class="o">=</span> <span class="n">calculate_dispersion</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">)</span>
+            <span class="n">biref</span><span class="p">,</span> <span class="n">n_e</span><span class="p">,</span> <span class="n">n_o</span> <span class="o">=</span> <span class="n">calculate_dispersion</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">material_source</span><span class="p">)</span>
 
-        <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">inc_angle</span><span class="p">,</span> <span class="n">azim_angle</span><span class="p">,</span> <span class="n">n_e</span><span class="p">,</span> <span class="n">n_o</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cut_angle_rad</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">thickness</span><span class="p">,</span> <span class="p">]</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">inc_angle</span><span class="p">,</span> <span class="n">azim_angle</span><span class="p">,</span> <span class="n">n_e</span><span class="p">,</span> <span class="n">n_o</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cut_angle_r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">thickness</span><span class="p">,</span> <span class="p">]</span>
         <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">apply_ufunc</span><span class="p">(</span><span class="n">_calc_delay_uniaxial_crystal</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">dask</span><span class="o">=</span><span class="s1">&#39;allowed&#39;</span><span class="p">,</span> <span class="p">)</span></div>
 
 <div class="viewcode-block" id="UniaxialCrystal.get_fringe_frequency"><a class="viewcode-back" href="../../../interferometer.html#pycis.model.interferometer.UniaxialCrystal.get_fringe_frequency">[docs]</a>    <span class="k">def</span> <span class="nf">get_fringe_frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">,</span> <span class="n">focal_length</span><span class="p">,</span> <span class="p">):</span>
@@ -386,8 +398,8 @@
         <span class="n">biref</span><span class="p">,</span> <span class="n">n_e</span><span class="p">,</span> <span class="n">n_o</span> <span class="o">=</span> <span class="n">calculate_dispersion</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">)</span>
 
         <span class="c1"># derived by first-order approx. of the Veiras formula.</span>
-        <span class="n">factor</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_o</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">n_e</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cut_angle_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cut_angle_rad</span><span class="p">)</span> <span class="o">/</span> \
-                 <span class="p">(</span><span class="n">n_e</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cut_angle_rad</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">n_o</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cut_angle_rad</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">factor</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_o</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">n_e</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cut_angle_r</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cut_angle_r</span><span class="p">)</span> <span class="o">/</span> \
+                 <span class="p">(</span><span class="n">n_e</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cut_angle_r</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">n_o</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cut_angle_r</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
         <span class="n">freq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">thickness</span> <span class="o">/</span> <span class="p">(</span><span class="n">wavelength</span> <span class="o">*</span> <span class="n">focal_length</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span>
 
         <span class="n">freq_x</span> <span class="o">=</span> <span class="n">freq</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">orientation</span><span class="p">)</span>
@@ -409,8 +421,12 @@
 <span class="sd">        between 0 and 1. Simulates the effect of real crystal imperfections.</span>
 <span class="sd">    :param str mode: Determines how impartedd delay is calculated: &#39;francon&#39; (approx.) or &#39;veiras&#39; (exact).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="n">thickness</span><span class="p">,</span> <span class="n">material</span><span class="o">=</span><span class="s1">&#39;a-BBO&#39;</span><span class="p">,</span> <span class="n">material_source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">contrast</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;francon&#39;</span><span class="p">,</span> <span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">orientation</span><span class="p">,</span> <span class="n">thickness</span><span class="p">,</span> <span class="n">material</span><span class="o">=</span><span class="n">material</span><span class="p">,</span> <span class="n">material_source</span><span class="o">=</span><span class="n">material_source</span><span class="p">,</span> <span class="n">contrast</span><span class="o">=</span><span class="n">contrast</span><span class="p">,</span> <span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thickness</span><span class="p">,</span> <span class="n">material</span><span class="o">=</span><span class="s1">&#39;a-BBO&#39;</span><span class="p">,</span> <span class="n">material_source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;francon&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">thickness</span> <span class="o">=</span> <span class="n">thickness</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">material</span> <span class="o">=</span> <span class="n">material</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">material_source</span> <span class="o">=</span> <span class="n">material_source</span><span class="p">,</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
 
 <div class="viewcode-block" id="SavartPlate.get_delay"><a class="viewcode-back" href="../../../interferometer.html#pycis.model.interferometer.SavartPlate.get_delay">[docs]</a>    <span class="k">def</span> <span class="nf">get_delay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">,</span> <span class="n">inc_angle</span><span class="p">,</span> <span class="n">azim_angle</span><span class="p">,</span> <span class="n">n_e</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_o</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -482,9 +498,8 @@
 <span class="sd">    :param float orientation: Orientation of component fast axis in degrees, relative to the x-axis.</span>
 <span class="sd">    :param float delay: Imparted delay in radians.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="n">delay</span><span class="p">,</span> <span class="p">):</span>
-        <span class="n">thickness</span> <span class="o">=</span> <span class="mf">1.</span>  <span class="c1"># this value is arbitrary since delay is set</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">orientation</span><span class="p">,</span> <span class="n">thickness</span><span class="p">,</span> <span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delay</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">delay</span> <span class="o">=</span> <span class="n">delay</span>
 
 <div class="viewcode-block" id="IdealWaveplate.get_delay"><a class="viewcode-back" href="../../../interferometer.html#pycis.model.interferometer.IdealWaveplate.get_delay">[docs]</a>    <span class="k">def</span> <span class="nf">get_delay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -499,9 +514,9 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Ideal quarter-wave plate.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="p">):</span>
-        <span class="n">ideal_delay</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">orientation</span><span class="p">,</span> <span class="n">ideal_delay</span><span class="p">,</span> <span class="p">)</span></div>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">delay</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">delay</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="HalfWaveplate"><a class="viewcode-back" href="../../../interferometer.html#pycis.model.interferometer.HalfWaveplate">[docs]</a><span class="k">class</span> <span class="nc">HalfWaveplate</span><span class="p">(</span><span class="n">IdealWaveplate</span><span class="p">):</span>
@@ -509,8 +524,8 @@
 <span class="sd">    Ideal half-wave plate.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="p">):</span>
-        <span class="n">ideal_delay</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">orientation</span><span class="p">,</span> <span class="n">ideal_delay</span><span class="p">,</span> <span class="p">)</span></div>
+        <span class="n">delay</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">delay</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 <span class="nd">@vectorize</span><span class="p">([</span><span class="n">f8</span><span class="p">(</span><span class="n">f8</span><span class="p">,</span> <span class="n">f8</span><span class="p">,</span> <span class="n">f8</span><span class="p">,</span> <span class="n">f8</span><span class="p">,</span> <span class="n">f8</span><span class="p">,</span> <span class="n">f8</span><span class="p">,</span> <span class="n">f8</span><span class="p">),</span> <span class="p">],</span> <span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fastmath</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="p">)</span>
