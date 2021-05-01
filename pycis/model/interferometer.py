@@ -52,28 +52,12 @@ class Component:
     def get_mueller_matrix(self, *args, **kwargs):
         raise NotImplementedError
 
-
-class Filter(Component):
-    """
-    Optical filter with no polarisation-dependent behaviour.
-
-    :param xr.DataArray tx: Fractional filter transmission, whose dimension 'wavelength' has coordinates in m.
-    :param float n: Refractive index (effective).
-    """
-    def __init__(self, tx, n):
-
-        super().__init__()
-        assert all(tx >= 0) and all(tx <= 1)
-        self.tx = tx
-        self.wl_centre = float((tx * tx.wavelength).integrate(dim='wavelength') / tx.integrate(dim='wavelength'))
-        self.n = n
-
-    def get_mueller_matrix(self, wavelength, *args, **kwargs):
-        # TODO incorporate filter tilt wavelength shift
-        # wl_shift = self.wl_centre * (np.sqrt(1 - (np.sin(inc_angle) / self.n) ** 2) - 1)
-
-        tx = self.tx.interp(wavelength=wavelength)
-        return xr.DataArray(np.identity(4), dims=('mueller_v', 'mueller_h',)) * tx
+    def __eq__(self, other_component):
+        if type(self) == type(other_component) \
+                and list(vars(self).values()) == list(vars(other_component).values()):
+            return True
+        else:
+            return False
 
 
 class OrientableComponent(Component):
@@ -105,6 +89,29 @@ class TiltableComponent(Component):
         super().__init__(**kwargs)
         self.tilt_x = tilt_x
         self.tilt_y = tilt_y
+
+
+class Filter(TiltableComponent):
+    """
+    Optical filter with no polarisation-dependent behaviour.
+
+    :param xr.DataArray tx: Fractional filter transmission, whose dimension 'wavelength' has coordinates in m.
+    :param float n: Refractive index (effective).
+    """
+    def __init__(self, tx, n):
+
+        super().__init__()
+        assert all(tx >= 0) and all(tx <= 1)
+        self.tx = tx
+        self.wl_centre = float((tx * tx.wavelength).integrate(dim='wavelength') / tx.integrate(dim='wavelength'))
+        self.n = n
+
+    def get_mueller_matrix(self, wavelength, *args, **kwargs):
+        # TODO incorporate filter tilt wavelength shift
+        # wl_shift = self.wl_centre * (np.sqrt(1 - (np.sin(inc_angle) / self.n) ** 2) - 1)
+
+        tx = self.tx.interp(wavelength=wavelength)
+        return xr.DataArray(np.identity(4), dims=('mueller_v', 'mueller_h',)) * tx
 
 
 class LinearPolariser(OrientableComponent):
@@ -200,8 +207,6 @@ class UniaxialCrystal(LinearRetarder):
         self.material = material
         self.material_source = material_source
 
-        self.cut_angle_r = radians(cut_angle)
-
     def get_delay(self, wavelength, inc_angle, azim_angle, n_e=None, n_o=None):
         """
         Calculate imparted delay in radians.
@@ -224,7 +229,7 @@ class UniaxialCrystal(LinearRetarder):
         if n_e is None and n_o is None:
             biref, n_e, n_o = calculate_dispersion(wavelength, self.material, source=self.material_source)
 
-        args = [wavelength, inc_angle, azim_angle, n_e, n_o, self.cut_angle_r, self.thickness, ]
+        args = [wavelength, inc_angle, azim_angle, n_e, n_o, radians(self.cut_angle), self.thickness, ]
         return xr.apply_ufunc(_calc_delay_uniaxial_crystal, *args, dask='allowed', )
 
     def get_fringe_frequency(self, wavelength, focal_length, ):
@@ -239,8 +244,8 @@ class UniaxialCrystal(LinearRetarder):
         biref, n_e, n_o = calculate_dispersion(wavelength, self.material, source=self.source)
 
         # derived by first-order approx. of the Veiras formula.
-        factor = (n_o ** 2 - n_e ** 2) * np.sin(self.cut_angle_r) * np.cos(self.cut_angle_r) / \
-                 (n_e ** 2 * np.sin(self.cut_angle_r) ** 2 + n_o ** 2 * np.cos(self.cut_angle_r) ** 2)
+        factor = (n_o ** 2 - n_e ** 2) * np.sin(radians(self.cut_angle)) * np.cos(radians(self.cut_angle)) / \
+                 (n_e ** 2 * np.sin(radians(self.cut_angle)) ** 2 + n_o ** 2 * np.cos(radians(self.cut_angle)) ** 2)
         freq = self.thickness / (wavelength * focal_length) * factor
 
         freq_x = freq * np.cos(self.orientation)
@@ -357,6 +362,8 @@ class QuarterWaveplate(IdealWaveplate):
     """
     def __init__(self, **kwargs):
         delay = np.pi / 2
+        if 'delay' in kwargs:
+            kwargs.pop('delay')  # nasty kludge to make instrument.write_config() work
         super().__init__(delay, **kwargs)
 
 
@@ -366,6 +373,8 @@ class HalfWaveplate(IdealWaveplate):
     """
     def __init__(self, orientation, ):
         delay = np.pi
+        if 'delay' in kwargs:
+            kwargs.pop('delay')  # nasty kludge to make instrument.write_config() work
         super().__init__(delay, **kwargs)
 
 

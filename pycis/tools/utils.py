@@ -41,3 +41,15 @@ def get_roi(input_image, centre=None, roi_dim=(250, 250), ):
     x_hi = int(x_dim_h + roi_width_h)
 
     return input_image[y_lo:y_hi, x_lo:x_hi]
+
+
+def get_roi_xr(im, roi_dim=(200, 200)):
+    """
+    :param xarray.DataArray im:
+    :param tuple roi_dim: (x, y)
+    :return:
+    """
+    slicex = slice(int(len(im.x) / 2 - roi_dim[0] / 2), int(len(im.x) / 2 + roi_dim[0] / 2))
+    slicey = slice(int(len(im.y) / 2 - roi_dim[1] / 2), int(len(im.y) / 2 + roi_dim[1] / 2))
+    return im.isel(x=slicex, y=slicey)
+

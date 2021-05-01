@@ -1,3 +1,4 @@
+import inspect
 import numpy as np
 import xarray as xr
 from pycis.model import LinearPolariser, mueller_product
@@ -11,8 +12,6 @@ camera_types = [
 
 class Camera(object):
     """
-    Camera class.
-
     :param tuple sensor_format: Number of pixels in each dimension (x, y, ).
     :param float pix_size: Pixel size in m.
     :param int bit_depth: Bit depth of sensor. Currently limited to 16.
@@ -139,6 +138,11 @@ class Camera(object):
         :return:
         """
         return get_pixelated_phase_mask(self.sensor_format).assign_coords({'x': self.x, 'y': self.y, }, )
+
+    def __eq__(self, other_cam):
+        args = [getattr(self, arg) for arg in list(inspect.signature(Camera).parameters)]
+        other_args = [getattr(other_cam, arg) for arg in list(inspect.signature(Camera).parameters)]
+        return args == other_args
 
 
 def get_pixelated_phase_mask(sensor_format):

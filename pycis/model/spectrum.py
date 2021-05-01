@@ -1,7 +1,7 @@
 import numpy as np
 import xarray as xr
 """
-functions for generating example spectra -- mostly for testing.
+simple example spectra for testing
 """
 
 def get_spectrum_delta(wl0, ph, ):

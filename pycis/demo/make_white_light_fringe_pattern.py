@@ -9,7 +9,6 @@ This has no use but it looks nice.
 the RGB camera type hasn't been tested, don't use this for anything that matters!
 """
 
-
 # define camera
 bit_depth = 12
 sensor_format = (600, 200, )

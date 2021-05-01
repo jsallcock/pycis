@@ -1,13 +1,16 @@
+import copy
 import sys
 import os
+import inspect
 import yaml
+from datetime import datetime
 import numpy as np
 import xarray as xr
 from math import isclose, radians
 from numba import vectorize, f8
 import pycis
 from pycis.model import mueller_product, LinearPolariser, Camera, QuarterWaveplate, Component, LinearRetarder, \
-    UniaxialCrystal
+    UniaxialCrystal, TiltableComponent
 
 
 class Instrument:
@@ -28,7 +31,7 @@ class Instrument:
     def __init__(self, config=None, camera=None, optics=None, interferometer=None, force_mueller=False):
 
         if config is not None:
-            self.camera, self.optics, self.interferometer = self.parse_config(config)
+            self.camera, self.optics, self.interferometer = self.read_config(config)
         else:
             self.camera = camera
             self.optics = optics
@@ -40,9 +43,9 @@ class Instrument:
         self.polarisers = [c for c in self.interferometer if isinstance(c, LinearPolariser)]
         self.type = self.get_type()
 
-    def parse_config(self, config):
+    def read_config(self, config):
         """
-        Try loading config as an absolute path to a .yaml file. Failing that, try it as a relative path to a .yaml file
+        Tries loading config as an absolute path to a .yaml file. Failing that, try it as a relative path to a .yaml file
         from the current working directory. Finally, try looking for config as a .yaml file saved in
         pycis/model/config/.
         """
@@ -70,14 +73,35 @@ class Instrument:
             ic = config['interferometer']
             interferometer = [getattr(pycis, [*ic[i]][0])(**[*ic[i].values()][0]) for i in range(3)]
 
-            for component in interferometer:
-                component.orientation += config['interferometer_orientation']
+            if 'interferometer_orientation' in config:
+                for component in interferometer:
+                    component.orientation += config['interferometer_orientation']
 
         except:
             print('pycis: could not interpret config file')
             raise FileNotFoundError
 
         return camera, optics, interferometer
+
+    def write_config(self, fpath):
+        """
+        Write the current instrument config to a .yaml file.
+
+        :param str filepath:
+        """
+
+        config = {
+            'camera': dict([(arg, getattr(self.camera, arg)) for arg in list(inspect.signature(pycis.Camera).parameters)]),
+            'focal_length_lens_1': self.optics[0],
+            'focal_length_lens_2': self.optics[1],
+            'focal_length_lens_3': self.optics[2],
+            'interferometer': [dict([(type(c).__name__, vars(c))]) for c in self.interferometer]
+        }
+
+        assert fpath[-5:] == '.yaml'
+        with open(fpath, 'w') as f:
+            f.write('# This file was generated automatically at ' + datetime.now().strftime("%H:%M:%S, %m/%d/%Y") + '\n')
+            documents = yaml.dump(config, f, Dumper=pycis.tools.MyDumper)
 
     def check_inputs(self):
         assert isinstance(self.camera, Camera)
@@ -163,7 +187,7 @@ class Instrument:
         :param pycis.Component component: Interferometer component.
         :return: (float, xr.DataArray) Incidence angle(s) in radians.
         """
-        if isinstance(component, pycis.TiltableComponent):
+        if isinstance(component, TiltableComponent):
             x0 = self.optics[2] * np.tan(radians(component.tilt_x))
             y0 = self.optics[2] * np.tan(radians(component.tilt_y))
         else:
@@ -195,7 +219,7 @@ class Instrument:
         """
         Calculate total Mueller matrix for the interferometer.
 
-        :param wavelength: Wavelength in m. I
+        :param wavelength: Wavelength in m.
         :type wavelength: float, xarray.DataArray
         :param x: Pixel centre x position(s) in sensor plane in m.
         :type x: float, xarray.DataArray
@@ -354,13 +378,10 @@ class Instrument:
 
         return spatial_freq_x, spatial_freq_y
 
-
-
-# @vectorize([f8(f8, f8, f8, ), ], nopython=True, fastmath=False, cache=False, )
-# def _get_inc_angle(x, y, f_3):
-#     return np.arctan2((x ** 2 + y ** 2) ** 0.5, f_3, )
-
-
-# @vectorize([f8(f8, f8, f8, ), ], nopython=True, fastmath=False, cache=False, )
-# def _get_azim_angle(x, y, crystal_orientation, ):
-#     return np.arctan2(y, x) + np.pi - crystal_orientation
+    def __eq__(self, inst_other):
+        condition_1 = all([getattr(self, attr) == getattr(inst_other, attr) for attr in ['camera', 'optics', ]])
+        condition_2 = all([c == c_other for c, c_other in zip(self.interferometer, inst_other.interferometer)])
+        if condition_1 and condition_2:
+            return True
+        else:
+            return False

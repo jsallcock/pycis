@@ -4,6 +4,10 @@ import os, csv, glob
 import matplotlib.pyplot as plt
 import pycis
 
+"""
+NOT USED ANYMORE
+"""
+
 
 class BandpassFilter:
     """ 

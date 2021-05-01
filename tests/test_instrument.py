@@ -1,5 +1,7 @@
+import os
 import unittest
 import numpy as np
+import pycis
 from numpy.testing import assert_almost_equal
 import xarray as xr
 from pycis.model import Camera, LinearPolariser, QuarterWaveplate, UniaxialCrystal, Instrument
@@ -141,6 +143,14 @@ class TestInstrument(unittest.TestCase):
         igram_fm = instrument_fm.capture(spectrum, clean=True, )
 
         assert_almost_equal(igram.values, igram_fm.values)
+
+    def test_read_config_write_config(self, ):
+        inst_1 = pycis.Instrument('single_delay_pixelated.yaml')
+        testpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test.yaml')
+        inst_1.write_config(testpath)
+        inst_2 = pycis.Instrument(testpath)
+        os.remove(testpath)
+        assert inst_1 == inst_2
 
 
 if __name__ == '__main__':
