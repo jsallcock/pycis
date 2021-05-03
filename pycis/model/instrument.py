@@ -39,7 +39,7 @@ class Instrument:
 
         self.force_mueller = force_mueller
         self.check_inputs()
-        self.crystals = [c for c in self.interferometer if isinstance(c, LinearRetarder)]
+        self.retarders = [c for c in self.interferometer if isinstance(c, LinearRetarder)]
         self.polarisers = [c for c in self.interferometer if isinstance(c, LinearPolariser)]
         self.type = self.get_type()
 
@@ -64,37 +64,31 @@ class Instrument:
                 found = False
 
         if not found:
-            print('pycis: could not find config file')
-            raise FileNotFoundError
+            raise FileNotFoundError('pycis: could not find config file')
 
         try:
             camera = Camera(**config['camera'])
-            optics = [config['focal_length_lens_' + str(i + 1)] for i in range(3)]
+            optics = [config['lens_' + str(i + 1) + '_focal_length'] for i in range(3)]
             ic = config['interferometer']
             interferometer = [getattr(pycis, [*ic[i]][0])(**[*ic[i].values()][0]) for i in range(3)]
 
-            if 'interferometer_orientation' in config:
-                for component in interferometer:
-                    component.orientation += config['interferometer_orientation']
-
         except:
-            print('pycis: could not interpret config file')
-            raise FileNotFoundError
+            raise ValueError('pycis: could not interpret config file')
 
         return camera, optics, interferometer
 
     def write_config(self, fpath):
         """
-        Write the current instrument config to a .yaml file.
+        Write the current instrument config to a .yaml config file that can then be reloaded at a later date.
 
         :param str filepath:
         """
 
         config = {
             'camera': dict([(arg, getattr(self.camera, arg)) for arg in list(inspect.signature(pycis.Camera).parameters)]),
-            'focal_length_lens_1': self.optics[0],
-            'focal_length_lens_2': self.optics[1],
-            'focal_length_lens_3': self.optics[2],
+            'lens_1_focal_length': self.optics[0],
+            'lens_2_focal_length': self.optics[1],
+            'lens_3_focal_length': self.optics[2],
             'interferometer': [dict([(type(c).__name__, vars(c))]) for c in self.interferometer]
         }
 
@@ -167,7 +161,7 @@ class Instrument:
             pol_2_orientation = self.interferometer[-1].orientation
 
             conditions_met = [pol_1_orientation == pol_2_orientation, ] + \
-                             [isclose(crys.orientation - pol_1_orientation, 45) for crys in self.crystals]
+                             [isclose(crys.orientation - pol_1_orientation, 45) for crys in self.retarders]
             if all(conditions_met):
                 type = 'single_delay_linear'
 
@@ -229,7 +223,6 @@ class Instrument:
         """
 
         mat_total = xr.DataArray(np.identity(4), dims=('mueller_v', 'mueller_h'), )
-
         for component in self.interferometer:
             inc_angle = self.get_inc_angle(x, y, component)
             azim_angle = self.get_azim_angle(x, y, component)
@@ -237,7 +230,7 @@ class Instrument:
             mat_total = mueller_product(mat_component, mat_total)
         return mat_total
 
-    def get_delay(self, wavelength, x, y):
+    def get_delay(self, wavelength, x, y, ):
         """
         Calculate the interferometer delay(s) at the given wavelength(s).
 
@@ -253,26 +246,26 @@ class Instrument:
         # not sure it would be possible to write a general function for this
         assert self.type != 'mueller'
 
-        inc_angle = self.get_inc_angle(x, y, self.crystals[0])
-        azim_angle = self.get_azim_angle(x, y, self.crystals[0])
+        inc_angle = self.get_inc_angle(x, y, self.retarders[0])
+        azim_angle = self.get_azim_angle(x, y, self.retarders[0])
 
         # calculation depends on instrument type
         if self.type == 'single_delay_linear':
             # add delay contribution due to each crystal
             delay = 0
-            for crystal in self.crystals:
+            for crystal in self.retarders:
                 delay += crystal.get_delay(wavelength, inc_angle, azim_angle, )
 
         elif self.type == 'single_delay_pixelated':
             # generalise to arbitrary interferometer orientations
             orientation_delay = -2 * radians(self.polarisers[0].orientation)
-            delay = self.crystals[0].get_delay(wavelength, inc_angle, azim_angle, ) + orientation_delay
+            delay = self.retarders[0].get_delay(wavelength, inc_angle, azim_angle, ) + orientation_delay
 
         elif self.type == 'multi_delay_pixelated':
             # generalise to arbitrary interferometer orientations
             orientation_delay = -2 * radians(self.polarisers[0].orientation)
-            delay_1 = self.crystals[0].get_delay(wavelength, inc_angle, azim_angle, )
-            delay_2 = self.crystals[1].get_delay(wavelength, inc_angle, azim_angle, ) + orientation_delay
+            delay_1 = self.retarders[0].get_delay(wavelength, inc_angle, azim_angle, )
+            delay_2 = self.retarders[1].get_delay(wavelength, inc_angle, azim_angle, ) + orientation_delay
             delay_sum = delay_1 + delay_2
             delay_diff = abs(delay_1 - delay_2)
 
@@ -321,11 +314,11 @@ class Instrument:
             apply_polarisers = False
 
             if self.type == 'single_delay_linear' and 'stokes' not in spectrum.dims:
-                contrast = np.array([crystal.contrast for crystal in self.crystals]).prod()
+                contrast = np.array([crystal.contrast for crystal in self.retarders]).prod()
                 spectrum = spectrum / 4 * (1 + contrast * np.cos(delay))
 
             elif self.type == 'single_delay_pixelated' and 'stokes' not in spectrum.dims:
-                contrast = self.crystals[0].contrast
+                contrast = self.retarders[0].contrast
                 phase_mask = self.camera.get_pixelated_phase_mask()
                 spectrum = spectrum / 4 * (1 + contrast * np.cos(delay + phase_mask))
 
@@ -334,8 +327,8 @@ class Instrument:
                 phase_mask = self.camera.get_pixelated_phase_mask()
 
                 delay_1, delay_2, delay_sum, delay_diff = delay
-                contrast_1 = self.crystals[0].contrast
-                contrast_2 = self.crystals[0].contrast
+                contrast_1 = self.retarders[0].contrast
+                contrast_2 = self.retarders[0].contrast
                 contrast_sum = contrast_diff = contrast_1 * contrast_2
 
                 spectrum = spectrum / 8 * (1 +
@@ -362,14 +355,14 @@ class Instrument:
         if self.type == 'single_delay_linear':
             # add contribution due to each crystal
             spatial_freq_x, spatial_freq_y = 0, 0
-            for crystal in self.crystals:
+            for crystal in self.retarders:
 
                 sp_f_x, sp_f_y = crystal.get_fringe_frequency(wavelength, self.optics[2], )
                 spatial_freq_x += sp_f_x
                 spatial_freq_y += sp_f_y
 
         elif self.type == 'multi_delay_pixelated':
-            crystal = self.crystals[0]
+            crystal = self.retarders[0]
             spatial_freq_x, spatial_freq_y = crystal.get_fringe_frequency(wavelength, self.optics[2], )
             # TODO and also the sum and difference terms?
 

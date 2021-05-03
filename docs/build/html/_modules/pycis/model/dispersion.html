@@ -162,71 +162,41 @@
 
 <span class="n">d_lambda</span> <span class="o">=</span> <span class="mf">1.e-10</span>
 <span class="n">d_lambda_mic</span> <span class="o">=</span> <span class="n">d_lambda</span> <span class="o">*</span> <span class="mf">1.e6</span>
+<span class="n">sellmeier_coefs_source_defaults</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;a-BBO&#39;</span><span class="p">:</span> <span class="s1">&#39;agoptics&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;b-BBO&#39;</span><span class="p">:</span> <span class="s1">&#39;eimerl&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;calcite&#39;</span><span class="p">:</span> <span class="s1">&#39;ghosh&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;YVO&#39;</span><span class="p">:</span> <span class="s1">&#39;shi&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;lithium_niobate&#39;</span><span class="p">:</span> <span class="s1">&#39;zelmon&#39;</span><span class="p">,</span>
+<span class="p">}</span>
 
-<span class="c1"># dispersion data</span>
-<span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;kato1986&#39;</span><span class="p">:</span>
-         <span class="p">{</span><span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;e&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.3753</span><span class="p">,</span> <span class="mf">0.01224</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01667</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01516</span><span class="p">],</span>
-                              <span class="s1">&#39;o&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.7359</span><span class="p">,</span> <span class="mf">0.01878</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01822</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01354</span><span class="p">]},</span>
-          <span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;b-BBO&#39;</span><span class="p">,</span>
-          <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+<div class="viewcode-block" id="get_refractive_indices"><a class="viewcode-back" href="../../../dispersion.html#pycis.model.dispersion.get_refractive_indices">[docs]</a><span class="k">def</span> <span class="nf">get_refractive_indices</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="n">sellmeier_coefs_source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sellmeier_coefs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
 
-     <span class="s1">&#39;kato2010&#39;</span><span class="p">:</span>
-         <span class="p">{</span><span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;e&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">3.33469</span><span class="p">,</span> <span class="mf">0.01237</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01647</span><span class="p">,</span> <span class="mf">79.0672</span><span class="p">,</span> <span class="o">-</span><span class="mf">82.2919</span><span class="p">],</span>
-                              <span class="s1">&#39;o&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">3.63357</span><span class="p">,</span> <span class="mf">0.018778</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01822</span><span class="p">,</span> <span class="mf">60.9129</span><span class="p">,</span> <span class="o">-</span><span class="mf">67.8505</span><span class="p">]},</span>
-          <span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;b-BBO&#39;</span><span class="p">,</span>
-          <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span>
+<span class="sd">    :param wavelength: Wavelength of light in m.</span>
+<span class="sd">    :type wavelength: float, numpy.ndarray, xarray.DataArray</span>
+<span class="sd">    :param str material: Set crystal material.</span>
+<span class="sd">    :param str sellmeier_coefs_source: Specify which source to use for the Sellmeier coefficients that describe the</span>
+<span class="sd">    dispersion. If not specified, defaults for each material are set by sellmeier_coefs_source_defaults in</span>
+<span class="sd">    pycis.model.dispersion.</span>
+<span class="sd">    :param dict sellmeier_coefs: Manually set the coefficients that describe the material dispersion</span>
+<span class="sd">    via the Sellmeier equation. Dictionary must have keys &#39;Ae&#39;, &#39;Be&#39;, &#39;Ce&#39;, &#39;De&#39;, &#39;Ao&#39;, &#39;Bo&#39;, &#39;Co&#39;, &#39;Do&#39;.</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-     <span class="s1">&#39;eimerl&#39;</span><span class="p">:</span>
-         <span class="p">{</span><span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;e&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.3730</span><span class="p">,</span> <span class="mf">0.0128</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0156</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0044</span><span class="p">],</span>
-                              <span class="s1">&#39;o&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.7405</span><span class="p">,</span> <span class="mf">0.0184</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0179</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0155</span><span class="p">]},</span>
-          <span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;b-BBO&#39;</span><span class="p">,</span>
-          <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+    <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="n">arg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="p">[</span><span class="n">sellmeier_coefs_source</span><span class="p">,</span> <span class="n">sellmeier_coefs</span><span class="p">]]):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;pycis: arguments not understood&#39;</span><span class="p">)</span>
 
-     <span class="s1">&#39;kim&#39;</span><span class="p">:</span>
-         <span class="p">{</span><span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;e&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.37153</span><span class="p">,</span> <span class="mf">0.01224</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01667</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01516</span><span class="p">],</span>
-                              <span class="s1">&#39;o&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.7471</span><span class="p">,</span> <span class="mf">0.01878</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01822</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01354</span><span class="p">]},</span>
-          <span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;a-BBO&#39;</span><span class="p">,</span>
-          <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+    <span class="k">if</span> <span class="n">sellmeier_coefs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">sellmeier_coefs_source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sellmeier_coefs_source</span> <span class="o">=</span> <span class="n">sellmeier_coefs_source_defaults</span><span class="p">[</span><span class="n">material</span><span class="p">]</span>
 
-     <span class="s1">&#39;agoptics&#39;</span><span class="p">:</span>
-         <span class="p">{</span><span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;e&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.3753</span><span class="p">,</span> <span class="mf">0.01224</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01667</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01516</span><span class="p">],</span>
-                              <span class="s1">&#39;o&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.7471</span><span class="p">,</span> <span class="mf">0.01878</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01822</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01354</span><span class="p">]},</span>
-          <span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;a-BBO&#39;</span><span class="p">,</span>
-          <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+        <span class="n">sellmeier_coefs</span> <span class="o">=</span> <span class="n">sellmeier_coefs_all</span><span class="p">[</span><span class="n">sellmeier_coefs_source</span><span class="p">][</span><span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">]</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">sellmeier_coefs_all</span><span class="p">[</span><span class="n">sellmeier_coefs_source</span><span class="p">][</span><span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">]</span>
 
-     <span class="s1">&#39;newlightphotonics&#39;</span><span class="p">:</span>
-         <span class="p">{</span><span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;e&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.31197</span><span class="p">,</span> <span class="mf">0.01184</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01607</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.00400</span><span class="p">],</span>
-                              <span class="s1">&#39;o&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.67579</span><span class="p">,</span> <span class="mf">0.02099</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.00470</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.00528</span><span class="p">]},</span>
-          <span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;a-BBO&#39;</span><span class="p">,</span>
-          <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
-
-     <span class="s1">&#39;ghosh&#39;</span><span class="p">:</span>
-         <span class="p">{</span><span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;e&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.35859695</span><span class="p">,</span> <span class="mf">0.82427830</span><span class="p">,</span> <span class="mf">1.06689543e-2</span><span class="p">,</span> <span class="mf">0.14429128</span><span class="p">,</span> <span class="mi">120</span><span class="p">],</span>
-                              <span class="s1">&#39;o&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.73358749</span><span class="p">,</span> <span class="mf">0.96464345</span><span class="p">,</span> <span class="mf">1.94325203e-2</span><span class="p">,</span> <span class="mf">1.82831454</span><span class="p">,</span> <span class="mi">120</span><span class="p">]},</span>
-          <span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;calcite&#39;</span><span class="p">,</span>
-          <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span>
-
-     <span class="s1">&#39;shi&#39;</span><span class="p">:</span>
-         <span class="p">{</span><span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;e&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">4.607200</span><span class="p">,</span> <span class="mf">0.108087</span><span class="p">,</span> <span class="mf">0.052495</span><span class="p">,</span> <span class="mf">0.014305</span><span class="p">],</span>
-                              <span class="s1">&#39;o&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">3.778790</span><span class="p">,</span> <span class="mf">0.070479</span><span class="p">,</span> <span class="mf">0.045731</span><span class="p">,</span> <span class="mf">0.009701</span><span class="p">]},</span>
-          <span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;YVO&#39;</span><span class="p">,</span>
-          <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
-
-     <span class="s1">&#39;zelmon&#39;</span><span class="p">:</span>
-     <span class="c1">#  D.E. Zelmon, D. L. Small, J. Opt. Soc. Am. B/Vol. 14, No. 12/December 1997</span>
-         <span class="p">{</span><span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;e&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.9804</span><span class="p">,</span> <span class="mf">0.02047</span><span class="p">,</span> <span class="mf">0.5981</span><span class="p">,</span> <span class="mf">0.0666</span><span class="p">,</span> <span class="mf">8.9543</span><span class="p">,</span> <span class="mf">416.08</span><span class="p">],</span>
-                              <span class="s1">&#39;o&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.6734</span><span class="p">,</span> <span class="mf">0.01764</span><span class="p">,</span> <span class="mf">1.2290</span><span class="p">,</span> <span class="mf">0.05914</span><span class="p">,</span> <span class="mf">12.614</span><span class="p">,</span> <span class="mf">474.6</span><span class="p">]},</span>
-          <span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;lithium_niobate&#39;</span><span class="p">,</span>
-          <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span>
-     <span class="p">}</span>
-
-<span class="c1"># set material default sources</span>
-<span class="n">default_sources</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;calcite&#39;</span><span class="p">:</span> <span class="s1">&#39;ghosh&#39;</span><span class="p">,</span>
-                   <span class="s1">&#39;b-BBO&#39;</span><span class="p">:</span> <span class="s1">&#39;eimerl&#39;</span><span class="p">,</span>
-                   <span class="s1">&#39;a-BBO&#39;</span><span class="p">:</span> <span class="s1">&#39;agoptics&#39;</span><span class="p">,</span>
-                   <span class="s1">&#39;YVO&#39;</span><span class="p">:</span> <span class="s1">&#39;shi&#39;</span><span class="p">,</span>
-                   <span class="s1">&#39;lithium_niobate&#39;</span><span class="p">:</span> <span class="s1">&#39;zelmon&#39;</span><span class="p">,</span>
-                   <span class="p">}</span>
+    <span class="k">return</span> <span class="n">sellmeier_eqn</span><span class="p">(</span><span class="n">wavelength</span> <span class="o">*</span> <span class="mf">1e6</span><span class="p">,</span> <span class="n">sellmeier_coefs</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="n">form</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="calculate_dispersion"><a class="viewcode-back" href="../../../dispersion.html#pycis.model.dispersion.calculate_dispersion">[docs]</a><span class="k">def</span> <span class="nf">calculate_dispersion</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="p">):</span>
@@ -242,7 +212,7 @@
 
     <span class="n">wl_mic</span> <span class="o">=</span> <span class="n">wavelength</span> <span class="o">*</span> <span class="mf">1e6</span>
     <span class="k">if</span> <span class="n">source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">source</span> <span class="o">=</span> <span class="n">default_sources</span><span class="p">[</span><span class="n">material</span><span class="p">]</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="n">sellmeier_coefs_source_defaults</span><span class="p">[</span><span class="n">material</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="n">material</span> <span class="o">==</span> <span class="s1">&#39;a-BBO&#39;</span> <span class="ow">and</span> <span class="n">source</span> <span class="o">==</span> <span class="s1">&#39;agoptics&#39;</span><span class="p">:</span>
         <span class="c1"># optimised ufuncs</span>
@@ -250,12 +220,9 @@
         <span class="n">n_o</span> <span class="o">=</span> <span class="n">_sellmeier_eqn_abbo_o_ufunc</span><span class="p">(</span><span class="n">wl_mic</span><span class="p">,</span> <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">dd</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">source</span><span class="p">]</span>
-        <span class="n">sellmeier_coefs</span> <span class="o">=</span> <span class="n">dd</span><span class="p">[</span><span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">]</span>
         <span class="n">form</span> <span class="o">=</span> <span class="n">dd</span><span class="p">[</span><span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">]</span>
-        <span class="n">sc_e</span> <span class="o">=</span> <span class="n">sellmeier_coefs</span><span class="p">[</span><span class="s1">&#39;e&#39;</span><span class="p">]</span>
-        <span class="n">sc_o</span> <span class="o">=</span> <span class="n">sellmeier_coefs</span><span class="p">[</span><span class="s1">&#39;o&#39;</span><span class="p">]</span>
-        <span class="n">n_e</span> <span class="o">=</span> <span class="n">_sellmeier_eqn</span><span class="p">(</span><span class="n">wl_mic</span><span class="p">,</span> <span class="n">sc_e</span><span class="p">,</span> <span class="n">form</span><span class="p">)</span>
-        <span class="n">n_o</span> <span class="o">=</span> <span class="n">_sellmeier_eqn</span><span class="p">(</span><span class="n">wl_mic</span><span class="p">,</span> <span class="n">sc_o</span><span class="p">,</span> <span class="n">form</span><span class="p">)</span>
+        <span class="n">n_e</span> <span class="o">=</span> <span class="n">sellmeier_eqn</span><span class="p">(</span><span class="n">wl_mic</span><span class="p">,</span> <span class="n">dd</span><span class="p">[</span><span class="s1">&#39;coefs_e&#39;</span><span class="p">],</span> <span class="n">form</span><span class="p">)</span>
+        <span class="n">n_o</span> <span class="o">=</span> <span class="n">sellmeier_eqn</span><span class="p">(</span><span class="n">wl_mic</span><span class="p">,</span> <span class="n">dd</span><span class="p">[</span><span class="s1">&#39;coefs_o&#39;</span><span class="p">],</span> <span class="n">form</span><span class="p">)</span>
 
     <span class="n">biref</span> <span class="o">=</span> <span class="n">n_e</span> <span class="o">-</span> <span class="n">n_o</span>
     <span class="k">return</span> <span class="n">biref</span><span class="p">,</span> <span class="n">n_e</span><span class="p">,</span> <span class="n">n_o</span></div>
@@ -275,7 +242,7 @@
     <span class="n">wl_mic</span> <span class="o">=</span> <span class="n">wavelength</span> <span class="o">*</span> <span class="mf">1e6</span>
 
     <span class="k">if</span> <span class="n">source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">source</span> <span class="o">=</span> <span class="n">default_sources</span><span class="p">[</span><span class="n">material</span><span class="p">]</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="n">sellmeier_coefs_source_defaults</span><span class="p">[</span><span class="n">material</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="n">material</span> <span class="o">==</span> <span class="s1">&#39;a-BBO&#39;</span> <span class="ow">and</span> <span class="n">source</span> <span class="o">==</span> <span class="s1">&#39;agoptics&#39;</span><span class="p">:</span>
         <span class="c1"># optimised ufuncs</span>
@@ -284,15 +251,15 @@
         <span class="n">dd</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">source</span><span class="p">]</span>
         <span class="n">sellmeier_coefs</span> <span class="o">=</span> <span class="n">dd</span><span class="p">[</span><span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">]</span>
         <span class="n">form</span> <span class="o">=</span> <span class="n">dd</span><span class="p">[</span><span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">]</span>
-        <span class="n">sc_e</span> <span class="o">=</span> <span class="n">sellmeier_coefs</span><span class="p">[</span><span class="s1">&#39;e&#39;</span><span class="p">]</span>
-        <span class="n">sc_o</span> <span class="o">=</span> <span class="n">sellmeier_coefs</span><span class="p">[</span><span class="s1">&#39;o&#39;</span><span class="p">]</span>
+        <span class="n">sc_e</span> <span class="o">=</span> <span class="n">dd</span><span class="p">[</span><span class="s1">&#39;coefs_e&#39;</span><span class="p">]</span>
+        <span class="n">sc_o</span> <span class="o">=</span> <span class="n">dd</span><span class="p">[</span><span class="s1">&#39;coefs_o&#39;</span><span class="p">]</span>
 
         <span class="n">wl_p1_mic</span> <span class="o">=</span> <span class="n">wl_mic</span> <span class="o">+</span> <span class="n">d_lambda_mic</span>
         <span class="n">wl_m1_mic</span> <span class="o">=</span> <span class="n">wl_mic</span> <span class="o">-</span> <span class="n">d_lambda_mic</span>
 
         <span class="n">biref</span><span class="p">,</span> <span class="n">n_e</span><span class="p">,</span> <span class="n">n_o</span> <span class="o">=</span> <span class="n">calculate_dispersion</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span> <span class="p">)</span>
-        <span class="n">biref_p1</span> <span class="o">=</span> <span class="n">_sellmeier_eqn</span><span class="p">(</span><span class="n">wl_p1_mic</span><span class="p">,</span> <span class="n">sc_e</span><span class="p">,</span> <span class="n">form</span><span class="p">)</span> <span class="o">-</span> <span class="n">_sellmeier_eqn</span><span class="p">(</span><span class="n">wl_p1_mic</span><span class="p">,</span> <span class="n">sc_o</span><span class="p">,</span> <span class="n">form</span><span class="p">)</span>
-        <span class="n">biref_m1</span> <span class="o">=</span> <span class="n">_sellmeier_eqn</span><span class="p">(</span><span class="n">wl_m1_mic</span><span class="p">,</span> <span class="n">sc_e</span><span class="p">,</span> <span class="n">form</span><span class="p">)</span> <span class="o">-</span> <span class="n">_sellmeier_eqn</span><span class="p">(</span><span class="n">wl_m1_mic</span><span class="p">,</span> <span class="n">sc_o</span><span class="p">,</span> <span class="n">form</span><span class="p">)</span>
+        <span class="n">biref_p1</span> <span class="o">=</span> <span class="n">sellmeier_eqn</span><span class="p">(</span><span class="n">wl_p1_mic</span><span class="p">,</span> <span class="n">sc_e</span><span class="p">,</span> <span class="n">form</span><span class="p">)</span> <span class="o">-</span> <span class="n">sellmeier_eqn</span><span class="p">(</span><span class="n">wl_p1_mic</span><span class="p">,</span> <span class="n">sc_o</span><span class="p">,</span> <span class="n">form</span><span class="p">)</span>
+        <span class="n">biref_m1</span> <span class="o">=</span> <span class="n">sellmeier_eqn</span><span class="p">(</span><span class="n">wl_m1_mic</span><span class="p">,</span> <span class="n">sc_e</span><span class="p">,</span> <span class="n">form</span><span class="p">)</span> <span class="o">-</span> <span class="n">sellmeier_eqn</span><span class="p">(</span><span class="n">wl_m1_mic</span><span class="p">,</span> <span class="n">sc_o</span><span class="p">,</span> <span class="n">form</span><span class="p">)</span>
 
         <span class="n">biref_deriv</span> <span class="o">=</span> <span class="p">(</span><span class="n">biref_p1</span> <span class="o">-</span> <span class="n">biref_m1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">d_lambda</span><span class="p">)</span>
         <span class="n">kappa</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">wavelength</span> <span class="o">/</span> <span class="n">biref</span><span class="p">)</span> <span class="o">*</span> <span class="n">biref_deriv</span>
@@ -300,28 +267,28 @@
     <span class="k">return</span> <span class="n">kappa</span></div>
 
 
-<span class="k">def</span> <span class="nf">_sellmeier_eqn</span><span class="p">(</span><span class="n">wl_mic</span><span class="p">,</span> <span class="n">coefs</span><span class="p">,</span> <span class="n">form</span><span class="p">):</span>
+<div class="viewcode-block" id="sellmeier_eqn"><a class="viewcode-back" href="../../../dispersion.html#pycis.model.dispersion.sellmeier_eqn">[docs]</a><span class="k">def</span> <span class="nf">sellmeier_eqn</span><span class="p">(</span><span class="n">wl</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">form</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    :param wl_mic: Wavelength(s) in units microns.</span>
-<span class="sd">    :param list coefs: List of Sellmeier coefficients.</span>
-<span class="sd">    :param form:</span>
-<span class="sd">    :return:</span>
+<span class="sd">    Given a set of Sellmeier coefficients, calculate the extraordinary and ordinary refractive indices as a function of</span>
+<span class="sd">    wavelength.</span>
+
+<span class="sd">    :param array-like wl: Wavelength(s) in microns.</span>
+<span class="sd">    :param dict c: Dictionary of Sellmeier coefficients.</span>
+<span class="sd">    :param int form: Which form of Sellmeier equation to use.</span>
+<span class="sd">    :return: (n_e, n_o) tuple containing extraordinary and ordinary refractive indices respectively as a function of</span>
+<span class="sd">    wavlength.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
+    <span class="n">ts</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;e&#39;</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">form</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">coefs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">coefs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="p">((</span><span class="n">wl_mic</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span> <span class="o">+</span> <span class="p">(</span><span class="n">coefs</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">wl_mic</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)))</span> <span class="o">**</span> <span class="mf">0.5</span>
+        <span class="k">return</span> <span class="p">[(</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;B&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">wl</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">c</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]))</span> <span class="o">+</span> <span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]</span> <span class="o">*</span> <span class="n">wl</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">**</span> <span class="mf">0.5</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">ts</span><span class="p">]</span>
     <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">coefs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">coefs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="p">((</span><span class="n">wl_mic</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span> <span class="o">+</span> <span class="p">(</span><span class="n">coefs</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">/</span> <span class="p">((</span><span class="n">wl_mic</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span> <span class="o">**</span> <span class="mf">0.5</span>
+        <span class="k">return</span> <span class="p">[(</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;B&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">wl</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">c</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]))</span> <span class="o">+</span> <span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">wl</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">c</span><span class="p">[</span><span class="s1">&#39;E&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">])))</span> <span class="o">**</span> <span class="mf">0.5</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">ts</span><span class="p">]</span>
     <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">((</span><span class="n">coefs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">wl_mic</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">wl_mic</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="o">+</span>
-                <span class="p">(</span><span class="n">coefs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">wl_mic</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">wl_mic</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span> <span class="o">+</span>
-                <span class="p">(</span><span class="n">coefs</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">*</span> <span class="n">wl_mic</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">wl_mic</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">5</span><span class="p">]))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span>
-
-
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">for optimised, parallelised calculations, these numba-vectorized functions with hard-coded Sellmeier coefficients </span>
-<span class="sd">(a-BBO, source=agoptics) are used, wrapped into ufuncs using xarray.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[((</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]</span> <span class="o">*</span> <span class="n">wl</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">wl</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">c</span><span class="p">[</span><span class="s1">&#39;B&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]))</span> <span class="o">+</span>
+                <span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]</span> <span class="o">*</span> <span class="n">wl</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">wl</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">c</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]))</span> <span class="o">+</span>
+                <span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;E&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]</span> <span class="o">*</span> <span class="n">wl</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">wl</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">c</span><span class="p">[</span><span class="s1">&#39;F&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">ts</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
 <span class="nd">@numba</span><span class="o">.</span><span class="n">vectorize</span><span class="p">([</span><span class="n">numba</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">numba</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span> <span class="p">],</span> <span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fastmath</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="p">)</span>
@@ -368,6 +335,151 @@
 
 <span class="k">def</span> <span class="nf">_calculate_kappa_abbo_ufunc</span><span class="p">(</span><span class="n">wl_mic</span><span class="p">,</span> <span class="p">):</span>
     <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">apply_ufunc</span><span class="p">(</span><span class="n">_calculate_kappa_abbo</span><span class="p">,</span> <span class="n">wl_mic</span><span class="p">,</span> <span class="n">dask</span><span class="o">=</span><span class="s1">&#39;allowed&#39;</span><span class="p">,</span> <span class="p">)</span>
+
+
+<span class="n">sellmeier_coefs_all</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;kato1986&#39;</span><span class="p">:</span>
+        <span class="p">{</span><span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;b-BBO&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+         <span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span>
+             <span class="p">{</span><span class="s1">&#39;Ae&#39;</span><span class="p">:</span> <span class="mf">2.3753</span><span class="p">,</span>
+              <span class="s1">&#39;Be&#39;</span><span class="p">:</span> <span class="mf">0.01224</span><span class="p">,</span>
+              <span class="s1">&#39;Ce&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.01667</span><span class="p">,</span>
+              <span class="s1">&#39;De&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.01516</span><span class="p">,</span>
+              <span class="s1">&#39;Ao&#39;</span><span class="p">:</span> <span class="mf">2.7359</span><span class="p">,</span>
+              <span class="s1">&#39;Bo&#39;</span><span class="p">:</span> <span class="mf">0.01878</span><span class="p">,</span>
+              <span class="s1">&#39;Co&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.01822</span><span class="p">,</span>
+              <span class="s1">&#39;Do&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.01354</span><span class="p">,</span>
+              <span class="p">},</span>
+         <span class="p">},</span>
+
+    <span class="s1">&#39;kato2010&#39;</span><span class="p">:</span>
+        <span class="p">{</span><span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;b-BBO&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+         <span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span>
+             <span class="p">{</span><span class="s1">&#39;Ae&#39;</span><span class="p">:</span> <span class="mf">3.33469</span><span class="p">,</span>
+              <span class="s1">&#39;Be&#39;</span><span class="p">:</span> <span class="mf">0.01237</span><span class="p">,</span>
+              <span class="s1">&#39;Ce&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.01647</span><span class="p">,</span>
+              <span class="s1">&#39;De&#39;</span><span class="p">:</span> <span class="mf">79.0672</span><span class="p">,</span>
+              <span class="s1">&#39;Ee&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">82.2919</span><span class="p">,</span>
+              <span class="s1">&#39;Ao&#39;</span><span class="p">:</span> <span class="mf">3.63357</span><span class="p">,</span>
+              <span class="s1">&#39;Bo&#39;</span><span class="p">:</span> <span class="mf">0.018778</span><span class="p">,</span>
+              <span class="s1">&#39;Co&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.01822</span><span class="p">,</span>
+              <span class="s1">&#39;Do&#39;</span><span class="p">:</span> <span class="mf">60.9129</span><span class="p">,</span>
+              <span class="s1">&#39;Eo&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">67.8505</span><span class="p">,</span>
+              <span class="p">},</span>
+         <span class="p">},</span>
+
+    <span class="s1">&#39;eimerl&#39;</span><span class="p">:</span>
+        <span class="p">{</span><span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;b-BBO&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+         <span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span>
+             <span class="p">{</span><span class="s1">&#39;Ae&#39;</span><span class="p">:</span> <span class="mf">2.3730</span><span class="p">,</span>
+              <span class="s1">&#39;Be&#39;</span><span class="p">:</span> <span class="mf">0.0128</span><span class="p">,</span>
+              <span class="s1">&#39;Ce&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.0156</span><span class="p">,</span>
+              <span class="s1">&#39;De&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.0044</span><span class="p">,</span>
+              <span class="s1">&#39;Ao&#39;</span><span class="p">:</span> <span class="mf">2.7405</span><span class="p">,</span>
+              <span class="s1">&#39;Bo&#39;</span><span class="p">:</span> <span class="mf">0.0184</span><span class="p">,</span>
+              <span class="s1">&#39;Co&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.0179</span><span class="p">,</span>
+              <span class="s1">&#39;Do&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.0155</span><span class="p">,</span>
+              <span class="p">},</span>
+         <span class="p">},</span>
+
+    <span class="s1">&#39;kim&#39;</span><span class="p">:</span>
+        <span class="p">{</span><span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;a-BBO&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+         <span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span>
+             <span class="p">{</span><span class="s1">&#39;Ae&#39;</span><span class="p">:</span> <span class="mf">2.37153</span><span class="p">,</span>
+              <span class="s1">&#39;Be&#39;</span><span class="p">:</span> <span class="mf">0.01224</span><span class="p">,</span>
+              <span class="s1">&#39;Ce&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.01667</span><span class="p">,</span>
+              <span class="s1">&#39;De&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.01516</span><span class="p">,</span>
+              <span class="s1">&#39;Ao&#39;</span><span class="p">:</span> <span class="mf">2.7471</span><span class="p">,</span>
+              <span class="s1">&#39;Bo&#39;</span><span class="p">:</span> <span class="mf">0.01878</span><span class="p">,</span>
+              <span class="s1">&#39;Co&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.01822</span><span class="p">,</span>
+              <span class="s1">&#39;Do&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.01354</span><span class="p">,</span>
+              <span class="p">},</span>
+         <span class="p">},</span>
+
+    <span class="s1">&#39;agoptics&#39;</span><span class="p">:</span>
+        <span class="p">{</span><span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;a-BBO&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+         <span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span>
+             <span class="p">{</span><span class="s1">&#39;Ae&#39;</span><span class="p">:</span> <span class="mf">2.3753</span><span class="p">,</span>
+              <span class="s1">&#39;Be&#39;</span><span class="p">:</span> <span class="mf">0.01224</span><span class="p">,</span>
+              <span class="s1">&#39;Ce&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.01667</span><span class="p">,</span>
+              <span class="s1">&#39;De&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.01516</span><span class="p">,</span>
+              <span class="s1">&#39;Ao&#39;</span><span class="p">:</span> <span class="mf">2.7471</span><span class="p">,</span>
+              <span class="s1">&#39;Bo&#39;</span><span class="p">:</span> <span class="mf">0.01878</span><span class="p">,</span>
+              <span class="s1">&#39;Co&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.01822</span><span class="p">,</span>
+              <span class="s1">&#39;Do&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.01354</span><span class="p">,</span>
+              <span class="p">},</span>
+         <span class="p">},</span>
+
+    <span class="s1">&#39;newlightphotonics&#39;</span><span class="p">:</span>
+        <span class="p">{</span><span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;a-BBO&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+         <span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span>
+             <span class="p">{</span><span class="s1">&#39;Ae&#39;</span><span class="p">:</span> <span class="mf">2.31197</span><span class="p">,</span>
+              <span class="s1">&#39;Be&#39;</span><span class="p">:</span> <span class="mf">0.01184</span><span class="p">,</span>
+              <span class="s1">&#39;Ce&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.01607</span><span class="p">,</span>
+              <span class="s1">&#39;De&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.00400</span><span class="p">,</span>
+              <span class="s1">&#39;Ao&#39;</span><span class="p">:</span> <span class="mf">2.67579</span><span class="p">,</span>
+              <span class="s1">&#39;Bo&#39;</span><span class="p">:</span> <span class="mf">0.02099</span><span class="p">,</span>
+              <span class="s1">&#39;Co&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.00470</span><span class="p">,</span>
+              <span class="s1">&#39;Do&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.00528</span><span class="p">,</span>
+              <span class="p">},</span>
+         <span class="p">},</span>
+
+    <span class="s1">&#39;ghosh&#39;</span><span class="p">:</span>
+        <span class="p">{</span><span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;calcite&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+         <span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span>
+             <span class="p">{</span><span class="s1">&#39;Ae&#39;</span><span class="p">:</span> <span class="mf">1.35859695</span><span class="p">,</span>
+              <span class="s1">&#39;Be&#39;</span><span class="p">:</span> <span class="mf">0.82427830</span><span class="p">,</span>
+              <span class="s1">&#39;Ce&#39;</span><span class="p">:</span> <span class="mf">1.06689543e-2</span><span class="p">,</span>
+              <span class="s1">&#39;De&#39;</span><span class="p">:</span> <span class="mf">0.14429128</span><span class="p">,</span>
+              <span class="s1">&#39;Ee&#39;</span><span class="p">:</span> <span class="mi">120</span><span class="p">,</span>
+              <span class="s1">&#39;Ao&#39;</span><span class="p">:</span> <span class="mf">1.73358749</span><span class="p">,</span>
+              <span class="s1">&#39;Bo&#39;</span><span class="p">:</span> <span class="mf">0.96464345</span><span class="p">,</span>
+              <span class="s1">&#39;Co&#39;</span><span class="p">:</span> <span class="mf">1.94325203e-2</span><span class="p">,</span>
+              <span class="s1">&#39;Do&#39;</span><span class="p">:</span> <span class="mf">1.82831454</span><span class="p">,</span>
+              <span class="s1">&#39;Eo&#39;</span><span class="p">:</span> <span class="mi">120</span><span class="p">,</span>
+              <span class="p">}</span>
+         <span class="p">},</span>
+    <span class="s1">&#39;shi&#39;</span><span class="p">:</span>
+        <span class="p">{</span><span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;YVO&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+         <span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span>
+             <span class="p">{</span><span class="s1">&#39;Ae&#39;</span><span class="p">:</span> <span class="mf">4.607200</span><span class="p">,</span>
+              <span class="s1">&#39;Be&#39;</span><span class="p">:</span> <span class="mf">0.108087</span><span class="p">,</span>
+              <span class="s1">&#39;Ce&#39;</span><span class="p">:</span> <span class="mf">0.052495</span><span class="p">,</span>
+              <span class="s1">&#39;De&#39;</span><span class="p">:</span> <span class="mf">0.014305</span><span class="p">,</span>
+              <span class="s1">&#39;Ao&#39;</span><span class="p">:</span> <span class="mf">3.778790</span><span class="p">,</span>
+              <span class="s1">&#39;Bo&#39;</span><span class="p">:</span> <span class="mf">0.070479</span><span class="p">,</span>
+              <span class="s1">&#39;Co&#39;</span><span class="p">:</span> <span class="mf">0.045731</span><span class="p">,</span>
+              <span class="s1">&#39;Do&#39;</span><span class="p">:</span> <span class="mf">0.009701</span><span class="p">,</span>
+              <span class="p">},</span>
+         <span class="p">},</span>
+
+    <span class="s1">&#39;zelmon&#39;</span><span class="p">:</span>  <span class="c1"># D.E. Zelmon, D. L. Small, J. Opt. Soc. Am. B/Vol. 14, No. 12/December 1997</span>
+        <span class="p">{</span><span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;lithium_niobate&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+         <span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span>
+             <span class="p">{</span><span class="s1">&#39;Ae&#39;</span><span class="p">:</span> <span class="mf">2.9804</span><span class="p">,</span>
+              <span class="s1">&#39;Be&#39;</span><span class="p">:</span> <span class="mf">0.02047</span><span class="p">,</span>
+              <span class="s1">&#39;Ce&#39;</span><span class="p">:</span> <span class="mf">0.5981</span><span class="p">,</span>
+              <span class="s1">&#39;De&#39;</span><span class="p">:</span> <span class="mf">0.0666</span><span class="p">,</span>
+              <span class="s1">&#39;Ee&#39;</span><span class="p">:</span> <span class="mf">8.9543</span><span class="p">,</span>
+              <span class="s1">&#39;Fe&#39;</span><span class="p">:</span> <span class="mf">416.08</span><span class="p">,</span>
+              <span class="s1">&#39;Ao&#39;</span><span class="p">:</span> <span class="mf">2.6734</span><span class="p">,</span>
+              <span class="s1">&#39;Bo&#39;</span><span class="p">:</span> <span class="mf">0.01764</span><span class="p">,</span>
+              <span class="s1">&#39;Co&#39;</span><span class="p">:</span> <span class="mf">1.2290</span><span class="p">,</span>
+              <span class="s1">&#39;Do&#39;</span><span class="p">:</span> <span class="mf">0.05914</span><span class="p">,</span>
+              <span class="s1">&#39;Eo&#39;</span><span class="p">:</span> <span class="mf">12.614</span><span class="p">,</span>
+              <span class="s1">&#39;Fo&#39;</span><span class="p">:</span> <span class="mf">474.6</span><span class="p">,</span>
+              <span class="p">},</span>
+         <span class="p">},</span>
+<span class="p">}</span>
 </pre></div>
 
            </div>

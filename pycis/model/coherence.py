@@ -64,7 +64,7 @@ def calculate_coherence(spectrum, delay, material=None, freq_com=None):
 
     elif mode == 'group_delay':
         if material is not None:
-            kappa_0 = pycis.calculate_kappa(c / freq_com, material=material, )
+            kappa_0 = pycis.get_kappa(c / freq_com, material=material, )
         else:
             kappa_0 = 1
 
@@ -104,7 +104,7 @@ def test_with_gaussian_lineshape():
     # ANALYTICAL
     wl_0 = 464.8e-9
     material = 'a-BBO'
-    kappa_0 = pycis.calculate_kappa(wl_0, material, )
+    kappa_0 = pycis.get_kappa(wl_0, material, )
     wl_sigma = 0.05e-9
     n_sigma = 10
     n_bins = 20000

@@ -1,21 +1,5 @@
-import traceback
-from .paths import root
-
-try:
-    from .analysis import *
-except ImportError:
-    print(traceback.format_exc())
-
-try:
-    from .model import *
-except ImportError:
-    print(traceback.format_exc())
-
-try:
-    from .tools import *
-except ImportError:
-    print(traceback.format_exc())
-
-
-
+from .paths import *
+from .tools import *
+from .model import *
+from .analysis import *
 

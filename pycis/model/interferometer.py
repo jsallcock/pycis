@@ -1,7 +1,7 @@
 import numpy as np
 import xarray as xr
 from numba import vectorize, f8
-from pycis.model import calculate_dispersion
+from pycis.model import get_refractive_indices
 from math import radians
 
 
@@ -48,9 +48,6 @@ class Component:
     """
     def __init__(self, ):
         pass
-
-    def get_mueller_matrix(self, *args, **kwargs):
-        raise NotImplementedError
 
     def __eq__(self, other_component):
         if type(self) == type(other_component) \
@@ -175,7 +172,7 @@ class LinearRetarder(OrientableComponent, TiltableComponent):
 
     def get_delay(self, *args, **kwargs):
         """
-        Interferometer delay in radians.
+         Calculates path delay (in radians) imparted by the retarder.
         """
         raise NotImplementedError
 
@@ -193,23 +190,32 @@ class UniaxialCrystal(LinearRetarder):
     :param float thickness: Crystal thickness in m.
     :param float cut_angle: Angle in degrees between crystal optic axis and front face.
     :param float orientation: Orientation of component fast axis in degrees, from positive x-axis towards positive y-axis.
-    :param str material: Crystal material.
-    :param str material_source: Source of Sellmeier coefficients describing dispersion in the crystal. If blank, the
-        default material source specified in pycis.model.dispersion
+    :param str material: Set crystal material.
+    :param str sellmeier_coefs_source: Specify which source to use for the Sellmeier coefficients that describe the
+        dispersion. If not specified, defaults for each material are set by sellmeier_coefs_source_defaults in
+        pycis.model.dispersion.
+    :param dict sellmeier_coefs: Manually set the coefficients that describe the material dispersion
+        via the Sellmeier equation. Dictionary must have keys 'Ae', 'Be', 'Ce', 'De', 'Ao', 'Bo', 'Co', 'Do'.
     :param float contrast: An arbitrary contrast degradation factor for the retarder, independent of ray path. Value
-        between 0 and 1. Simulates the effect of real crystal imperfections.
+        between 0 and 1. Simulates real crystal imperfections.
+
     """
-    def __init__(self, thickness, cut_angle, material='a-BBO', material_source=None, **kwargs):
+    def __init__(self, thickness, cut_angle, material='a-BBO', sellmeier_coefs_source=None, sellmeier_coefs=None,
+                 **kwargs):
         super().__init__(**kwargs)
 
         self.thickness = thickness
         self.cut_angle = cut_angle
         self.material = material
-        self.material_source = material_source
+        self.sellmeier_coefs_source = sellmeier_coefs_source
+        self.sellmeier_coefs = sellmeier_coefs
 
-    def get_delay(self, wavelength, inc_angle, azim_angle, n_e=None, n_o=None):
+        if all([attr is not None for attr in [self.sellmeier_coefs_source, self.sellmeier_coefs]]):
+            raise ValueError('pycis: arguments not understood')
+
+    def get_delay(self, wavelength, inc_angle, azim_angle, ):
         """
-        Calculate imparted delay in radians.
+        Calculates path delay (in radians) imparted by the crystal.
 
         :param wavelength: Wavelength in m.
         :type wavelength: float, xarray.DataArray
@@ -217,19 +223,16 @@ class UniaxialCrystal(LinearRetarder):
         :type inc_angle: float, xarray.DataArray
         :param azim_angle: Ray azimuthal angle(s) in radians.
         :type azim_angle: float, xarray.DataArray
-        :param float n_e: Manually set extraordinary refractive index (e.g. for fitting).
-        :param float n_o: Manually set ordinary refractive index (e.g. for fitting).
         :return: (float, xarray.DataArray) Imparted delay in radians.
         """
 
-        # Veiras defines optical path difference as OPL_o - OPL_e ie. +ve phase indicates a delayed extraordinary
-        # ray.
+        kwargs = {
+            'sellmeier_coefs_source': self.sellmeier_coefs_source,
+            'sellmeier_coefs': self.sellmeier_coefs,
+        }
+        ne, no = get_refractive_indices(wavelength, self.material, **kwargs)
 
-        # if refractive indices have not been manually set, calculate
-        if n_e is None and n_o is None:
-            biref, n_e, n_o = calculate_dispersion(wavelength, self.material, source=self.material_source)
-
-        args = [wavelength, inc_angle, azim_angle, n_e, n_o, radians(self.cut_angle), self.thickness, ]
+        args = [wavelength, inc_angle, azim_angle, ne, no, radians(self.cut_angle), self.thickness, ]
         return xr.apply_ufunc(_calc_delay_uniaxial_crystal, *args, dask='allowed', )
 
     def get_fringe_frequency(self, wavelength, focal_length, ):
@@ -241,11 +244,15 @@ class UniaxialCrystal(LinearRetarder):
         :return: (tuple) x and y components of the fringe frequency in units m^-1 and in order (f_x, f_y).
         """
 
-        biref, n_e, n_o = calculate_dispersion(wavelength, self.material, source=self.source)
+        kwargs = {
+            'sellmeier_coefs_source': self.sellmeier_coefs_source,
+            'sellmeier_coefs': self.sellmeier_coefs,
+        }
+        ne, no = get_refractive_indices(wavelength, self.material, **kwargs)
 
-        # derived by first-order approx. of the Veiras formula.
-        factor = (n_o ** 2 - n_e ** 2) * np.sin(radians(self.cut_angle)) * np.cos(radians(self.cut_angle)) / \
-                 (n_e ** 2 * np.sin(radians(self.cut_angle)) ** 2 + n_o ** 2 * np.cos(radians(self.cut_angle)) ** 2)
+        # from first-order approx. of the Veiras formula.
+        factor = (no ** 2 - ne ** 2) * np.sin(radians(self.cut_angle)) * np.cos(radians(self.cut_angle)) / \
+                 (ne ** 2 * np.sin(radians(self.cut_angle)) ** 2 + no ** 2 * np.cos(radians(self.cut_angle)) ** 2)
         freq = self.thickness / (wavelength * focal_length) * factor
 
         freq_x = freq * np.cos(self.orientation)
@@ -379,21 +386,21 @@ class HalfWaveplate(IdealWaveplate):
 
 
 @vectorize([f8(f8, f8, f8, f8, f8, f8, f8), ], nopython=True, fastmath=True, cache=True, )
-def _calc_delay_uniaxial_crystal(wavelength, inc_angle, azim_angle, n_e, n_o, cut_angle, thickness, ):
+def _calc_delay_uniaxial_crystal(wavelength, inc_angle, azim_angle, ne, no, cut_angle, thickness, ):
     s_inc_angle = np.sin(inc_angle)
     s_inc_angle_2 = s_inc_angle ** 2
     s_cut_angle_2 = np.sin(cut_angle) ** 2
     c_cut_angle_2 = np.cos(cut_angle) ** 2
 
-    term_1 = np.sqrt(n_o ** 2 - s_inc_angle_2)
-    term_2 = (n_o ** 2 - n_e ** 2) * \
+    term_1 = np.sqrt(no ** 2 - s_inc_angle_2)
+    term_2 = (no ** 2 - ne ** 2) * \
              (np.sin(cut_angle) * np.cos(cut_angle) * np.cos(azim_angle) * s_inc_angle) / \
-             (n_e ** 2 * s_cut_angle_2 + n_o ** 2 * c_cut_angle_2)
-    term_3 = - n_o * np.sqrt(
-        (n_e ** 2 * (n_e ** 2 * s_cut_angle_2 + n_o ** 2 * c_cut_angle_2)) -
-        ((n_e ** 2 - (n_e ** 2 - n_o ** 2) * c_cut_angle_2 * np.sin(
+             (ne ** 2 * s_cut_angle_2 + no ** 2 * c_cut_angle_2)
+    term_3 = - no * np.sqrt(
+        (ne ** 2 * (ne ** 2 * s_cut_angle_2 + no ** 2 * c_cut_angle_2)) -
+        ((ne ** 2 - (ne ** 2 - no ** 2) * c_cut_angle_2 * np.sin(
             azim_angle) ** 2) * s_inc_angle_2)) / \
-             (n_e ** 2 * s_cut_angle_2 + n_o ** 2 * c_cut_angle_2)
+             (ne ** 2 * s_cut_angle_2 + no ** 2 * c_cut_angle_2)
 
     return 2 * np.pi * (thickness / wavelength) * (term_1 + term_2 + term_3)
 

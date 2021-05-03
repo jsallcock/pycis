@@ -192,11 +192,22 @@ analytical shortcut is available.</p></li>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="pycis.model.instrument.Instrument.parse_config">
-<code class="sig-name descname">parse_config</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">config</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.parse_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.parse_config" title="Permalink to this definition">¶</a></dt>
-<dd><p>Try loading config as an absolute path to a .yaml file. Failing that, try it as a relative path to a .yaml file
+<dt id="pycis.model.instrument.Instrument.read_config">
+<code class="sig-name descname">read_config</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">config</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.read_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.read_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tries loading config as an absolute path to a .yaml file. Failing that, try it as a relative path to a .yaml file
 from the current working directory. Finally, try looking for config as a .yaml file saved in
 pycis/model/config/.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pycis.model.instrument.Instrument.write_config">
+<code class="sig-name descname">write_config</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fpath</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.write_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.write_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the current instrument config to a .yaml file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filepath</strong> (<em>str</em>) – </p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -258,7 +269,7 @@ pycis/model/config/.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>wavelength</strong> (<em>float</em><em>, </em><em>xarray.DataArray</em>) – Wavelength in m. I</p></li>
+<li><p><strong>wavelength</strong> (<em>float</em><em>, </em><em>xarray.DataArray</em>) – Wavelength in m.</p></li>
 <li><p><strong>x</strong> (<em>float</em><em>, </em><em>xarray.DataArray</em>) – Pixel centre x position(s) in sensor plane in m.</p></li>
 <li><p><strong>y</strong> (<em>float</em><em>, </em><em>xarray.DataArray</em>) – Pixel centre y position(s) in sensor plane in m.</p></li>
 </ul>
