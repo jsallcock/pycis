@@ -175,36 +175,45 @@
 <dl class="py function">
 <dt id="pycis.model.dispersion.get_refractive_indices">
 <code class="sig-prename descclassname">pycis.model.dispersion.</code><code class="sig-name descname">get_refractive_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wavelength</span></em>, <em class="sig-param"><span class="n">material</span></em>, <em class="sig-param"><span class="n">sellmeier_coefs_source</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sellmeier_coefs</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/dispersion.html#get_refractive_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.dispersion.get_refractive_indices" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the extraordinary and ordinary refractive indices as a function of wavelength.</p>
+<dd><p>Calculate the extraordinary and ordinary refractive indices as a function of wavelength</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>wavelength</strong> (<em>float</em><em>, </em><em>numpy.ndarray</em><em>, </em><em>xarray.DataArray</em>) – Wavelength in m.</p></li>
 <li><p><strong>material</strong> (<em>str</em>) – Set crystal material.</p></li>
-<li><p><strong>sellmeier_coefs_source</strong> (<em>str</em>) – Specify which source to use for the Sellmeier coefficients that describe the</p></li>
+<li><p><strong>sellmeier_coefs_source</strong> (<em>str</em>) – Specify which source to use for the Sellmeier coefficients that describe the
+dispersion. If not specified, defaults for each material are set by sellmeier_coefs_source_defaults in
+pycis.model.dispersion.</p></li>
+<li><p><strong>sellmeier_coefs</strong> (<em>dict</em>) – Manually set the coefficients that describe the material dispersion
+via the Sellmeier equation. Dictionary must have keys ‘Ae’, ‘Be’, ‘Ce’, ‘De’, ‘Ao’, ‘Bo’, ‘Co’ and ‘Do’.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(ne, no) tuple containing extraordinary and ordinary refractive indices respectively. type(ne) = type(no)
+= type(wavelength).</p>
+</dd>
 </dl>
-<p>dispersion. If not specified, defaults for each material are set by sellmeier_coefs_source_defaults in
-pycis.model.dispersion.
-:param dict sellmeier_coefs: Manually set the coefficients that describe the material dispersion
-via the Sellmeier equation. Dictionary must have keys ‘Ae’, ‘Be’, ‘Ce’, ‘De’, ‘Ao’, ‘Bo’, ‘Co’, ‘Do’.
-:return:</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="pycis.model.dispersion.get_kappa">
 <code class="sig-prename descclassname">pycis.model.dispersion.</code><code class="sig-name descname">get_kappa</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wavelength</span></em>, <em class="sig-param"><span class="n">material</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/dispersion.html#get_kappa"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.dispersion.get_kappa" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate kappa, the dimensionless parameter that gives a first-order account of material dispersion.</p>
+<dd><p>Calculate kappa, the dimensionless parameter that gives a first-order account of material dispersion, as a function
+of wavelength</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>wavelength</strong> (<em>float</em><em>, </em><em>np.array</em><em>, </em><em>xr.DataArray</em>) – Wavelength(s) in units m.</p></li>
-<li><p><strong>material</strong> (<em>str</em>) – Specifies the material.</p></li>
+<li><p><strong>wavelength</strong> (<em>float</em><em>, </em><em>numpy.ndarray</em><em>, </em><em>xarray.DataArray</em>) – Wavelength in m.</p></li>
+<li><p><strong>material</strong> (<em>str</em>) – Set crystal material.</p></li>
+<li><p><strong>sellmeier_coefs_source</strong> (<em>str</em>) – Specify which source to use for the Sellmeier coefficients that describe the
+dispersion. If not specified, defaults for each material are set by sellmeier_coefs_source_defaults in
+pycis.model.dispersion.</p></li>
+<li><p><strong>sellmeier_coefs</strong> (<em>dict</em>) – Manually set the coefficients that describe the material dispersion
+via the Sellmeier equation. Dictionary must have keys ‘Ae’, ‘Be’, ‘Ce’, ‘De’, ‘Ao’, ‘Bo’, ‘Co’ and ‘Do’.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Kappa</p>
+<dd class="field-even"><p>kappa. type(kappa) = type(wavelength)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -213,31 +222,37 @@ via the Sellmeier equation. Dictionary must have keys ‘Ae’, ‘Be’, ‘Ce�
 <dt id="pycis.model.dispersion.sellmeier_eqn">
 <code class="sig-prename descclassname">pycis.model.dispersion.</code><code class="sig-name descname">sellmeier_eqn</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wl</span></em>, <em class="sig-param"><span class="n">c</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/dispersion.html#sellmeier_eqn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.dispersion.sellmeier_eqn" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a set of Sellmeier coefficients, calculate the extraordinary and ordinary refractive indices as a function of
-wavelength.</p>
+wavelength</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>wl</strong> (<em>array-like</em>) – Wavelength(s) in microns.</p></li>
-<li><p><strong>c</strong> (<em>dict</em>) – Dictionary of Sellmeier coefficients.</p></li>
-<li><p><strong>form</strong> (<em>int</em>) – Which form of Sellmeier equation to use.</p></li>
+<li><p><strong>wl</strong> (<em>float</em><em>, </em><em>numpy.ndarray</em><em>, </em><em>xarray.DataArray</em>) – Wavelength in microns.</p></li>
+<li><p><strong>c</strong> (<em>dict</em>) – Coefficients that describe material dispersion via the Sellmeier equation. Dictionary must have keys ‘Ae’, ‘Be’,
+‘Ce’, … and ‘Ao’, ‘Bo’, ‘Co’, … The form of Sellmeier equation used is determined by len(c).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>(n_e, n_o) tuple containing extraordinary and ordinary refractive indices respectively as a function of</p>
+<dd class="field-even"><p>(ne, no) tuple containing extraordinary and ordinary refractive indices respectively as a function of
+wavelength.</p>
 </dd>
 </dl>
-<p>wavlength.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="pycis.model.dispersion.get_sellmeier_coefs">
 <code class="sig-prename descclassname">pycis.model.dispersion.</code><code class="sig-name descname">get_sellmeier_coefs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">material</span></em>, <em class="sig-param"><span class="n">sellmeier_coefs_source</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/dispersion.html#get_sellmeier_coefs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.dispersion.get_sellmeier_coefs" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
+<dd><p>Return the requested set of Sellmeier coefficients</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>sellmeier_coefs_source</strong> – </p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>material</strong> (<em>str</em>) – </p></li>
+<li><p><strong>sellmeier_coefs_source</strong> (<em>str</em>) – Specify which source to use for the Sellmeier coefficients that describe the
+dispersion. If not specified, defaults for each material are set by sellmeier_coefs_source_defaults in
+pycis.model.dispersion.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>dict containing the Sellmeier coefficients.</p>
 </dd>
 </dl>
 </dd></dl>

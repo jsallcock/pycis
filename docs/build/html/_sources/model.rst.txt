@@ -13,10 +13,10 @@ frequency.
 
 Conventions
 -----------
-+ Mueller matrices are xr.DataArray instances with dimensions that include 'mueller_v' and 'mueller_h' (each with length = 4).
-+ Stokes vectors are xr.DataArray instances with dimensions that include 'stokes' (with length = 4).
++ Mueller matrices are xr.DataArrays with dimensions that include 'mueller_v' and 'mueller_h' (each with length = 4).
++ Stokes vectors are xr.DataArrays with dimensions that include 'stokes' (with length = 4).
 + The coordinate system is defined with its origin at the centre of the camera sensor, which lies in the xy plane.
-+ S.I. units are used throughout, and all physical angles and phase delay angles are in radians.
++ S.I. units are used throughout, physical angles are in degrees and phase delay angles are in radians.
 
 Geometry definitions
 --------------------

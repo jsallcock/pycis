@@ -174,18 +174,26 @@
 
 <div class="viewcode-block" id="Instrument"><a class="viewcode-back" href="../../../instrument.html#pycis.model.instrument.Instrument">[docs]</a><span class="k">class</span> <span class="nc">Instrument</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Coherence imaging instrument.</span>
+<span class="sd">    Coherence imaging instrument</span>
 
-<span class="sd">    Generated from either a configuration file, or with the constituent python objects.</span>
+<span class="sd">    :param str config: \</span>
+<span class="sd">        Path to a .yaml instrument configuration file.</span>
 
-<span class="sd">    :param str config: path to a .yaml instrument configuration file</span>
-<span class="sd">    :param pycis.model.Camera camera: Instrument camera.</span>
-<span class="sd">    :param list optics: A list of floats, the focal lengths (in m) of the three lenses used in the standard CI</span>
-<span class="sd">        configuration (see e.g. my thesis or Scott Silburn&#39;s): [f_1, f_2, f_3] where f_1 is the objective lens.</span>
-<span class="sd">    :param list interferometer: A list of instances of pycis.model.Component, where the first entry is the first</span>
+<span class="sd">    :param pycis.model.Camera camera: \</span>
+<span class="sd">        Instrument camera.</span>
+
+<span class="sd">    :param list optics: \</span>
+<span class="sd">        A list of floats, the focal lengths (in m) of the three lenses used in the standard CI configuration (see e.g.</span>
+<span class="sd">        my thesis or Scott Silburn&#39;s): [f_1, f_2, f_3] where f_1 is the objective lens.</span>
+
+<span class="sd">    :param list interferometer: \</span>
+<span class="sd">        A list of instances of pycis.model.Component, where the first entry is the first</span>
 <span class="sd">        component that the light passes through.</span>
-<span class="sd">    :param bool force_mueller: Forces the full Mueller matrix calculation of the interferogram, regardless of whether an</span>
+
+<span class="sd">    :param bool force_mueller: \</span>
+<span class="sd">        Forces the full Mueller matrix calculation of the interferogram, regardless of whether an</span>
 <span class="sd">        analytical shortcut is available.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">camera</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interferometer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">force_mueller</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
@@ -263,7 +271,7 @@
 
 <div class="viewcode-block" id="Instrument.get_type"><a class="viewcode-back" href="../../../instrument.html#pycis.model.instrument.Instrument.get_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Type of instrument determines how interferogram is calculated.</span>
+<span class="sd">        Instrument type determines how the interferogram is calculated</span>
 
 <span class="sd">        Valid instrument types:</span>
 <span class="sd">        - &#39;mueller&#39;: Full Mueller calculation</span>
@@ -331,7 +339,7 @@
 
 <div class="viewcode-block" id="Instrument.get_inc_angle"><a class="viewcode-back" href="../../../instrument.html#pycis.model.instrument.Instrument.get_inc_angle">[docs]</a>    <span class="k">def</span> <span class="nf">get_inc_angle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">component</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Calculate incidence angle(s) of ray(s) through the interferometer, in radians.</span>
+<span class="sd">        Calculate incidence angle(s) of ray(s) through the component</span>
 
 <span class="sd">        :param x: Pixel centre x position(s) in sensor plane in m.</span>
 <span class="sd">        :type x: float, xr.DataArray</span>
@@ -350,7 +358,7 @@
 
 <div class="viewcode-block" id="Instrument.get_azim_angle"><a class="viewcode-back" href="../../../instrument.html#pycis.model.instrument.Instrument.get_azim_angle">[docs]</a>    <span class="k">def</span> <span class="nf">get_azim_angle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">component</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Calculate azimuthal angle(s) of ray(s) through the crystal, in radians.</span>
+<span class="sd">        Calculate azimuthal angle(s) of ray(s) through the component</span>
 
 <span class="sd">        :param x: Pixel centre x position(s) in sensor plane in m.</span>
 <span class="sd">        :type x: float, xr.DataArray</span>
@@ -370,14 +378,17 @@
 
 <div class="viewcode-block" id="Instrument.get_mueller_matrix"><a class="viewcode-back" href="../../../instrument.html#pycis.model.instrument.Instrument.get_mueller_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">get_mueller_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Calculate total Mueller matrix for the interferometer.</span>
+<span class="sd">        Calculate total Mueller matrix for the interferometer</span>
 
 <span class="sd">        :param wavelength: Wavelength in m.</span>
-<span class="sd">        :type wavelength: float, xarray.DataArray</span>
+<span class="sd">        :type wavelength: float, xr.DataArray</span>
+
 <span class="sd">        :param x: Pixel centre x position(s) in sensor plane in m.</span>
-<span class="sd">        :type x: float, xarray.DataArray</span>
+<span class="sd">        :type x: float, xr.DataArray</span>
+
 <span class="sd">        :param y: Pixel centre y position(s) in sensor plane in m.</span>
-<span class="sd">        :type y: float, xarray.DataArray</span>
+<span class="sd">        :type y: float, xr.DataArray</span>
+
 <span class="sd">        :return: (xr.DataArray) Mueller matrix.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -391,14 +402,14 @@
 
 <div class="viewcode-block" id="Instrument.get_delay"><a class="viewcode-back" href="../../../instrument.html#pycis.model.instrument.Instrument.get_delay">[docs]</a>    <span class="k">def</span> <span class="nf">get_delay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Calculate the interferometer delay(s) at the given wavelength(s).</span>
+<span class="sd">        Calculate the interferometer delay(s) at the given wavelength(s)</span>
 
-<span class="sd">        :param wavelength: Wavelength in m. If xarray.DataArray, must have dimension name &#39;wavelength&#39;.</span>
-<span class="sd">        :type wavelength: float, xarray.DataArray</span>
+<span class="sd">        :param wavelength: Wavelength in m. If xr.DataArray, must have dimension name &#39;wavelength&#39;.</span>
+<span class="sd">        :type wavelength: float, xr.DataArray</span>
 <span class="sd">        :param x: Pixel centre x position(s) in sensor plane in m.</span>
-<span class="sd">        :type x: float, xarray.DataArray</span>
+<span class="sd">        :type x: float, xr.DataArray</span>
 <span class="sd">        :param y: Pixel centre y position(s) in sensor plane in m.</span>
-<span class="sd">        :type y: float, xarray.DataArray</span>
+<span class="sd">        :type y: float, xr.DataArray</span>
 <span class="sd">        :return: (xr.DataArray) Interferometer delay(s) in radians.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -438,13 +449,13 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Capture image of given spectrum.</span>
 
-<span class="sd">        :param spectrum: (xarray.DataArray) photon fluence spectrum with units of ph / m [hitting the pixel area during</span>
+<span class="sd">        :param spectrum: (xr.DataArray) photon fluence spectrum with units of ph / m [hitting the pixel area during</span>
 <span class="sd">            exposure time] and with dimensions &#39;wavelength&#39; and, optionally, &#39;x&#39;, &#39;y&#39; and &#39;stokes&#39;. Xarray broadcasting</span>
 <span class="sd">            rules apply to the spatial dimensions: if &#39;x&#39; or &#39;y&#39; are not in spectrum.dims then it is assumed that the</span>
 <span class="sd">            incident spectrum is uniform across pixels. However, if there is no &#39;stokes&#39; dimension then it is assumed</span>
 <span class="sd">            that light is unpolarised (i.e. the spectrum supplied is the S_0 Stokes parameter only).</span>
 <span class="sd">        :param bool clean: False to add realistic image noise, passed to self.camera.capture()</span>
-<span class="sd">        :return: (xarray.DataArray) image in units of camera counts.</span>
+<span class="sd">        :return: (xr.DataArray) image in units of camera counts.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="s1">&#39;x&#39;</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>

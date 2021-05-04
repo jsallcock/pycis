@@ -275,9 +275,15 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Linear polariser</span>
 
-<span class="sd">    :param float orientation: Orientation in degrees of the transmission axis relative to the x-axis.</span>
-<span class="sd">    :param float tx_1: transmission primary component. [0, 1] - defaults to 1.</span>
-<span class="sd">    :param float tx_2: transmission secondary (orthogonal) component. [0, 1] - defaults to 0.</span>
+<span class="sd">    :param float orientation: \</span>
+<span class="sd">        Orientation in degrees of the transmission axis relative to the x-axis.</span>
+
+<span class="sd">    :param float tx_1: \</span>
+<span class="sd">        Transmission, primary component. [0, 1] - default is 1.</span>
+
+<span class="sd">    :param float tx_2: \</span>
+<span class="sd">        Transmission, secondary (orthogonal) component. [0, 1] - default is 0.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tx_1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">tx_2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -289,10 +295,8 @@
 
 <div class="viewcode-block" id="LinearPolariser.get_mueller_matrix"><a class="viewcode-back" href="../../../interferometer.html#pycis.model.interferometer.LinearPolariser.get_mueller_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">get_mueller_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Mueller matrix for a linear polariser</span>
 
-<span class="sd">        :param args:</span>
-<span class="sd">        :param kwargs:</span>
-<span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">m</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">self</span><span class="o">.</span><span class="n">tx_2</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx_1</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx_1</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx_2</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
@@ -392,7 +396,7 @@
 <span class="sd">        :type azim_angle: float, xarray.DataArray</span>
 
 <span class="sd">        :return: (float, xarray.DataArray) Imparted delay in radians.</span>
-<span class="sd">        </span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span>
@@ -456,7 +460,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate path delay (in radians) imparted by the retarder</span>
 
-<span class="sd">        ::param wavelength: Wavelength in m.</span>
+<span class="sd">        :param wavelength: Wavelength in m.</span>
 <span class="sd">        :type wavelength: float, xarray.DataArray</span>
 <span class="sd">        :param inc_angle: Ray incidence angle(s) in radians.</span>
 <span class="sd">        :type inc_angle: float, xarray.DataArray</span>

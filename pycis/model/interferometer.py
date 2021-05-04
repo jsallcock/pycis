@@ -301,7 +301,7 @@ class SavartPlate(LinearRetarder):
         """
         Calculate path delay (in radians) imparted by the retarder
 
-        ::param wavelength: Wavelength in m.
+        :param wavelength: Wavelength in m.
         :type wavelength: float, xarray.DataArray
         :param inc_angle: Ray incidence angle(s) in radians.
         :type inc_angle: float, xarray.DataArray

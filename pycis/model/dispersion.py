@@ -1,7 +1,5 @@
 import copy
 
-import xarray as xr
-
 DWL = 1.e-10
 sellmeier_coefs_source_defaults = {
     'a-BBO': 'agoptics',
@@ -13,19 +11,26 @@ sellmeier_coefs_source_defaults = {
 
 def get_refractive_indices(wavelength, material, sellmeier_coefs_source=None, sellmeier_coefs=None, ):
     """
-    Calculate the extraordinary and ordinary refractive indices as a function of wavelength.
+    Calculate the extraordinary and ordinary refractive indices as a function of wavelength
 
     :param wavelength: Wavelength in m.
     :type wavelength: float, numpy.ndarray, xarray.DataArray
-    :param str material: Set crystal material.
-    :param str sellmeier_coefs_source: Specify which source to use for the Sellmeier coefficients that describe the
-    dispersion. If not specified, defaults for each material are set by sellmeier_coefs_source_defaults in
-    pycis.model.dispersion.
-    :param dict sellmeier_coefs: Manually set the coefficients that describe the material dispersion
-    via the Sellmeier equation. Dictionary must have keys 'Ae', 'Be', 'Ce', 'De', 'Ao', 'Bo', 'Co', 'Do'.
-    :return:
-    """
 
+    :param str material: Set crystal material.
+
+    :param str sellmeier_coefs_source: \
+        Specify which source to use for the Sellmeier coefficients that describe the
+        dispersion. If not specified, defaults for each material are set by sellmeier_coefs_source_defaults in
+        pycis.model.dispersion.
+
+    :param dict sellmeier_coefs: \
+        Manually set the coefficients that describe the material dispersion
+        via the Sellmeier equation. Dictionary must have keys 'Ae', 'Be', 'Ce', 'De', 'Ao', 'Bo', 'Co' and 'Do'.
+
+    :return: (ne, no) tuple containing extraordinary and ordinary refractive indices respectively. type(ne) = type(no)
+        = type(wavelength).
+
+    """
     if all([arg is not None for arg in [sellmeier_coefs_source, sellmeier_coefs]]):
         raise ValueError('pycis: arguments not understood')
 
@@ -38,14 +43,26 @@ def get_refractive_indices(wavelength, material, sellmeier_coefs_source=None, se
 
 def get_kappa(wavelength, material, **kwargs):
     """
-    Calculate kappa, the dimensionless parameter that gives a first-order account of material dispersion.
+    Calculate kappa, the dimensionless parameter that gives a first-order account of material dispersion, as a function
+    of wavelength
 
-    :param wavelength: Wavelength(s) in units m.
-    :type wavelength: float, np.array, xr.DataArray
-    :param str material: Specifies the material.
-    :return: Kappa
+    :param wavelength: Wavelength in m.
+    :type wavelength: float, numpy.ndarray, xarray.DataArray
+
+    :param str material: Set crystal material.
+
+    :param str sellmeier_coefs_source: \
+        Specify which source to use for the Sellmeier coefficients that describe the
+        dispersion. If not specified, defaults for each material are set by sellmeier_coefs_source_defaults in
+        pycis.model.dispersion.
+
+    :param dict sellmeier_coefs: \
+        Manually set the coefficients that describe the material dispersion
+        via the Sellmeier equation. Dictionary must have keys 'Ae', 'Be', 'Ce', 'De', 'Ao', 'Bo', 'Co' and 'Do'.
+
+    :return: kappa. type(kappa) = type(wavelength)
+
     """
-
     ne, no = get_refractive_indices(wavelength, material, **kwargs)
     ne_p1, no_p1 = get_refractive_indices(wavelength + DWL, material, **kwargs)
     ne_m1, no_m1 = get_refractive_indices(wavelength - DWL, material, **kwargs)
@@ -61,13 +78,18 @@ def get_kappa(wavelength, material, **kwargs):
 def sellmeier_eqn(wl, c, ):
     """
     Given a set of Sellmeier coefficients, calculate the extraordinary and ordinary refractive indices as a function of
-    wavelength.
+    wavelength
 
-    :param array-like wl: Wavelength(s) in microns.
-    :param dict c: Dictionary of Sellmeier coefficients.
-    :param int form: Which form of Sellmeier equation to use.
-    :return: (n_e, n_o) tuple containing extraordinary and ordinary refractive indices respectively as a function of
-    wavlength.
+    :param wl: Wavelength in microns.
+    :type wl: float, numpy.ndarray, xarray.DataArray
+
+    :param dict c: \
+        Coefficients that describe material dispersion via the Sellmeier equation. Dictionary must have keys 'Ae', 'Be',
+         'Ce', ... and 'Ao', 'Bo', 'Co', ... The form of Sellmeier equation used is determined by len(c).
+
+    :return: (ne, no) tuple containing extraordinary and ordinary refractive indices respectively as a function of
+        wavelength.
+
     """
     ts = ['e', 'o']
     if len(c) == 8:
@@ -84,8 +106,16 @@ def sellmeier_eqn(wl, c, ):
 
 def get_sellmeier_coefs(material, sellmeier_coefs_source=None):
     """
-    :param sellmeier_coefs_source:
-    :return:
+    Return the requested set of Sellmeier coefficients
+
+    :param str material:
+
+    :param str sellmeier_coefs_source: \
+        Specify which source to use for the Sellmeier coefficients that describe the
+        dispersion. If not specified, defaults for each material are set by sellmeier_coefs_source_defaults in
+        pycis.model.dispersion.
+
+    :return: dict containing the Sellmeier coefficients.
     """
     if sellmeier_coefs_source is None:
         sellmeier_coefs_source = sellmeier_coefs_source_defaults[material]

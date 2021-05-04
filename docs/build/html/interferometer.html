@@ -170,9 +170,10 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-pycis.model.interferometer">
-<span id="interferometer"></span><h1>Interferometer<a class="headerlink" href="#module-pycis.model.interferometer" title="Permalink to this headline">¶</a></h1>
-<dl class="py function">
+  <div class="section" id="interferometer">
+<h1>Interferometer<a class="headerlink" href="#interferometer" title="Permalink to this headline">¶</a></h1>
+<p>Interferometer components.</p>
+<span class="target" id="module-pycis.model.interferometer"></span><dl class="py function">
 <dt id="pycis.model.interferometer.mueller_product">
 <code class="sig-prename descclassname">pycis.model.interferometer.</code><code class="sig-name descname">mueller_product</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mat1</span></em>, <em class="sig-param"><span class="n">mat2</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#mueller_product"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.interferometer.mueller_product" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the product of a Mueller matrix with a Mueller matrix / Stokes vector</p>
@@ -225,25 +226,15 @@
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>orientation</strong> (<em>float</em>) – Orientation in degrees of the transmission axis relative to the x-axis.</p></li>
-<li><p><strong>tx_1</strong> (<em>float</em>) – transmission primary component. [0, 1] - defaults to 1.</p></li>
-<li><p><strong>tx_2</strong> (<em>float</em>) – transmission secondary (orthogonal) component. [0, 1] - defaults to 0.</p></li>
+<li><p><strong>tx_1</strong> (<em>float</em>) – Transmission, primary component. [0, 1] - default is 1.</p></li>
+<li><p><strong>tx_2</strong> (<em>float</em>) – Transmission, secondary (orthogonal) component. [0, 1] - default is 0.</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="py method">
 <dt id="pycis.model.interferometer.LinearPolariser.get_mueller_matrix">
 <code class="sig-name descname">get_mueller_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#LinearPolariser.get_mueller_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.interferometer.LinearPolariser.get_mueller_matrix" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>args</strong> – </p></li>
-<li><p><strong>kwargs</strong> – </p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-</dl>
+<dd><p>Mueller matrix for a linear polariser</p>
 </dd></dl>
 
 </dd></dl>
@@ -327,13 +318,18 @@ between 0 and 1. Simulates the effect of real crystal imperfections.</p></li>
 <dt id="pycis.model.interferometer.SavartPlate.get_delay">
 <code class="sig-name descname">get_delay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wavelength</span></em>, <em class="sig-param"><span class="n">inc_angle</span></em>, <em class="sig-param"><span class="n">azim_angle</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#SavartPlate.get_delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.interferometer.SavartPlate.get_delay" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate path delay (in radians) imparted by the retarder</p>
-<p>::param wavelength: Wavelength in m.
-:type wavelength: float, xarray.DataArray
-:param inc_angle: Ray incidence angle(s) in radians.
-:type inc_angle: float, xarray.DataArray
-:param azim_angle: Ray azimuthal angle(s) in radians.
-:type azim_angle: float, xarray.DataArray
-:return: (float, xarray.DataArray) Imparted delay in radians.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>wavelength</strong> (<em>float</em><em>, </em><em>xarray.DataArray</em>) – Wavelength in m.</p></li>
+<li><p><strong>inc_angle</strong> (<em>float</em><em>, </em><em>xarray.DataArray</em>) – Ray incidence angle(s) in radians.</p></li>
+<li><p><strong>azim_angle</strong> (<em>float</em><em>, </em><em>xarray.DataArray</em>) – Ray azimuthal angle(s) in radians.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(float, xarray.DataArray) Imparted delay in radians.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

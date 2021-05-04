@@ -175,15 +175,14 @@
 <dl class="py class">
 <dt id="pycis.model.instrument.Instrument">
 <em class="property">class </em><code class="sig-prename descclassname">pycis.model.instrument.</code><code class="sig-name descname">Instrument</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">config</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">camera</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">optics</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">interferometer</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">force_mueller</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument" title="Permalink to this definition">¶</a></dt>
-<dd><p>Coherence imaging instrument.</p>
-<p>Generated from either a configuration file, or with the constituent python objects.</p>
+<dd><p>Coherence imaging instrument</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>config</strong> (<em>str</em>) – path to a .yaml instrument configuration file</p></li>
+<li><p><strong>config</strong> (<em>str</em>) – Path to a .yaml instrument configuration file.</p></li>
 <li><p><strong>camera</strong> (<em>pycis.model.Camera</em>) – Instrument camera.</p></li>
-<li><p><strong>optics</strong> (<em>list</em>) – A list of floats, the focal lengths (in m) of the three lenses used in the standard CI
-configuration (see e.g. my thesis or Scott Silburn’s): [f_1, f_2, f_3] where f_1 is the objective lens.</p></li>
+<li><p><strong>optics</strong> (<em>list</em>) – A list of floats, the focal lengths (in m) of the three lenses used in the standard CI configuration (see e.g.
+my thesis or Scott Silburn’s): [f_1, f_2, f_3] where f_1 is the objective lens.</p></li>
 <li><p><strong>interferometer</strong> (<em>list</em>) – A list of instances of pycis.model.Component, where the first entry is the first
 component that the light passes through.</p></li>
 <li><p><strong>force_mueller</strong> (<em>bool</em>) – Forces the full Mueller matrix calculation of the interferogram, regardless of whether an
@@ -213,7 +212,7 @@ pycis/model/config/.</p>
 <dl class="py method">
 <dt id="pycis.model.instrument.Instrument.get_type">
 <code class="sig-name descname">get_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_type" title="Permalink to this definition">¶</a></dt>
-<dd><p>Type of instrument determines how interferogram is calculated.</p>
+<dd><p>Instrument type determines how the interferogram is calculated</p>
 <p>Valid instrument types:
 - ‘mueller’: Full Mueller calculation
 - ‘single_delay_linear’
@@ -229,7 +228,7 @@ pycis/model/config/.</p>
 <dl class="py method">
 <dt id="pycis.model.instrument.Instrument.get_inc_angle">
 <code class="sig-name descname">get_inc_angle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">component</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_inc_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_inc_angle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate incidence angle(s) of ray(s) through the interferometer, in radians.</p>
+<dd><p>Calculate incidence angle(s) of ray(s) through the component</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -247,7 +246,7 @@ pycis/model/config/.</p>
 <dl class="py method">
 <dt id="pycis.model.instrument.Instrument.get_azim_angle">
 <code class="sig-name descname">get_azim_angle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">component</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_azim_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_azim_angle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate azimuthal angle(s) of ray(s) through the crystal, in radians.</p>
+<dd><p>Calculate azimuthal angle(s) of ray(s) through the component</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -265,13 +264,13 @@ pycis/model/config/.</p>
 <dl class="py method">
 <dt id="pycis.model.instrument.Instrument.get_mueller_matrix">
 <code class="sig-name descname">get_mueller_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wavelength</span></em>, <em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_mueller_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_mueller_matrix" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate total Mueller matrix for the interferometer.</p>
+<dd><p>Calculate total Mueller matrix for the interferometer</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>wavelength</strong> (<em>float</em><em>, </em><em>xarray.DataArray</em>) – Wavelength in m.</p></li>
-<li><p><strong>x</strong> (<em>float</em><em>, </em><em>xarray.DataArray</em>) – Pixel centre x position(s) in sensor plane in m.</p></li>
-<li><p><strong>y</strong> (<em>float</em><em>, </em><em>xarray.DataArray</em>) – Pixel centre y position(s) in sensor plane in m.</p></li>
+<li><p><strong>wavelength</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Wavelength in m.</p></li>
+<li><p><strong>x</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre x position(s) in sensor plane in m.</p></li>
+<li><p><strong>y</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre y position(s) in sensor plane in m.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -283,13 +282,13 @@ pycis/model/config/.</p>
 <dl class="py method">
 <dt id="pycis.model.instrument.Instrument.get_delay">
 <code class="sig-name descname">get_delay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wavelength</span></em>, <em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_delay" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the interferometer delay(s) at the given wavelength(s).</p>
+<dd><p>Calculate the interferometer delay(s) at the given wavelength(s)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>wavelength</strong> (<em>float</em><em>, </em><em>xarray.DataArray</em>) – Wavelength in m. If xarray.DataArray, must have dimension name ‘wavelength’.</p></li>
-<li><p><strong>x</strong> (<em>float</em><em>, </em><em>xarray.DataArray</em>) – Pixel centre x position(s) in sensor plane in m.</p></li>
-<li><p><strong>y</strong> (<em>float</em><em>, </em><em>xarray.DataArray</em>) – Pixel centre y position(s) in sensor plane in m.</p></li>
+<li><p><strong>wavelength</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Wavelength in m. If xr.DataArray, must have dimension name ‘wavelength’.</p></li>
+<li><p><strong>x</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre x position(s) in sensor plane in m.</p></li>
+<li><p><strong>y</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre y position(s) in sensor plane in m.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -305,7 +304,7 @@ pycis/model/config/.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>spectrum</strong> – (xarray.DataArray) photon fluence spectrum with units of ph / m [hitting the pixel area during
+<li><p><strong>spectrum</strong> – (xr.DataArray) photon fluence spectrum with units of ph / m [hitting the pixel area during
 exposure time] and with dimensions ‘wavelength’ and, optionally, ‘x’, ‘y’ and ‘stokes’. Xarray broadcasting
 rules apply to the spatial dimensions: if ‘x’ or ‘y’ are not in spectrum.dims then it is assumed that the
 incident spectrum is uniform across pixels. However, if there is no ‘stokes’ dimension then it is assumed
@@ -314,7 +313,7 @@ that light is unpolarised (i.e. the spectrum supplied is the S_0 Stokes paramete
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>(xarray.DataArray) image in units of camera counts.</p>
+<dd class="field-even"><p>(xr.DataArray) image in units of camera counts.</p>
 </dd>
 </dl>
 </dd></dl>

@@ -112,7 +112,7 @@ class Instrument:
 
     def get_type(self):
         """
-        Type of instrument determines how interferogram is calculated.
+        Instrument type determines how the interferogram is calculated
 
         Valid instrument types:
         - 'mueller': Full Mueller calculation
@@ -180,7 +180,7 @@ class Instrument:
 
     def get_inc_angle(self, x, y, component):
         """
-        Calculate incidence angle(s) of ray(s) through the interferometer, in radians.
+        Calculate incidence angle(s) of ray(s) through the component
 
         :param x: Pixel centre x position(s) in sensor plane in m.
         :type x: float, xr.DataArray
@@ -199,7 +199,7 @@ class Instrument:
 
     def get_azim_angle(self, x, y, component):
         """
-        Calculate azimuthal angle(s) of ray(s) through the crystal, in radians.
+        Calculate azimuthal angle(s) of ray(s) through the component
 
         :param x: Pixel centre x position(s) in sensor plane in m.
         :type x: float, xr.DataArray
@@ -219,14 +219,17 @@ class Instrument:
 
     def get_mueller_matrix(self, wavelength, x, y):
         """
-        Calculate total Mueller matrix for the interferometer.
+        Calculate total Mueller matrix for the interferometer
 
         :param wavelength: Wavelength in m.
-        :type wavelength: float, xarray.DataArray
+        :type wavelength: float, xr.DataArray
+
         :param x: Pixel centre x position(s) in sensor plane in m.
-        :type x: float, xarray.DataArray
+        :type x: float, xr.DataArray
+
         :param y: Pixel centre y position(s) in sensor plane in m.
-        :type y: float, xarray.DataArray
+        :type y: float, xr.DataArray
+
         :return: (xr.DataArray) Mueller matrix.
         """
 
@@ -240,14 +243,14 @@ class Instrument:
 
     def get_delay(self, wavelength, x, y, ):
         """
-        Calculate the interferometer delay(s) at the given wavelength(s).
+        Calculate the interferometer delay(s) at the given wavelength(s)
 
-        :param wavelength: Wavelength in m. If xarray.DataArray, must have dimension name 'wavelength'.
-        :type wavelength: float, xarray.DataArray
+        :param wavelength: Wavelength in m. If xr.DataArray, must have dimension name 'wavelength'.
+        :type wavelength: float, xr.DataArray
         :param x: Pixel centre x position(s) in sensor plane in m.
-        :type x: float, xarray.DataArray
+        :type x: float, xr.DataArray
         :param y: Pixel centre y position(s) in sensor plane in m.
-        :type y: float, xarray.DataArray
+        :type y: float, xr.DataArray
         :return: (xr.DataArray) Interferometer delay(s) in radians.
         """
 
@@ -287,13 +290,13 @@ class Instrument:
         """
         Capture image of given spectrum.
 
-        :param spectrum: (xarray.DataArray) photon fluence spectrum with units of ph / m [hitting the pixel area during
+        :param spectrum: (xr.DataArray) photon fluence spectrum with units of ph / m [hitting the pixel area during
             exposure time] and with dimensions 'wavelength' and, optionally, 'x', 'y' and 'stokes'. Xarray broadcasting
             rules apply to the spatial dimensions: if 'x' or 'y' are not in spectrum.dims then it is assumed that the
             incident spectrum is uniform across pixels. However, if there is no 'stokes' dimension then it is assumed
             that light is unpolarised (i.e. the spectrum supplied is the S_0 Stokes parameter only).
         :param bool clean: False to add realistic image noise, passed to self.camera.capture()
-        :return: (xarray.DataArray) image in units of camera counts.
+        :return: (xr.DataArray) image in units of camera counts.
         """
 
         if 'x' in spectrum.dims:
