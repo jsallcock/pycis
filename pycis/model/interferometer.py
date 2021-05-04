@@ -187,14 +187,19 @@ class UniaxialCrystal(LinearRetarder):
     """
     Plane-parallel uniaxial birefringent crystal plate.
 
-    :param float thickness: Crystal thickness in m.
-    :param float cut_angle: Angle in degrees between crystal optic axis and front face.
-    :param float orientation: Orientation of component fast axis in degrees, from positive x-axis towards positive y-axis.
-    :param str material: Set crystal material.
-    :param str sellmeier_coefs_source: Specify which source to use for the Sellmeier coefficients that describe the
-        dispersion. If not specified, defaults for each material are set by sellmeier_coefs_source_defaults in
-        pycis.model.dispersion.
-    :param dict sellmeier_coefs: Manually set the coefficients that describe the material dispersion
+    :param float thickness: \
+        Crystal thickness in m.
+    :param float cut_angle: \
+        Angle in degrees between crystal optic axis and front face.
+    :param float orientation: \
+        Orientation of component fast axis in degrees, from positive x-axis towards positive y-axis.
+    :param str material: \
+        Set crystal material.
+    :param str sellmeier_coefs_source: \
+        Specify which source to use for the Sellmeier coefficients that describe the dispersion. If not specified,
+        defaults for each material are set by sellmeier_coefs_source_defaults in pycis.model.dispersion.
+    :param dict sellmeier_coefs: \
+        Manually set the coefficients that describe the material dispersion
         via the Sellmeier equation. Dictionary must have keys 'Ae', 'Be', 'Ce', 'De', 'Ao', 'Bo', 'Co', 'Do'.
     :param float contrast: An arbitrary contrast degradation factor for the retarder, independent of ray path. Value
         between 0 and 1. Simulates real crystal imperfections.

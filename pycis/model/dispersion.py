@@ -1,3 +1,5 @@
+import copy
+
 import xarray as xr
 
 DWL = 1.e-10
@@ -87,7 +89,7 @@ def get_sellmeier_coefs(material, sellmeier_coefs_source=None):
     """
     if sellmeier_coefs_source is None:
         sellmeier_coefs_source = sellmeier_coefs_source_defaults[material]
-    return sellmeier_coefs_all[sellmeier_coefs_source]['sellmeier_coefs']
+    return copy.deepcopy(sellmeier_coefs_all[sellmeier_coefs_source]['sellmeier_coefs'])
 
 
 sellmeier_coefs_all = {

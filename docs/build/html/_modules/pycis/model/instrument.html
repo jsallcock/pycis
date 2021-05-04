@@ -223,8 +223,7 @@
                 <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;pycis: could not find config file&#39;</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">FileNotFoundError</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s1">&#39;pycis: could not find config file&#39;</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="n">camera</span> <span class="o">=</span> <span class="n">Camera</span><span class="p">(</span><span class="o">**</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;camera&#39;</span><span class="p">])</span>
@@ -233,14 +232,13 @@
             <span class="n">interferometer</span> <span class="o">=</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">pycis</span><span class="p">,</span> <span class="p">[</span><span class="o">*</span><span class="n">ic</span><span class="p">[</span><span class="n">i</span><span class="p">]][</span><span class="mi">0</span><span class="p">])(</span><span class="o">**</span><span class="p">[</span><span class="o">*</span><span class="n">ic</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">()][</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]</span>
 
         <span class="k">except</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;pycis: could not interpret config file&#39;</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">FileNotFoundError</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;pycis: could not interpret config file&#39;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">camera</span><span class="p">,</span> <span class="n">optics</span><span class="p">,</span> <span class="n">interferometer</span></div>
 
 <div class="viewcode-block" id="Instrument.write_config"><a class="viewcode-back" href="../../../instrument.html#pycis.model.instrument.Instrument.write_config">[docs]</a>    <span class="k">def</span> <span class="nf">write_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fpath</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Write the current instrument config to a .yaml file.</span>
+<span class="sd">        Write the current instrument config to a .yaml config file that can then be reloaded at a later date.</span>
 
 <span class="sd">        :param str filepath:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -384,7 +382,6 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">mat_total</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;mueller_v&#39;</span><span class="p">,</span> <span class="s1">&#39;mueller_h&#39;</span><span class="p">),</span> <span class="p">)</span>
-
         <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interferometer</span><span class="p">:</span>
             <span class="n">inc_angle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_inc_angle</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">component</span><span class="p">)</span>
             <span class="n">azim_angle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_azim_angle</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">component</span><span class="p">)</span>

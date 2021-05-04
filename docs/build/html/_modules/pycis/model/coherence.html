@@ -223,7 +223,7 @@
 
     <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;group_delay&#39;</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">material</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">kappa_0</span> <span class="o">=</span> <span class="n">pycis</span><span class="o">.</span><span class="n">calculate_kappa</span><span class="p">(</span><span class="n">c</span> <span class="o">/</span> <span class="n">freq_com</span><span class="p">,</span> <span class="n">material</span><span class="o">=</span><span class="n">material</span><span class="p">,</span> <span class="p">)</span>
+            <span class="n">kappa_0</span> <span class="o">=</span> <span class="n">pycis</span><span class="o">.</span><span class="n">get_kappa</span><span class="p">(</span><span class="n">c</span> <span class="o">/</span> <span class="n">freq_com</span><span class="p">,</span> <span class="n">material</span><span class="o">=</span><span class="n">material</span><span class="p">,</span> <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">kappa_0</span> <span class="o">=</span> <span class="mi">1</span>
 
@@ -263,7 +263,7 @@
     <span class="c1"># ANALYTICAL</span>
     <span class="n">wl_0</span> <span class="o">=</span> <span class="mf">464.8e-9</span>
     <span class="n">material</span> <span class="o">=</span> <span class="s1">&#39;a-BBO&#39;</span>
-    <span class="n">kappa_0</span> <span class="o">=</span> <span class="n">pycis</span><span class="o">.</span><span class="n">calculate_kappa</span><span class="p">(</span><span class="n">wl_0</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="p">)</span>
+    <span class="n">kappa_0</span> <span class="o">=</span> <span class="n">pycis</span><span class="o">.</span><span class="n">get_kappa</span><span class="p">(</span><span class="n">wl_0</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="p">)</span>
     <span class="n">wl_sigma</span> <span class="o">=</span> <span class="mf">0.05e-9</span>
     <span class="n">n_sigma</span> <span class="o">=</span> <span class="mi">10</span>
     <span class="n">n_bins</span> <span class="o">=</span> <span class="mi">20000</span>

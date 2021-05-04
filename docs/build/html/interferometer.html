@@ -259,20 +259,19 @@
 <li><p><strong>cut_angle</strong> (<em>float</em>) – Angle in degrees between crystal optic axis and front face.</p></li>
 <li><p><strong>orientation</strong> (<em>float</em>) – Orientation of component fast axis in degrees, from positive x-axis towards positive y-axis.</p></li>
 <li><p><strong>material</strong> (<em>str</em>) – Set crystal material.</p></li>
-<li><p><strong>sellmeier_coefs_source</strong> (<em>str</em>) – Specify which source to use for the Sellmeier coefficients that describe the
-dispersion. If not specified, defaults for each material are set by sellmeier_coefs_source_defaults in
-pycis.model.dispersion.</p></li>
+<li><p><strong>sellmeier_coefs_source</strong> (<em>str</em>) – Specify which source to use for the Sellmeier coefficients that describe the dispersion. If not specified,
+defaults for each material are set by sellmeier_coefs_source_defaults in pycis.model.dispersion.</p></li>
 <li><p><strong>sellmeier_coefs</strong> (<em>dict</em>) – Manually set the coefficients that describe the material dispersion
 via the Sellmeier equation. Dictionary must have keys ‘Ae’, ‘Be’, ‘Ce’, ‘De’, ‘Ao’, ‘Bo’, ‘Co’, ‘Do’.</p></li>
 <li><p><strong>contrast</strong> (<em>float</em>) – An arbitrary contrast degradation factor for the retarder, independent of ray path. Value
-between 0 and 1. Simulates the effect of real crystal imperfections.</p></li>
+between 0 and 1. Simulates real crystal imperfections.</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="py method">
 <dt id="pycis.model.interferometer.UniaxialCrystal.get_delay">
 <code class="sig-name descname">get_delay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wavelength</span></em>, <em class="sig-param"><span class="n">inc_angle</span></em>, <em class="sig-param"><span class="n">azim_angle</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#UniaxialCrystal.get_delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.interferometer.UniaxialCrystal.get_delay" title="Permalink to this definition">¶</a></dt>
-<dd><p>Interferometric delay (in radians) imparted by the crystal.</p>
+<dd><p>Calculates path delay (in radians) imparted by the crystal.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -367,7 +366,7 @@ between 0 and 1. Simulates the effect of real crystal imperfections.</p></li>
 <dl class="py method">
 <dt id="pycis.model.interferometer.IdealWaveplate.get_delay">
 <code class="sig-name descname">get_delay</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#IdealWaveplate.get_delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.interferometer.IdealWaveplate.get_delay" title="Permalink to this definition">¶</a></dt>
-<dd><p>Interferometer delay in radians.</p>
+<dd><p>Calculates path delay (in radians) imparted by the retarder.</p>
 </dd></dl>
 
 <dl class="py method">

@@ -157,11 +157,11 @@
            <div itemprop="articleBody">
             
   <h1>Source code for pycis.model.dispersion</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numba</span>
+<span></span><span class="kn">import</span> <span class="nn">copy</span>
+
 <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
 
-<span class="n">d_lambda</span> <span class="o">=</span> <span class="mf">1.e-10</span>
-<span class="n">d_lambda_mic</span> <span class="o">=</span> <span class="n">d_lambda</span> <span class="o">*</span> <span class="mf">1.e6</span>
+<span class="n">DWL</span> <span class="o">=</span> <span class="mf">1.e-10</span>
 <span class="n">sellmeier_coefs_source_defaults</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;a-BBO&#39;</span><span class="p">:</span> <span class="s1">&#39;agoptics&#39;</span><span class="p">,</span>
     <span class="s1">&#39;b-BBO&#39;</span><span class="p">:</span> <span class="s1">&#39;eimerl&#39;</span><span class="p">,</span>
@@ -172,8 +172,9 @@
 
 <div class="viewcode-block" id="get_refractive_indices"><a class="viewcode-back" href="../../../dispersion.html#pycis.model.dispersion.get_refractive_indices">[docs]</a><span class="k">def</span> <span class="nf">get_refractive_indices</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="n">sellmeier_coefs_source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sellmeier_coefs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the extraordinary and ordinary refractive indices as a function of wavelength.</span>
 
-<span class="sd">    :param wavelength: Wavelength of light in m.</span>
+<span class="sd">    :param wavelength: Wavelength in m.</span>
 <span class="sd">    :type wavelength: float, numpy.ndarray, xarray.DataArray</span>
 <span class="sd">    :param str material: Set crystal material.</span>
 <span class="sd">    :param str sellmeier_coefs_source: Specify which source to use for the Sellmeier coefficients that describe the</span>
@@ -190,84 +191,33 @@
     <span class="k">if</span> <span class="n">sellmeier_coefs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">form</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">sellmeier_coefs_source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">sellmeier_coefs_source</span> <span class="o">=</span> <span class="n">sellmeier_coefs_source_defaults</span><span class="p">[</span><span class="n">material</span><span class="p">]</span>
-
-        <span class="n">sellmeier_coefs</span> <span class="o">=</span> <span class="n">sellmeier_coefs_all</span><span class="p">[</span><span class="n">sellmeier_coefs_source</span><span class="p">][</span><span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">]</span>
-        <span class="n">form</span> <span class="o">=</span> <span class="n">sellmeier_coefs_all</span><span class="p">[</span><span class="n">sellmeier_coefs_source</span><span class="p">][</span><span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">]</span>
-
-    <span class="k">return</span> <span class="n">sellmeier_eqn</span><span class="p">(</span><span class="n">wavelength</span> <span class="o">*</span> <span class="mf">1e6</span><span class="p">,</span> <span class="n">sellmeier_coefs</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="n">form</span><span class="p">)</span></div>
+        <span class="n">sellmeier_coefs</span> <span class="o">=</span> <span class="n">get_sellmeier_coefs</span><span class="p">(</span><span class="n">material</span><span class="p">,</span> <span class="n">sellmeier_coefs_source</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sellmeier_eqn</span><span class="p">(</span><span class="n">wavelength</span> <span class="o">*</span> <span class="mf">1e6</span><span class="p">,</span> <span class="n">sellmeier_coefs</span><span class="p">,</span> <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="calculate_dispersion"><a class="viewcode-back" href="../../../dispersion.html#pycis.model.dispersion.calculate_dispersion">[docs]</a><span class="k">def</span> <span class="nf">calculate_dispersion</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="p">):</span>
+<div class="viewcode-block" id="get_kappa"><a class="viewcode-back" href="../../../dispersion.html#pycis.model.dispersion.get_kappa">[docs]</a><span class="k">def</span> <span class="nf">get_kappa</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Calculate the birefringence and refractive indices of a material as a function of wavelength.</span>
-<span class="sd">    </span>
-<span class="sd">    :param wavelength: Wavelength(s) with units m.</span>
-<span class="sd">    :type wavelength: float, np.array, xr.DataArray</span>
-<span class="sd">    :param str material: Specifies the material.</span>
-<span class="sd">    :param str source: Specifies source of dispersion info.</span>
-<span class="sd">    :return: A tuple of (birefringence, extraordinary refractive index, ordinary refractive index).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">wl_mic</span> <span class="o">=</span> <span class="n">wavelength</span> <span class="o">*</span> <span class="mf">1e6</span>
-    <span class="k">if</span> <span class="n">source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">source</span> <span class="o">=</span> <span class="n">sellmeier_coefs_source_defaults</span><span class="p">[</span><span class="n">material</span><span class="p">]</span>
-
-    <span class="k">if</span> <span class="n">material</span> <span class="o">==</span> <span class="s1">&#39;a-BBO&#39;</span> <span class="ow">and</span> <span class="n">source</span> <span class="o">==</span> <span class="s1">&#39;agoptics&#39;</span><span class="p">:</span>
-        <span class="c1"># optimised ufuncs</span>
-        <span class="n">n_e</span> <span class="o">=</span> <span class="n">_sellmeier_eqn_abbo_e_ufunc</span><span class="p">(</span><span class="n">wl_mic</span><span class="p">,</span> <span class="p">)</span>
-        <span class="n">n_o</span> <span class="o">=</span> <span class="n">_sellmeier_eqn_abbo_o_ufunc</span><span class="p">(</span><span class="n">wl_mic</span><span class="p">,</span> <span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">dd</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">source</span><span class="p">]</span>
-        <span class="n">form</span> <span class="o">=</span> <span class="n">dd</span><span class="p">[</span><span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">]</span>
-        <span class="n">n_e</span> <span class="o">=</span> <span class="n">sellmeier_eqn</span><span class="p">(</span><span class="n">wl_mic</span><span class="p">,</span> <span class="n">dd</span><span class="p">[</span><span class="s1">&#39;coefs_e&#39;</span><span class="p">],</span> <span class="n">form</span><span class="p">)</span>
-        <span class="n">n_o</span> <span class="o">=</span> <span class="n">sellmeier_eqn</span><span class="p">(</span><span class="n">wl_mic</span><span class="p">,</span> <span class="n">dd</span><span class="p">[</span><span class="s1">&#39;coefs_o&#39;</span><span class="p">],</span> <span class="n">form</span><span class="p">)</span>
-
-    <span class="n">biref</span> <span class="o">=</span> <span class="n">n_e</span> <span class="o">-</span> <span class="n">n_o</span>
-    <span class="k">return</span> <span class="n">biref</span><span class="p">,</span> <span class="n">n_e</span><span class="p">,</span> <span class="n">n_o</span></div>
-
-
-<div class="viewcode-block" id="calculate_kappa"><a class="viewcode-back" href="../../../dispersion.html#pycis.model.dispersion.calculate_kappa">[docs]</a><span class="k">def</span> <span class="nf">calculate_kappa</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Calculate kappa for a material, the unitless first-order dispersion parameter, as a function of wavelength.</span>
+<span class="sd">    Calculate kappa, the dimensionless parameter that gives a first-order account of material dispersion.</span>
 
 <span class="sd">    :param wavelength: Wavelength(s) in units m.</span>
 <span class="sd">    :type wavelength: float, np.array, xr.DataArray</span>
 <span class="sd">    :param str material: Specifies the material.</span>
-<span class="sd">    :param str source: Specifies source of dispersion info.</span>
-<span class="sd">    :return: Dispersion parameter kappa.</span>
+<span class="sd">    :return: Kappa</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">wl_mic</span> <span class="o">=</span> <span class="n">wavelength</span> <span class="o">*</span> <span class="mf">1e6</span>
+    <span class="n">ne</span><span class="p">,</span> <span class="n">no</span> <span class="o">=</span> <span class="n">get_refractive_indices</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">ne_p1</span><span class="p">,</span> <span class="n">no_p1</span> <span class="o">=</span> <span class="n">get_refractive_indices</span><span class="p">(</span><span class="n">wavelength</span> <span class="o">+</span> <span class="n">DWL</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">ne_m1</span><span class="p">,</span> <span class="n">no_m1</span> <span class="o">=</span> <span class="n">get_refractive_indices</span><span class="p">(</span><span class="n">wavelength</span> <span class="o">-</span> <span class="n">DWL</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">source</span> <span class="o">=</span> <span class="n">sellmeier_coefs_source_defaults</span><span class="p">[</span><span class="n">material</span><span class="p">]</span>
+    <span class="n">biref</span> <span class="o">=</span> <span class="n">ne</span> <span class="o">-</span> <span class="n">no</span>
+    <span class="n">biref_p1</span> <span class="o">=</span> <span class="n">ne_p1</span> <span class="o">-</span> <span class="n">no_p1</span>
+    <span class="n">biref_m1</span> <span class="o">=</span> <span class="n">ne_m1</span> <span class="o">-</span> <span class="n">no_m1</span>
+    <span class="n">biref_deriv</span> <span class="o">=</span> <span class="p">(</span><span class="n">biref_p1</span> <span class="o">-</span> <span class="n">biref_m1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">DWL</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">material</span> <span class="o">==</span> <span class="s1">&#39;a-BBO&#39;</span> <span class="ow">and</span> <span class="n">source</span> <span class="o">==</span> <span class="s1">&#39;agoptics&#39;</span><span class="p">:</span>
-        <span class="c1"># optimised ufuncs</span>
-        <span class="n">kappa</span> <span class="o">=</span> <span class="n">_calculate_kappa_abbo_ufunc</span><span class="p">(</span><span class="n">wl_mic</span><span class="p">,</span> <span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">dd</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">source</span><span class="p">]</span>
-        <span class="n">sellmeier_coefs</span> <span class="o">=</span> <span class="n">dd</span><span class="p">[</span><span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">]</span>
-        <span class="n">form</span> <span class="o">=</span> <span class="n">dd</span><span class="p">[</span><span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">]</span>
-        <span class="n">sc_e</span> <span class="o">=</span> <span class="n">dd</span><span class="p">[</span><span class="s1">&#39;coefs_e&#39;</span><span class="p">]</span>
-        <span class="n">sc_o</span> <span class="o">=</span> <span class="n">dd</span><span class="p">[</span><span class="s1">&#39;coefs_o&#39;</span><span class="p">]</span>
-
-        <span class="n">wl_p1_mic</span> <span class="o">=</span> <span class="n">wl_mic</span> <span class="o">+</span> <span class="n">d_lambda_mic</span>
-        <span class="n">wl_m1_mic</span> <span class="o">=</span> <span class="n">wl_mic</span> <span class="o">-</span> <span class="n">d_lambda_mic</span>
-
-        <span class="n">biref</span><span class="p">,</span> <span class="n">n_e</span><span class="p">,</span> <span class="n">n_o</span> <span class="o">=</span> <span class="n">calculate_dispersion</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span> <span class="p">)</span>
-        <span class="n">biref_p1</span> <span class="o">=</span> <span class="n">sellmeier_eqn</span><span class="p">(</span><span class="n">wl_p1_mic</span><span class="p">,</span> <span class="n">sc_e</span><span class="p">,</span> <span class="n">form</span><span class="p">)</span> <span class="o">-</span> <span class="n">sellmeier_eqn</span><span class="p">(</span><span class="n">wl_p1_mic</span><span class="p">,</span> <span class="n">sc_o</span><span class="p">,</span> <span class="n">form</span><span class="p">)</span>
-        <span class="n">biref_m1</span> <span class="o">=</span> <span class="n">sellmeier_eqn</span><span class="p">(</span><span class="n">wl_m1_mic</span><span class="p">,</span> <span class="n">sc_e</span><span class="p">,</span> <span class="n">form</span><span class="p">)</span> <span class="o">-</span> <span class="n">sellmeier_eqn</span><span class="p">(</span><span class="n">wl_m1_mic</span><span class="p">,</span> <span class="n">sc_o</span><span class="p">,</span> <span class="n">form</span><span class="p">)</span>
-
-        <span class="n">biref_deriv</span> <span class="o">=</span> <span class="p">(</span><span class="n">biref_p1</span> <span class="o">-</span> <span class="n">biref_m1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">d_lambda</span><span class="p">)</span>
-        <span class="n">kappa</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">wavelength</span> <span class="o">/</span> <span class="n">biref</span><span class="p">)</span> <span class="o">*</span> <span class="n">biref_deriv</span>
-
-    <span class="k">return</span> <span class="n">kappa</span></div>
+    <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">wavelength</span> <span class="o">/</span> <span class="n">biref</span><span class="p">)</span> <span class="o">*</span> <span class="n">biref_deriv</span></div>
 
 
-<div class="viewcode-block" id="sellmeier_eqn"><a class="viewcode-back" href="../../../dispersion.html#pycis.model.dispersion.sellmeier_eqn">[docs]</a><span class="k">def</span> <span class="nf">sellmeier_eqn</span><span class="p">(</span><span class="n">wl</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">form</span><span class="p">):</span>
+<div class="viewcode-block" id="sellmeier_eqn"><a class="viewcode-back" href="../../../dispersion.html#pycis.model.dispersion.sellmeier_eqn">[docs]</a><span class="k">def</span> <span class="nf">sellmeier_eqn</span><span class="p">(</span><span class="n">wl</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Given a set of Sellmeier coefficients, calculate the extraordinary and ordinary refractive indices as a function of</span>
 <span class="sd">    wavelength.</span>
@@ -279,11 +229,11 @@
 <span class="sd">    wavlength.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">ts</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;e&#39;</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">form</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">[(</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;B&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">wl</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">c</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]))</span> <span class="o">+</span> <span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]</span> <span class="o">*</span> <span class="n">wl</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">**</span> <span class="mf">0.5</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">ts</span><span class="p">]</span>
-    <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">[(</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;B&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">wl</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">c</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]))</span> <span class="o">+</span> <span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">wl</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">c</span><span class="p">[</span><span class="s1">&#39;E&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">])))</span> <span class="o">**</span> <span class="mf">0.5</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">ts</span><span class="p">]</span>
-    <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">==</span> <span class="mi">12</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">[((</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]</span> <span class="o">*</span> <span class="n">wl</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">wl</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">c</span><span class="p">[</span><span class="s1">&#39;B&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]))</span> <span class="o">+</span>
                 <span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]</span> <span class="o">*</span> <span class="n">wl</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">wl</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">c</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]))</span> <span class="o">+</span>
                 <span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;E&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]</span> <span class="o">*</span> <span class="n">wl</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">wl</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">c</span><span class="p">[</span><span class="s1">&#39;F&#39;</span><span class="o">+</span><span class="n">t</span><span class="p">]))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">ts</span><span class="p">]</span>
@@ -291,56 +241,19 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
-<span class="nd">@numba</span><span class="o">.</span><span class="n">vectorize</span><span class="p">([</span><span class="n">numba</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">numba</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span> <span class="p">],</span> <span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fastmath</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="p">)</span>
-<span class="k">def</span> <span class="nf">_sellmeier_eqn_abbo_e</span><span class="p">(</span><span class="n">wl_mic</span><span class="p">,</span> <span class="p">):</span>
-    <span class="n">a</span> <span class="o">=</span> <span class="mf">2.3753</span>
-    <span class="n">b</span> <span class="o">=</span> <span class="mf">0.01224</span>
-    <span class="n">c</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.01667</span>
-    <span class="n">d</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.01516</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="p">(</span><span class="n">b</span> <span class="o">/</span> <span class="p">((</span><span class="n">wl_mic</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">c</span><span class="p">))</span> <span class="o">+</span> <span class="n">d</span> <span class="o">*</span> <span class="p">(</span><span class="n">wl_mic</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">**</span> <span class="mf">0.5</span>
-
-
-<span class="nd">@numba</span><span class="o">.</span><span class="n">vectorize</span><span class="p">([</span><span class="n">numba</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">numba</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span> <span class="p">],</span> <span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fastmath</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="p">)</span>
-<span class="k">def</span> <span class="nf">_sellmeier_eqn_abbo_o</span><span class="p">(</span><span class="n">wl_mic</span><span class="p">,</span> <span class="p">):</span>
-    <span class="n">a</span> <span class="o">=</span> <span class="mf">2.7471</span>
-    <span class="n">b</span> <span class="o">=</span> <span class="mf">0.01878</span>
-    <span class="n">c</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.01822</span>
-    <span class="n">d</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.01354</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="p">(</span><span class="n">b</span> <span class="o">/</span> <span class="p">((</span><span class="n">wl_mic</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">c</span><span class="p">))</span> <span class="o">+</span> <span class="n">d</span> <span class="o">*</span> <span class="p">(</span><span class="n">wl_mic</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">**</span> <span class="mf">0.5</span>
-
-
-<span class="nd">@numba</span><span class="o">.</span><span class="n">vectorize</span><span class="p">([</span><span class="n">numba</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">numba</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span> <span class="p">],</span> <span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fastmath</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="p">)</span>
-<span class="k">def</span> <span class="nf">_calculate_kappa_abbo</span><span class="p">(</span><span class="n">wl_mic</span><span class="p">,</span> <span class="p">):</span>
-
-    <span class="n">d_lambda</span> <span class="o">=</span> <span class="mf">1.e-10</span>
-    <span class="n">d_lambda_mic</span> <span class="o">=</span> <span class="n">d_lambda</span> <span class="o">*</span> <span class="mf">1.e6</span>
-    <span class="n">wl_p1_mic</span> <span class="o">=</span> <span class="n">wl_mic</span> <span class="o">+</span> <span class="n">d_lambda_mic</span>
-    <span class="n">wl_m1_mic</span> <span class="o">=</span> <span class="n">wl_mic</span> <span class="o">-</span> <span class="n">d_lambda_mic</span>
-
-    <span class="n">biref_p1</span> <span class="o">=</span> <span class="n">_sellmeier_eqn_abbo_e</span><span class="p">(</span><span class="n">wl_p1_mic</span><span class="p">)</span> <span class="o">-</span> <span class="n">_sellmeier_eqn_abbo_o</span><span class="p">(</span><span class="n">wl_p1_mic</span><span class="p">)</span>
-    <span class="n">biref_m1</span> <span class="o">=</span> <span class="n">_sellmeier_eqn_abbo_e</span><span class="p">(</span><span class="n">wl_m1_mic</span><span class="p">)</span> <span class="o">-</span> <span class="n">_sellmeier_eqn_abbo_o</span><span class="p">(</span><span class="n">wl_m1_mic</span><span class="p">)</span>
-    <span class="n">biref</span> <span class="o">=</span> <span class="n">_sellmeier_eqn_abbo_e</span><span class="p">(</span><span class="n">wl_mic</span><span class="p">)</span> <span class="o">-</span> <span class="n">_sellmeier_eqn_abbo_o</span><span class="p">(</span><span class="n">wl_mic</span><span class="p">)</span>
-
-    <span class="n">biref_deriv</span> <span class="o">=</span> <span class="p">(</span><span class="n">biref_p1</span> <span class="o">-</span> <span class="n">biref_m1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">d_lambda_mic</span><span class="p">)</span>
-    <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">wl_mic</span> <span class="o">/</span> <span class="n">biref</span><span class="p">)</span> <span class="o">*</span> <span class="n">biref_deriv</span>
-
-
-<span class="k">def</span> <span class="nf">_sellmeier_eqn_abbo_e_ufunc</span><span class="p">(</span><span class="n">wl_mic</span><span class="p">,</span> <span class="p">):</span>
-    <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">apply_ufunc</span><span class="p">(</span><span class="n">_sellmeier_eqn_abbo_e</span><span class="p">,</span> <span class="n">wl_mic</span><span class="p">,</span> <span class="n">dask</span><span class="o">=</span><span class="s1">&#39;allowed&#39;</span><span class="p">,</span> <span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">_sellmeier_eqn_abbo_o_ufunc</span><span class="p">(</span><span class="n">wl_mic</span><span class="p">,</span> <span class="p">):</span>
-    <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">apply_ufunc</span><span class="p">(</span><span class="n">_sellmeier_eqn_abbo_o</span><span class="p">,</span> <span class="n">wl_mic</span><span class="p">,</span> <span class="n">dask</span><span class="o">=</span><span class="s1">&#39;allowed&#39;</span><span class="p">,</span> <span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">_calculate_kappa_abbo_ufunc</span><span class="p">(</span><span class="n">wl_mic</span><span class="p">,</span> <span class="p">):</span>
-    <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">apply_ufunc</span><span class="p">(</span><span class="n">_calculate_kappa_abbo</span><span class="p">,</span> <span class="n">wl_mic</span><span class="p">,</span> <span class="n">dask</span><span class="o">=</span><span class="s1">&#39;allowed&#39;</span><span class="p">,</span> <span class="p">)</span>
+<div class="viewcode-block" id="get_sellmeier_coefs"><a class="viewcode-back" href="../../../dispersion.html#pycis.model.dispersion.get_sellmeier_coefs">[docs]</a><span class="k">def</span> <span class="nf">get_sellmeier_coefs</span><span class="p">(</span><span class="n">material</span><span class="p">,</span> <span class="n">sellmeier_coefs_source</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :param sellmeier_coefs_source:</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">sellmeier_coefs_source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">sellmeier_coefs_source</span> <span class="o">=</span> <span class="n">sellmeier_coefs_source_defaults</span><span class="p">[</span><span class="n">material</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">sellmeier_coefs_all</span><span class="p">[</span><span class="n">sellmeier_coefs_source</span><span class="p">][</span><span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">])</span></div>
 
 
 <span class="n">sellmeier_coefs_all</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;kato1986&#39;</span><span class="p">:</span>
         <span class="p">{</span><span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;b-BBO&#39;</span><span class="p">,</span>
-         <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
          <span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span>
              <span class="p">{</span><span class="s1">&#39;Ae&#39;</span><span class="p">:</span> <span class="mf">2.3753</span><span class="p">,</span>
               <span class="s1">&#39;Be&#39;</span><span class="p">:</span> <span class="mf">0.01224</span><span class="p">,</span>
@@ -355,7 +268,6 @@
 
     <span class="s1">&#39;kato2010&#39;</span><span class="p">:</span>
         <span class="p">{</span><span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;b-BBO&#39;</span><span class="p">,</span>
-         <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
          <span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span>
              <span class="p">{</span><span class="s1">&#39;Ae&#39;</span><span class="p">:</span> <span class="mf">3.33469</span><span class="p">,</span>
               <span class="s1">&#39;Be&#39;</span><span class="p">:</span> <span class="mf">0.01237</span><span class="p">,</span>
@@ -372,7 +284,6 @@
 
     <span class="s1">&#39;eimerl&#39;</span><span class="p">:</span>
         <span class="p">{</span><span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;b-BBO&#39;</span><span class="p">,</span>
-         <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
          <span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span>
              <span class="p">{</span><span class="s1">&#39;Ae&#39;</span><span class="p">:</span> <span class="mf">2.3730</span><span class="p">,</span>
               <span class="s1">&#39;Be&#39;</span><span class="p">:</span> <span class="mf">0.0128</span><span class="p">,</span>
@@ -387,7 +298,6 @@
 
     <span class="s1">&#39;kim&#39;</span><span class="p">:</span>
         <span class="p">{</span><span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;a-BBO&#39;</span><span class="p">,</span>
-         <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
          <span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span>
              <span class="p">{</span><span class="s1">&#39;Ae&#39;</span><span class="p">:</span> <span class="mf">2.37153</span><span class="p">,</span>
               <span class="s1">&#39;Be&#39;</span><span class="p">:</span> <span class="mf">0.01224</span><span class="p">,</span>
@@ -402,7 +312,6 @@
 
     <span class="s1">&#39;agoptics&#39;</span><span class="p">:</span>
         <span class="p">{</span><span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;a-BBO&#39;</span><span class="p">,</span>
-         <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
          <span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span>
              <span class="p">{</span><span class="s1">&#39;Ae&#39;</span><span class="p">:</span> <span class="mf">2.3753</span><span class="p">,</span>
               <span class="s1">&#39;Be&#39;</span><span class="p">:</span> <span class="mf">0.01224</span><span class="p">,</span>
@@ -417,7 +326,6 @@
 
     <span class="s1">&#39;newlightphotonics&#39;</span><span class="p">:</span>
         <span class="p">{</span><span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;a-BBO&#39;</span><span class="p">,</span>
-         <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
          <span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span>
              <span class="p">{</span><span class="s1">&#39;Ae&#39;</span><span class="p">:</span> <span class="mf">2.31197</span><span class="p">,</span>
               <span class="s1">&#39;Be&#39;</span><span class="p">:</span> <span class="mf">0.01184</span><span class="p">,</span>
@@ -432,7 +340,6 @@
 
     <span class="s1">&#39;ghosh&#39;</span><span class="p">:</span>
         <span class="p">{</span><span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;calcite&#39;</span><span class="p">,</span>
-         <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
          <span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span>
              <span class="p">{</span><span class="s1">&#39;Ae&#39;</span><span class="p">:</span> <span class="mf">1.35859695</span><span class="p">,</span>
               <span class="s1">&#39;Be&#39;</span><span class="p">:</span> <span class="mf">0.82427830</span><span class="p">,</span>
@@ -448,7 +355,6 @@
          <span class="p">},</span>
     <span class="s1">&#39;shi&#39;</span><span class="p">:</span>
         <span class="p">{</span><span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;YVO&#39;</span><span class="p">,</span>
-         <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
          <span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span>
              <span class="p">{</span><span class="s1">&#39;Ae&#39;</span><span class="p">:</span> <span class="mf">4.607200</span><span class="p">,</span>
               <span class="s1">&#39;Be&#39;</span><span class="p">:</span> <span class="mf">0.108087</span><span class="p">,</span>
@@ -463,7 +369,6 @@
 
     <span class="s1">&#39;zelmon&#39;</span><span class="p">:</span>  <span class="c1"># D.E. Zelmon, D. L. Small, J. Opt. Soc. Am. B/Vol. 14, No. 12/December 1997</span>
         <span class="p">{</span><span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;lithium_niobate&#39;</span><span class="p">,</span>
-         <span class="s1">&#39;sellmeier_eqn_form&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
          <span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span>
              <span class="p">{</span><span class="s1">&#39;Ae&#39;</span><span class="p">:</span> <span class="mf">2.9804</span><span class="p">,</span>
               <span class="s1">&#39;Be&#39;</span><span class="p">:</span> <span class="mf">0.02047</span><span class="p">,</span>
