@@ -7,11 +7,11 @@ from math import radians
 
 def mueller_product(mat1, mat2):
     """
-    Compute the product of two Mueller matrices.
+    Compute the product of a Mueller matrix with a Mueller matrix / Stokes vector
 
-    :param xr.DataArray mat1: Mueller matrix.
-    :param xr.DataArray mat2: Mueller matrix or Stokes vector.
-    :return: (xr.DataArray) mat1 @ mat2, a Mueller matrix or a Stokes vector, depending on the dimensions of mat2.
+    :param xarray.DataArray mat1: Mueller matrix.
+    :param xarray.DataArray mat2: Mueller matrix or Stokes vector.
+    :return: (xarray.DataArray) mat1 @ mat2, a Mueller matrix or a Stokes vector, depending on the dimensions of mat2.
     """
 
     if 'mueller_v' in mat2.dims and 'mueller_h' in mat2.dims:
@@ -23,12 +23,12 @@ def mueller_product(mat1, mat2):
         return mat1.dot(mat2_i, dims=('mueller_h', ), ).rename({'mueller_v': 'stokes'})
 
     else:
-        raise Exception('input not understood')
+        raise ValueError('pycis: arguments not understood')
 
 
 def rotation_matrix(angle):
     """
-    Mueller matrix for frame rotation (anti-clockwise from x-axis).
+    Mueller matrix for frame rotation (anti-clockwise from x-axis)
 
     :param float angle: rotation angle in degrees.
     :return: (xr.DataArray) Frame rotation Mueller matrix.
@@ -44,7 +44,7 @@ def rotation_matrix(angle):
 
 class Component:
     """
-    Base class for interferometer component.
+    Base class for interferometer component
     """
     def __init__(self, ):
         pass
@@ -59,7 +59,8 @@ class Component:
 
 class OrientableComponent(Component):
     """
-    Base class for interferometer component with orientation-dependent behaviour.
+    Base class for component with orientation-dependent behaviour
+
     """
     def __init__(self, orientation=0, **kwargs):
         super().__init__(**kwargs)
@@ -79,9 +80,9 @@ class OrientableComponent(Component):
 
 class TiltableComponent(Component):
     """
-    Base class for interferometer component with tilt-dependent behaviour.
-    """
+    Base class for component with tilt-dependent behaviour.
 
+    """
     def __init__(self, tilt_x=0, tilt_y=0, **kwargs):
         super().__init__(**kwargs)
         self.tilt_x = tilt_x
@@ -113,11 +114,17 @@ class Filter(TiltableComponent):
 
 class LinearPolariser(OrientableComponent):
     """
-    Linear polariser.
+    Linear polariser
 
-    :param float orientation: Orientation in degrees of the transmission axis relative to the x-axis.
-    :param float tx_1: transmission primary component. [0, 1] - defaults to 1.
-    :param float tx_2: transmission secondary (orthogonal) component. [0, 1] - defaults to 0.
+    :param float orientation: \
+        Orientation in degrees of the transmission axis relative to the x-axis.
+
+    :param float tx_1: \
+        Transmission, primary component. [0, 1] - default is 1.
+
+    :param float tx_2: \
+        Transmission, secondary (orthogonal) component. [0, 1] - default is 0.
+
     """
     def __init__(self, tx_1=1, tx_2=0, **kwargs):
         super().__init__(**kwargs)
@@ -129,10 +136,8 @@ class LinearPolariser(OrientableComponent):
 
     def get_mueller_matrix(self, *args, **kwargs):
         """
+        Mueller matrix for a linear polariser
 
-        :param args:
-        :param kwargs:
-        :return:
         """
 
         m = [[self.tx_2 ** 2 + self.tx_1 ** 2, self.tx_1 ** 2 - self.tx_2 ** 2, 0, 0],
@@ -145,7 +150,7 @@ class LinearPolariser(OrientableComponent):
 
 class LinearRetarder(OrientableComponent, TiltableComponent):
     """
-    Base class for a general linear retarder.
+    Base class for a general linear retarder
     """
     def __init__(self, contrast=1, **kwargs):
         super().__init__(**kwargs)
@@ -153,7 +158,7 @@ class LinearRetarder(OrientableComponent, TiltableComponent):
 
     def get_mueller_matrix(self, *args, **kwargs):
         """
-        General Mueller matrix for a linear retarder.
+        Mueller matrix for a linear retarder
         """
 
         delay = self.get_delay(*args, **kwargs)
@@ -171,36 +176,36 @@ class LinearRetarder(OrientableComponent, TiltableComponent):
         return self.orient(xr.combine_nested(m, concat_dim=('mueller_v', 'mueller_h', ), ))
 
     def get_delay(self, *args, **kwargs):
-        """
-         Calculates path delay (in radians) imparted by the retarder.
-        """
         raise NotImplementedError
 
     def get_fringe_frequency(self, *args, **kwargs):
-        """
-        Spatial frequency of the fringe pattern at the sensor plane in units m^-1.
-        """
         raise NotImplementedError
 
 
 class UniaxialCrystal(LinearRetarder):
     """
-    Plane-parallel uniaxial birefringent crystal plate.
+    Plane-parallel uniaxial birefringent crystal plate
 
     :param float thickness: \
         Crystal thickness in m.
+
     :param float cut_angle: \
         Angle in degrees between crystal optic axis and front face.
+
     :param float orientation: \
         Orientation of component fast axis in degrees, from positive x-axis towards positive y-axis.
+
     :param str material: \
         Set crystal material.
+
     :param str sellmeier_coefs_source: \
         Specify which source to use for the Sellmeier coefficients that describe the dispersion. If not specified,
         defaults for each material are set by sellmeier_coefs_source_defaults in pycis.model.dispersion.
+
     :param dict sellmeier_coefs: \
         Manually set the coefficients that describe the material dispersion
         via the Sellmeier equation. Dictionary must have keys 'Ae', 'Be', 'Ce', 'De', 'Ao', 'Bo', 'Co', 'Do'.
+
     :param float contrast: An arbitrary contrast degradation factor for the retarder, independent of ray path. Value
         between 0 and 1. Simulates real crystal imperfections.
 
@@ -218,17 +223,21 @@ class UniaxialCrystal(LinearRetarder):
         if all([attr is not None for attr in [self.sellmeier_coefs_source, self.sellmeier_coefs]]):
             raise ValueError('pycis: arguments not understood')
 
-    def get_delay(self, wavelength, inc_angle, azim_angle, ):
+    def get_delay(self, wavelength, inc_angle, azim_angle):
         """
-        Calculates path delay (in radians) imparted by the crystal.
+        Calculate path delay (in radians) imparted by the retarder
 
         :param wavelength: Wavelength in m.
         :type wavelength: float, xarray.DataArray
+
         :param inc_angle: Ray incidence angle(s) in radians.
         :type inc_angle: float, xarray.DataArray
+
         :param azim_angle: Ray azimuthal angle(s) in radians.
         :type azim_angle: float, xarray.DataArray
+
         :return: (float, xarray.DataArray) Imparted delay in radians.
+
         """
 
         kwargs = {
@@ -236,11 +245,10 @@ class UniaxialCrystal(LinearRetarder):
             'sellmeier_coefs': self.sellmeier_coefs,
         }
         ne, no = get_refractive_indices(wavelength, self.material, **kwargs)
-
         args = [wavelength, inc_angle, azim_angle, ne, no, radians(self.cut_angle), self.thickness, ]
         return xr.apply_ufunc(_calc_delay_uniaxial_crystal, *args, dask='allowed', )
 
-    def get_fringe_frequency(self, wavelength, focal_length, ):
+    def get_fringe_frequency(self, wavelength, focal_length):
         """
         Calculate the (approx.) spatial frequency of the fringe pattern at the sensor plane.
 
@@ -268,10 +276,12 @@ class UniaxialCrystal(LinearRetarder):
 
 class SavartPlate(LinearRetarder):
     """
-    Savart plate.
+    Savart plate
 
-    :param float orientation: Orientation of component fast axis in degrees, relative to the x-axis.
-    :param float thickness: Total thickness of plate in m.
+    :param float thickness: \
+        Total thickness of plate in m.
+    :param float orientation: \
+        Orientation of component fast axis in degrees, relative to the x-axis.
     :param str material: Crystal material.
     :param str material_source: Source of Sellmeier coefficients describing dispersion in the crystal. If blank, the
         default material source specified in pycis.model.dispersion
@@ -287,19 +297,17 @@ class SavartPlate(LinearRetarder):
         self.material_source = material_source,
         self.mode = mode
 
-    def get_delay(self, wavelength, inc_angle, azim_angle, n_e=None, n_o=None):
+    def get_delay(self, wavelength, inc_angle, azim_angle):
         """
-        Calculate imparted delay in radians.
+        Calculate path delay (in radians) imparted by the retarder
 
-        :param wavelength: Wavelength in m.
-        :type wavelength: float, xr.DataArray
+        ::param wavelength: Wavelength in m.
+        :type wavelength: float, xarray.DataArray
         :param inc_angle: Ray incidence angle(s) in radians.
-        :type inc_angle: float, xr.DataArray
+        :type inc_angle: float, xarray.DataArray
         :param azim_angle: Ray azimuthal angle(s) in radians.
-        :type azim_angle: float, xr.DataArray
-        :param float n_e: manually set extraordinary refractive index (e.g. for fitting).
-        :param float n_o: manually set ordinary refractive index (e.g. for fitting).
-        :return: (float, xr.DataArray) Imparted delay in radians.
+        :type azim_angle: float, xarray.DataArray
+        :return: (float, xarray.DataArray) Imparted delay in radians.
         """
 
         if self.mode == 'francon':

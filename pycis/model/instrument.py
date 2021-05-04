@@ -15,18 +15,26 @@ from pycis.model import mueller_product, LinearPolariser, Camera, QuarterWavepla
 
 class Instrument:
     """
-    Coherence imaging instrument.
+    Coherence imaging instrument
 
-    Generated from either a configuration file, or with the constituent python objects.
+    :param str config: \
+        Path to a .yaml instrument configuration file.
 
-    :param str config: path to a .yaml instrument configuration file
-    :param pycis.model.Camera camera: Instrument camera.
-    :param list optics: A list of floats, the focal lengths (in m) of the three lenses used in the standard CI
-        configuration (see e.g. my thesis or Scott Silburn's): [f_1, f_2, f_3] where f_1 is the objective lens.
-    :param list interferometer: A list of instances of pycis.model.Component, where the first entry is the first
+    :param pycis.model.Camera camera: \
+        Instrument camera.
+
+    :param list optics: \
+        A list of floats, the focal lengths (in m) of the three lenses used in the standard CI configuration (see e.g.
+        my thesis or Scott Silburn's): [f_1, f_2, f_3] where f_1 is the objective lens.
+
+    :param list interferometer: \
+        A list of instances of pycis.model.Component, where the first entry is the first
         component that the light passes through.
-    :param bool force_mueller: Forces the full Mueller matrix calculation of the interferogram, regardless of whether an
+
+    :param bool force_mueller: \
+        Forces the full Mueller matrix calculation of the interferogram, regardless of whether an
         analytical shortcut is available.
+
     """
     def __init__(self, config=None, camera=None, optics=None, interferometer=None, force_mueller=False):
 
