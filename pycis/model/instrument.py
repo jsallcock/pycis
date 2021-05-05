@@ -68,6 +68,7 @@ class Instrument:
                 with open(fpath) as f:
                     config = yaml.load(f, Loader=yaml.FullLoader)
                 found = True
+                break
             except FileNotFoundError:
                 found = False
 

@@ -45,9 +45,8 @@ def rotation_matrix(angle):
 class Component:
     """
     Base class for interferometer component
+
     """
-    def __init__(self, ):
-        pass
 
     def __eq__(self, other_component):
         if type(self) == type(other_component) \
@@ -163,15 +162,15 @@ class LinearRetarder(OrientableComponent, TiltableComponent):
 
         delay = self.get_delay(*args, **kwargs)
 
-        m1s = xr.ones_like(delay)
-        m0s = xr.zeros_like(delay)
-        c_c = self.contrast * np.cos(delay)
-        c_s = self.contrast * np.sin(delay)
+        m1 = xr.ones_like(delay)
+        m0 = xr.zeros_like(delay)
+        cc = self.contrast * np.cos(delay)
+        cs = self.contrast * np.sin(delay)
 
-        m = [[m1s,  m0s,  m0s,  m0s],
-             [m0s,  m1s,  m0s,  m0s],
-             [m0s,  m0s,  c_c,  c_s],
-             [m0s,  m0s, -c_s,  c_c]]
+        m = [[m1,  m0,  m0,  m0],
+             [m0,  m1,  m0,  m0],
+             [m0,  m0,  cc,  cs],
+             [m0,  m0, -cs,  cc]]
 
         return self.orient(xr.combine_nested(m, concat_dim=('mueller_v', 'mueller_h', ), ))
 
@@ -280,11 +279,15 @@ class SavartPlate(LinearRetarder):
 
     :param float thickness: \
         Total thickness of plate in m.
+
     :param float orientation: \
         Orientation of component fast axis in degrees, relative to the x-axis.
+
     :param str material: Crystal material.
+
     :param str material_source: Source of Sellmeier coefficients describing dispersion in the crystal. If blank, the
         default material source specified in pycis.model.dispersion
+
     :param float contrast: An arbitrary contrast degradation factor for the retarder, independent of ray path. Value
         between 0 and 1. Simulates the effect of real crystal imperfections.
     :param str mode: Determines how impartedd delay is calculated: 'francon' (approx.) or 'veiras' (exact).
