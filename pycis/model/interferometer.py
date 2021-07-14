@@ -292,13 +292,16 @@ class SavartPlate(LinearRetarder):
         between 0 and 1. Simulates the effect of real crystal imperfections.
     :param str mode: Determines how impartedd delay is calculated: 'francon' (approx.) or 'veiras' (exact).
     """
-    def __init__(self, thickness, material='a-BBO', material_source=None, mode='francon', **kwargs):
+    def __init__(self, thickness, material='a-BBO', sellmeier_coefs_source=None, sellmeier_coefs=None, mode='francon',
+                 **kwargs):
         super().__init__(**kwargs)
 
         self.thickness = thickness
         self.material = material
-        self.material_source = material_source,
+        self.sellmeier_coefs_source = sellmeier_coefs_source
+        self.sellmeier_coefs = sellmeier_coefs
         self.mode = mode
+
 
     def get_delay(self, wavelength, inc_angle, azim_angle):
         """
@@ -313,14 +316,17 @@ class SavartPlate(LinearRetarder):
         :return: (float, xarray.DataArray) Imparted delay in radians.
         """
 
+        kwargs = {
+            'sellmeier_coefs_source': self.sellmeier_coefs_source,
+            'sellmeier_coefs': self.sellmeier_coefs,
+        }
+        ne, no = get_refractive_indices(wavelength, self.material, **kwargs)
+
         if self.mode == 'francon':
 
-            if n_e is None and n_o is None:
-                biref, n_e, n_o = calculate_dispersion(wavelength, self.material, source=self.source)
-
             # Delay eqn. from Francon and Mallick's 'Polarization Interferometers' textbook.
-            a = 1 / n_e
-            b = 1 / n_o
+            a = 1 / ne
+            b = 1 / no
 
             c_azim_angle = np.cos(azim_angle)
             s_azim_angle = np.sin(azim_angle)
@@ -344,8 +350,14 @@ class SavartPlate(LinearRetarder):
             azim_angle2 = azim_angle - np.pi / 2
             t = self.thickness / 2
 
-            crystal_1 = UniaxialCrystal(or1, t, cut_angle=-45, material=self.material)
-            crystal_2 = UniaxialCrystal(or2, t, cut_angle=45, material=self.material)
+            kwargs = {
+                'thickness': t,
+                'material': self.material,
+                'sellmeier_coefs': self.sellmeier_coefs,
+                'sellmeier_coefs_source': self.sellmeier_coefs_source,
+            }
+            crystal_1 = UniaxialCrystal(orientation=or1, cut_angle=-45, **kwargs, )
+            crystal_2 = UniaxialCrystal(orientation=or2, thickness=t, **kwargs, )
 
             delay = crystal_1.get_delay(wavelength, inc_angle, azim_angle1, n_e=n_e, n_o=n_o) - \
                     crystal_2.get_delay(wavelength, inc_angle, azim_angle2, n_e=n_e, n_o=n_o)

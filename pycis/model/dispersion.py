@@ -9,7 +9,7 @@ sellmeier_coefs_source_defaults = {
     'lithium_niobate': 'zelmon',
 }
 
-def get_refractive_indices(wavelength, material, sellmeier_coefs_source=None, sellmeier_coefs=None, ):
+def get_refractive_indices(wavelength, material='a-BBO', sellmeier_coefs_source=None, sellmeier_coefs=None, ):
     """
     Calculate the extraordinary and ordinary refractive indices as a function of wavelength
 
@@ -41,7 +41,7 @@ def get_refractive_indices(wavelength, material, sellmeier_coefs_source=None, se
     return sellmeier_eqn(wavelength * 1e6, sellmeier_coefs, )
 
 
-def get_kappa(wavelength, material, **kwargs):
+def get_kappa(wavelength, **kwargs):
     """
     Calculate kappa, the dimensionless parameter that gives a first-order account of material dispersion, as a function
     of wavelength
@@ -63,9 +63,9 @@ def get_kappa(wavelength, material, **kwargs):
     :return: kappa. type(kappa) = type(wavelength)
 
     """
-    ne, no = get_refractive_indices(wavelength, material, **kwargs)
-    ne_p1, no_p1 = get_refractive_indices(wavelength + DWL, material, **kwargs)
-    ne_m1, no_m1 = get_refractive_indices(wavelength - DWL, material, **kwargs)
+    ne, no = get_refractive_indices(wavelength, **kwargs)
+    ne_p1, no_p1 = get_refractive_indices(wavelength + DWL, **kwargs)
+    ne_m1, no_m1 = get_refractive_indices(wavelength - DWL, **kwargs)
 
     biref = ne - no
     biref_p1 = ne_p1 - no_p1

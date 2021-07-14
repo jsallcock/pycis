@@ -25,7 +25,7 @@ def unwrap(phase, centre=True):
     Unwrap 1-D / 2-D phase profiles.
 
     In 2-D, a simple phase unwrapping algorithm sequentially unwraps columns and then rows (or vice versa). For noisy
-    data however, this method can perform poorly.
+    ci_data_mast however, this method can perform poorly.
 
     This 'pseudo 2D' unwrapping algorithm relies on the strong vertical phase shear present in the CIS raw_data.
     In an ideal system the optical axis is projected onto the detector centre. On axis, the Savart plate introduces

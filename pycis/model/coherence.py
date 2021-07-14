@@ -181,7 +181,7 @@ def test_with_gaussian_lineshape():
 
 
     np.testing.assert_almost_equal(doc_analytical(delay_0).real.data, doc_n1.real.data)
-    # np.testing.assert_almost_equal(doc_analytical(delay_0).real.data, doc_n2.real.data)
+    # np.testing.assert_almost_equal(doc_analytical(delay_0).real.ci_data_mast, doc_n2.real.ci_data_mast)
 
     titles = ['Spectrum', 'Contrast', 'Phase', ]
     for ax, title in zip(axes, titles):

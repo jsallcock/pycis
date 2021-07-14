@@ -73,7 +73,8 @@ def make_carrier_window(fft, fringe_freq, sign='p'):
     coord = (coord - np.nanmin(coord)) / (np.nanmax(coord) - np.nanmin(coord))
 
     # manually define Blackman window
-    alpha = 0.16
+    # alpha = 0.16
+    alpha = 0.01
     a_0 = (1 - alpha) / 2
     a_1 = 0.5
     a_2 = alpha / 2
