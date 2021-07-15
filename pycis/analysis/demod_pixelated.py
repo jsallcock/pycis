@@ -32,7 +32,7 @@ def demod_single_delay_pixelated(im):
     return i0 / 4, phase, contrast
 
 
-def demodulate_multi_delay_pixelated(image, fringe_freq, ):
+def demod_multi_delay_pixelated(image, fringe_freq, ):
 
     fft = fft2_im(image)
     window_pm = make_carrier_window(fft, fringe_freq, sign='pm')
