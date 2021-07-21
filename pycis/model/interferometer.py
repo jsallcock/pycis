@@ -391,7 +391,7 @@ class HalfWaveplate(IdealWaveplate):
     """
     Ideal half-wave plate.
     """
-    def __init__(self, orientation, ):
+    def __init__(self, **kwargs, ):
         delay = np.pi
         if 'delay' in kwargs:
             kwargs.pop('delay')  # nasty kludge to make instrument.write_config() work
