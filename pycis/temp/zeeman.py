@@ -19,7 +19,7 @@ def zeeman(bfield, view=None):
     - wavelengths: list of wavelengths
     - relative_intensities: list of relative intensities.
 
-    TODO: this script is unfinished, need to account for
+    TODO: this script is unfinished, need to account for view_angle and polarisation effects
     """
 
     bfield_mag = np.abs(bfield)  # TODO
