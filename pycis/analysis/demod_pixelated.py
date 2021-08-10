@@ -32,6 +32,8 @@ def demod_single_delay_pixelated(im):
 
 def demod_single_delay_pixelated_mod(im):
     """
+    alternative to demod_single_delay_pixelated() using 'synchronous demodulation' instead of the 'four-bucket' algorithm.
+    
     :param im: xr.DataArray image to be demodulation. Must have dimensions 'x' and 'y'.
     :return:
     """
@@ -57,7 +59,7 @@ def demod_single_delay_pixelated_mod(im):
     return dc, phase, contrast
 
 
-def demodulate_multi_delay_pixelated(image, fringe_freq, ):
+def demod_multi_delay_pixelated(image, fringe_freq, ):
 
     fft = fft2_im(image)
     window_pm = make_carrier_window(fft, fringe_freq, sign='pm')
