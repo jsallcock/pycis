@@ -111,7 +111,8 @@ def make_lowpass_window(fft, fringe_freq):
     window = window.where((-freq_x_lim < window.freq_x) & (window.freq_x < freq_x_lim), 0)
     window = window.where((-freq_y_lim < window.freq_y) & (window.freq_y < freq_y_lim), 0)
 
-    sigma = 0.00005 * np.array(fft.shape) * (abs(np.array(fringe_freq)) ** 0.7 / (4 * np.array([fft.freq_x.max(), fft.freq_y.max()]))) ** -1
+    # sigma = 0.00005 * np.array(fft.shape) * (abs(np.array(fringe_freq)) ** 0.7 / (4 * np.array([fft.freq_x.max(), fft.freq_y.max()]))) ** -1
+    sigma = fringe_freq
     print(sigma)
     window.values = gaussian_filter(window.values, sigma)
 

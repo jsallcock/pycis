@@ -2,7 +2,7 @@ import os
 import numpy as np
 import xarray as xr
 import matplotlib.pyplot as plt
-from pycis.model import Camera, LinearPolariser, UniaxialCrystal, Instrument, get_spectrum_delta
+from pycis.model import Camera, Instrument, get_spectrum_delta
 
 
 inst_types = [

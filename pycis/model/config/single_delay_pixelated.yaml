@@ -20,7 +20,7 @@ camera:
 # Focal lengths (in metres) of lenses. Lens order is front-to-back.
 lens_1_focal_length: 70.e-3
 lens_2_focal_length: 105.e-3
-lens_3_focal_length: 50.e-3
+lens_3_focal_length: 150.e-3
 
 
 # INTERFEROMETER

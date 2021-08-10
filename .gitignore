@@ -2,7 +2,6 @@
 *.DS_Store
 *__pycache__
 pycis/demo/*.png
-pycis/temp
 pycis/model/config/*
 !pycis/model/config/single_delay_linear.yaml
 !pycis/model/config/single_delay_pixelated.yaml
