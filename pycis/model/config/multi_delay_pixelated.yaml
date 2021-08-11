@@ -5,11 +5,11 @@
 # ------
 # example is FLIR BlackFly S polarised camera
 camera:
-  bit_depth: 12
   sensor_format:
     - 2448  # x
     - 2048  # y
   pixel_size: 3.45e-6  # metres
+  bit_depth: 12
   qe: 0.35
   epercount: 0.46
   cam_noise: 2.5  # e-
@@ -18,9 +18,9 @@ camera:
 # OPTICS
 # ------
 # Focal lengths (in metres) of lenses. Lens order is front-to-back.
-focal_length_lens_1: 70.e-3
-focal_length_lens_2: 105.e-3
-focal_length_lens_3: 150.e-3
+lens_1_focal_length: 70.e-3
+lens_2_focal_length: 105.e-3
+lens_3_focal_length: 150.e-3
 
 
 # INTERFEROMETER
@@ -30,14 +30,14 @@ focal_length_lens_3: 150.e-3
 # - thicknesses are in metres.
 interferometer:
 
-  LinearPolariser:
-    orientation: 0.
+  - LinearPolariser:
+      orientation: 0.
 
-  UniaxialCrystal:
-    orientation: 45.
-    cut_angle: 0.
-    thickness: 6.5e-3
-    material: 'a-BBO'
+  - UniaxialCrystal:
+      orientation: 45.
+      cut_angle: 0.
+      thickness: 6.5e-3
+      material: 'a-BBO'
 
-  QuarterWaveplate:
-    orientation: 90.
+  - QuarterWaveplate:
+      orientation: 90.
