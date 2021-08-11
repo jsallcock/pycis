@@ -1,7 +1,7 @@
 import os, inspect
 
 """
-The saved filter bandpass data will probably be moved elsewhere, but for now, the saved filter bandpass data can be 
+The saved filter bandpass ci_data_mast will probably be moved elsewhere, but for now, the saved filter bandpass ci_data_mast can be 
 accessed using pycis.model.FilterFromName or else directly using pycis.paths.filters_path
 
 """

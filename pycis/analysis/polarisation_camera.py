@@ -5,10 +5,10 @@ import pycis
 
 def polcam_demod(im, pixel_order=np.array([[0,45],[135,90]]), despeckle=False, components_out=False):
     '''
-    Demodulation of polarisation camera CIS data.
+    Demodulation of polarisation camera CIS ci_data_mast.
 
     !!! WARNING !!! THIS MAY WELL BE WRONG IN SOME UNKNOWN WAY AT THE MOMENT, YET TO BE 
-    FULLY TESTED & VALIDATED (seems to do strange things on my test data --Scott.)
+    FULLY TESTED & VALIDATED (seems to do strange things on my test ci_data_mast --Scott.)
 
     Parameters:
 

@@ -1,0 +1,26 @@
+---
+# energy in eV
+
+- energy_u: 32.199382
+  energy_l: 29.534646
+  j_u: 0
+  j_l: 1
+  g_u: 1.5
+  g_l: 2
+  rel_int: 0.111
+
+- energy_u: 32.200085
+  energy_l: 29.534646
+  j_u: 1
+  j_l: 1
+  g_u: 1.5
+  g_l: 2
+  rel_int: 0.333
+
+- energy_u: 32.201707
+  energy_l: 29.534646
+  j_u: 2
+  j_l: 1
+  g_u: 1.5
+  g_l: 2
+  rel_int: 0.556

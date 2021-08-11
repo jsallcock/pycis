@@ -73,7 +73,8 @@ def make_carrier_window(fft, fringe_freq, sign='p'):
     coord = (coord - np.nanmin(coord)) / (np.nanmax(coord) - np.nanmin(coord))
 
     # manually define Blackman window
-    alpha = 0.16
+    # alpha = 0.16
+    alpha = 0.01
     a_0 = (1 - alpha) / 2
     a_1 = 0.5
     a_2 = alpha / 2
@@ -110,7 +111,8 @@ def make_lowpass_window(fft, fringe_freq):
     window = window.where((-freq_x_lim < window.freq_x) & (window.freq_x < freq_x_lim), 0)
     window = window.where((-freq_y_lim < window.freq_y) & (window.freq_y < freq_y_lim), 0)
 
-    sigma = 0.00005 * np.array(fft.shape) * (abs(np.array(fringe_freq)) ** 0.7 / (4 * np.array([fft.freq_x.max(), fft.freq_y.max()]))) ** -1
+    # sigma = 0.00005 * np.array(fft.shape) * (abs(np.array(fringe_freq)) ** 0.7 / (4 * np.array([fft.freq_x.max(), fft.freq_y.max()]))) ** -1
+    sigma = fringe_freq
     print(sigma)
     window.values = gaussian_filter(window.values, sigma)
 

@@ -214,7 +214,7 @@ class FilterFromFile(BandpassFilter):
     def __init__(self, fname, ref_index=None):
         """
         
-        load filters data saved as a .csv file
+        load filters ci_data_mast saved as a .csv file
         
         .csv format: 
         the wavelengths as the first column [ m ] and transmission as the 

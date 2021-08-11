@@ -72,7 +72,6 @@ class Camera(object):
                 np.random.seed()
                 signal.values = np.random.poisson(signal.values)
             signal = signal * self.qe
-
             if not clean:
                 signal.values = signal.values + np.random.normal(0, self.cam_noise, signal.values.shape)
 

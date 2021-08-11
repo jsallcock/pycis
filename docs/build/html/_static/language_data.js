@@ -2,7 +2,7 @@
  * language_data.js
  * ~~~~~~~~~~~~~~~~
  *
- * This script contains the language-specific data used by searchtools.js,
+ * This script contains the language-specific ci_data_mast used by searchtools.js,
  * namely the list of stopwords, stemmer, scorer and splitter.
  *
  * :copyright: Copyright 2007-2021 by the Sphinx team, see AUTHORS.

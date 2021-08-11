@@ -6,7 +6,7 @@ import scipy.ndimage
 
 def end_region_mask(img, alpha=0.1, mean_subtract=True, display=False):
     """
-    Smoothly transition data to the image mean at the top and bottom edges, to reduce Gibbs phenomenon.
+    Smoothly transition ci_data_mast to the image mean at the top and bottom edges, to reduce Gibbs phenomenon.
     
     :param img: 
     :param alpha: "Shape parameter of the Tukey window, representing the fraction of the window inside the cosine 
