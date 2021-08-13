@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
-def zeeman(bfield, view=None):
+def zeeman(bfield, view=0):
     """
     Zeeman-split line component wavelengths, relative intensities and polarisation states.
 
@@ -84,12 +84,23 @@ def zeeman(bfield, view=None):
                     elif delta_mj == 0:
                         rel_int = mj_u ** 2
 
+                # account for view angle. Should this be before or after normalisation?
+                if delta_mj == 0:
+                    rel_int = rel_int * (np.sin(view))**2
+                else:
+                    rel_int = rel_int * (1 + (np.cos(view))**2)
+
                 rel_ints.append(rel_int * rel_int_fine_structure)
-    return wls, rel_ints
+
+    # normalise the intensities
+    const = np.sum(rel_ints)
+    norm_rel_ints = rel_ints/const
+
+    return wls, norm_rel_ints
 
 if __name__ == '__main__':
-    bfield = 1.
-    wls, ris = zeeman(bfield, )
+    bfield = 0.
+    wls, ris = zeeman(bfield, 45)
 
     fig = plt.figure()
     ax = fig.add_subplot(111)

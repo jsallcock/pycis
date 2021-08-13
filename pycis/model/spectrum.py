@@ -1,6 +1,7 @@
 import numpy as np
 import xarray as xr
 from scipy.constants import c,e, atomic_mass
+from pycis.temp.zeeman import zeeman
 
 """
 simple example spectra for testing
@@ -19,7 +20,7 @@ def get_spectrum_delta(wl0, ph, ):
     return spectrum * ph / spectrum.integrate(coord='wavelength')
 
 
-def get_spectrum_ciii_triplet(temperature, domain='frequency', nbins=1000):
+def get_spectrum_ciii_triplet(temperature, bfield=0, view=0, domain='frequency', nbins=1000):
     """
     return area-normalised spectrum of the Doppler-broadened C III triplet at 464.9 nm.
 
@@ -30,9 +31,15 @@ def get_spectrum_ciii_triplet(temperature, domain='frequency', nbins=1000):
     :return: (xr.DataArray) spectrum
     """
 
-    # define spectrum (corresponds to Doppler-broadened carbon III triplet at 464.9 nm):
-    wls = np.array([464.742e-9, 465.025e-9, 465.147e-9, ])  # line component centre wavelengths in m
-    rel_ints = np.array([0.556, 0.333, 0.111, ])  # relative intensities
+    # define spectrum (corresponds to Doppler-broadened carbon III triplet at 464.9 nm)
+    # if magnetic field is present, account for zeeman splitting:
+    if bfield != 0:
+        wls, rel_ints = zeeman(bfield, view)
+        wls = np.array(wls)
+        rel_ints = np.array(rel_ints)
+    else:
+        wls = np.array([464.742e-9, 465.025e-9, 465.147e-9, ])  # line component centre wavelengths in m
+        rel_ints = np.array([0.556, 0.333, 0.111, ])  # relative intensities
     freqs = c / wls
     freq_com = (c / wls * rel_ints).sum()  # centre-of-mass frequency in Hz
     sigma_freq = freq_com / c * np.sqrt(temperature * e / (12 * atomic_mass))  # line Doppler-width st. dev. in Hz
