@@ -38,8 +38,8 @@ def get_spectrum_ciii_triplet(temperature, bfield=0, view=0, domain='frequency',
         wls = np.array(wls)
         rel_ints = np.array(rel_ints)
     else:
-        wls = np.array([464.742e-9, 465.025e-9, 465.147e-9, ])  # line component centre wavelengths in m
-        rel_ints = np.array([0.556, 0.333, 0.111, ])  # relative intensities
+         wls = np.array([464.742e-9, 465.025e-9, 465.147e-9, ])  # line component centre wavelengths in m
+         rel_ints = np.array([0.556, 0.333, 0.111, ])  # relative intensities
     freqs = c / wls
     freq_com = (c / wls * rel_ints).sum()  # centre-of-mass frequency in Hz
     sigma_freq = freq_com / c * np.sqrt(temperature * e / (12 * atomic_mass))  # line Doppler-width st. dev. in Hz

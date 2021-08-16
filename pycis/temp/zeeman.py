@@ -15,6 +15,10 @@ def zeeman(bfield, view=0):
 
     Based on 'specline.m' script by Scott Silburn
 
+    param: float bfield: the strength of the magnetic field
+
+    param: float view: the angle in degrees between the magnetic field vector and the view vector.
+
     :return:
     - wavelengths: list of wavelengths
     - relative_intensities: list of relative intensities.
@@ -25,17 +29,21 @@ def zeeman(bfield, view=0):
     bfield_mag = np.abs(bfield)  # TODO
     mu_b = physical_constants['Bohr magneton in eV/T'][0]
 
+    # convert view angle to radians
+    view = np.pi * view / 180
+
 
     with open(os.path.join(dir_path, 'ciii.yaml')) as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
 
     no_transitions = len(config)
     wls = []
-    rel_ints = []
+    norm_rel_ints = []
 
     # loop over each transition
     for ii in range(no_transitions):
 
+        rel_ints=[]
         j_u = config[ii]['j_u']
         j_l = config[ii]['j_l']
         g_u = config[ii]['g_u']
@@ -49,6 +57,7 @@ def zeeman(bfield, view=0):
             for mj_l in np.linspace(-1 * j_l, j_l, 2 * j_l + 1):
                 delta_j = j_u - j_l
                 delta_mj = mj_u - mj_l
+
 
                 # selection rule satisfied?
                 if abs(delta_mj) > 1:
@@ -91,16 +100,20 @@ def zeeman(bfield, view=0):
                     rel_int = rel_int * (1 + (np.cos(view))**2)
 
                 rel_ints.append(rel_int * rel_int_fine_structure)
+        # normalise the intensities
+        const = np.sum(rel_ints)
+        for intensity in rel_ints:
+            norm_rel_ints=np.append(norm_rel_ints, (intensity/const)*rel_int_fine_structure)
 
     # normalise the intensities
-    const = np.sum(rel_ints)
-    norm_rel_ints = rel_ints/const
+    # const = np.sum(rel_ints)
+    # norm_rel_ints = rel_ints/const
 
     return wls, norm_rel_ints
 
 if __name__ == '__main__':
     bfield = 0.
-    wls, ris = zeeman(bfield, 45)
+    wls, ris = zeeman(bfield, 0)
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
