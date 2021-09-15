@@ -101,10 +101,8 @@ class Camera(object):
         y = xr.DataArray(y, dims=('y',), coords=(y,), attrs={'units': 'm'})
 
         # add pixel numbers as non-dimension coordinates -- for explicit indexing and plotting
-        x_pixel_coord = xr.DataArray(np.arange(self.sensor_format[0], ).astype(np.uint16), dims=('x', ), coords=(x, ), )
-        y_pixel_coord = xr.DataArray(np.arange(self.sensor_format[1], ).astype(np.uint16), dims=('y', ), coords=(y, ), )
-        x = x.assign_coords({'x_pixel': ('x', x_pixel_coord), }, )
-        y = y.assign_coords({'y_pixel': ('y', y_pixel_coord), }, )
+        x = x.assign_coords({'x_pixel': ('x', np.arange(self.sensor_format[0], ).astype(np.uint16)), }, )
+        y = y.assign_coords({'y_pixel': ('y', np.arange(self.sensor_format[1], ).astype(np.uint16)), }, )
 
         if x_pixel is not None:
             x = x.isel(x=x_pixel)
