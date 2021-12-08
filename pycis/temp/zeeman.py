@@ -43,7 +43,7 @@ def zeeman(bfield, view=0):
     # loop over each transition
     for ii in range(no_transitions):
 
-        rel_ints=[]
+        rel_ints = []
         j_u = config[ii]['j_u']
         j_l = config[ii]['j_l']
         g_u = config[ii]['g_u']
@@ -57,7 +57,6 @@ def zeeman(bfield, view=0):
             for mj_l in np.linspace(-1 * j_l, j_l, 2 * j_l + 1):
                 delta_j = j_u - j_l
                 delta_mj = mj_u - mj_l
-
 
                 # selection rule satisfied?
                 if abs(delta_mj) > 1:
@@ -99,7 +98,8 @@ def zeeman(bfield, view=0):
                 else:
                     rel_int = rel_int * (1 + (np.cos(view))**2)
 
-                rel_ints.append(rel_int * rel_int_fine_structure)
+                rel_ints.append(rel_int)
+
         # normalise the intensities
         const = np.sum(rel_ints)
         for intensity in rel_ints:
@@ -111,9 +111,12 @@ def zeeman(bfield, view=0):
 
     return wls, norm_rel_ints
 
+
 if __name__ == '__main__':
-    bfield = 0.
+    bfield = 1.
     wls, ris = zeeman(bfield, 0)
+
+    print(np.array(ris).sum())
 
     fig = plt.figure()
     ax = fig.add_subplot(111)

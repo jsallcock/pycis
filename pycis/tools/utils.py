@@ -44,7 +44,7 @@ def get_roi(input_image, centre=None, roi_dim=(250, 250), ):
     return input_image[y_lo:y_hi, x_lo:x_hi]
 
 
-def get_roi_xr(im, roi_dim=(200, 200)):
+def get_roi_xr(im, roi_dim=(40, 40)):
     """
     :param xarray.DataArray im:
     :param tuple roi_dim: (x, y)
