@@ -273,6 +273,70 @@ class UniaxialCrystal(LinearRetarder):
         return freq_x, freq_y
 
 
+class Waveplate(LinearRetarder):
+    """
+    Waveplate, a special case of the plane-parallel uniaxial birefringent crystal plate (cut_angle=0).
+
+    :param float thickness: \
+        Crystal thickness in m.
+
+    :param float orientation: \
+        Orientation of component fast axis in degrees, from positive x-axis towards positive y-axis.
+
+    :param str material: \
+        Set crystal material.
+
+    :param str sellmeier_coefs_source: \
+        Specify which source to use for the Sellmeier coefficients that describe the dispersion. If not specified,
+        defaults for each material are set by sellmeier_coefs_source_defaults in pycis.model.dispersion.
+
+    :param dict sellmeier_coefs: \
+        Manually set the coefficients that describe the material dispersion
+        via the Sellmeier equation. Dictionary must have keys 'Ae', 'Be', 'Ce', 'De', 'Ao', 'Bo', 'Co', 'Do'.
+
+    :param float contrast: An arbitrary contrast degradation factor for the retarder, independent of ray path. Value
+        between 0 and 1. Simulates real crystal imperfections.
+
+    """
+    def __init__(self, thickness, material='a-BBO', sellmeier_coefs_source=None, sellmeier_coefs=None, **kwargs):
+        super().__init__(**kwargs)
+
+        self.thickness = thickness
+        self.cut_angle = 0
+        self.material = material
+        self.sellmeier_coefs_source = sellmeier_coefs_source
+        self.sellmeier_coefs = sellmeier_coefs
+
+    def get_delay(self, wavelength, inc_angle, azim_angle):
+        """
+        Calculate path delay (in radians) imparted by the retarder
+
+        :param wavelength: Wavelength in m.
+        :type wavelength: float, xarray.DataArray
+
+        :param inc_angle: Ray incidence angle(s) in radians.
+        :type inc_angle: float, xarray.DataArray
+
+        :param azim_angle: Ray azimuthal angle(s) in radians.
+        :type azim_angle: float, xarray.DataArray
+
+        :return: (float, xarray.DataArray) Imparted delay in radians.
+
+        """
+
+        kwargs = {
+            'sellmeier_coefs_source': self.sellmeier_coefs_source,
+            'sellmeier_coefs': self.sellmeier_coefs,
+        }
+        ne, no = get_refractive_indices(wavelength, self.material, **kwargs)
+        args = [wavelength, inc_angle, azim_angle, ne, no, self.thickness, ]
+        return xr.apply_ufunc(_calc_delay_waveplate, *args, dask='allowed', )
+
+    def get_fringe_frequency(self, *args, **kwargs):
+        # no phase change across sensor plane
+        return 0, 0
+
+
 class SavartPlate(LinearRetarder):
     """
     Savart plate
@@ -301,7 +365,6 @@ class SavartPlate(LinearRetarder):
         self.sellmeier_coefs_source = sellmeier_coefs_source
         self.sellmeier_coefs = sellmeier_coefs
         self.mode = mode
-
 
     def get_delay(self, wavelength, inc_angle, azim_angle):
         """
@@ -359,8 +422,8 @@ class SavartPlate(LinearRetarder):
             crystal_1 = UniaxialCrystal(orientation=or1, cut_angle=-45, **kwargs, )
             crystal_2 = UniaxialCrystal(orientation=or2, thickness=t, **kwargs, )
 
-            delay = crystal_1.get_delay(wavelength, inc_angle, azim_angle1, n_e=n_e, n_o=n_o) - \
-                    crystal_2.get_delay(wavelength, inc_angle, azim_angle2, n_e=n_e, n_o=n_o)
+            delay = crystal_1.get_delay(wavelength, inc_angle, azim_angle1, ) - \
+                    crystal_2.get_delay(wavelength, inc_angle, azim_angle2, )
 
         else:
             raise Exception('invalid SavartPlate.mode')
@@ -431,4 +494,12 @@ def _calc_delay_uniaxial_crystal(wavelength, inc_angle, azim_angle, ne, no, cut_
              (ne ** 2 * s_cut_angle_2 + no ** 2 * c_cut_angle_2)
 
     return 2 * np.pi * (thickness / wavelength) * (term_1 + term_2 + term_3)
+
+
+def _calc_delay_waveplate(wavelength, inc_angle, azim_angle, ne, no, thickness, ):
+    s_inc_angle = np.sin(inc_angle)
+    s_inc_angle_2 = s_inc_angle ** 2
+    term_1 = np.sqrt(no ** 2 - s_inc_angle_2)
+    term_3 = - np.sqrt((ne ** 2 * no ** 2) - ((ne ** 2 - (ne ** 2 - no ** 2) * np.sin(azim_angle) ** 2) * s_inc_angle_2)) / no
+    return 2 * np.pi * (thickness / wavelength) * (term_1 + term_3)
 

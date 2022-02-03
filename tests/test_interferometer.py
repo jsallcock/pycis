@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 from numpy.testing import assert_almost_equal
 import xarray as xr
-from pycis import mueller_product
+from pycis import mueller_product, UniaxialCrystal, Waveplate
 
 
 class TestMueller(unittest.TestCase):
@@ -19,6 +19,25 @@ class TestMueller(unittest.TestCase):
         assert_almost_equal(mm_1.values, mueller_product(mm_1, mm_2).values, )
         assert_almost_equal(mm_1.values, mueller_product(mm_2, mm_1).values, )
         assert_almost_equal(sv_1.values, mueller_product(mm_2, sv_1).data, )
+
+    def test_waveplate(self, ):
+        thickness = np.random.rand() * 1e-2
+        orientation = np.random.rand() * 360
+        uni_crystal = UniaxialCrystal(
+            orientation=orientation,
+            thickness=thickness,
+            cut_angle=0,
+        )
+        waveplate = Waveplate(
+            orientation=orientation,
+            thickness=thickness,
+        )
+        kwargs = {
+            'wavelength': np.random.uniform(300e-9, 700e-9),
+            'inc_angle': np.random.uniform(0, np.pi / 2),
+            'azim_angle': np.random.uniform(0, 2 * np.pi),
+        }
+        assert_almost_equal(uni_crystal.get_delay(**kwargs), waveplate.get_delay(**kwargs))
 
 
 if __name__ == '__main__':
