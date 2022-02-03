@@ -37,6 +37,8 @@ class TestMueller(unittest.TestCase):
             'inc_angle': np.random.uniform(0, np.pi / 2),
             'azim_angle': np.random.uniform(0, 2 * np.pi),
         }
+        print(uni_crystal.cut_angle)
+        print(waveplate.cut_angle)
         assert_almost_equal(uni_crystal.get_delay(**kwargs), waveplate.get_delay(**kwargs))
 
 

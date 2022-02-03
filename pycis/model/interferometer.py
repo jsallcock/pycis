@@ -273,9 +273,12 @@ class UniaxialCrystal(LinearRetarder):
         return freq_x, freq_y
 
 
-class Waveplate(LinearRetarder):
+class Waveplate(UniaxialCrystal):
     """
     Waveplate, a special case of the plane-parallel uniaxial birefringent crystal plate (cut_angle=0).
+
+    I made this class to speed up the model when fitting to experimental data: the equation for phase delay due to a
+    waveplate is simpler than the general uniaxial crystal case.
 
     :param float thickness: \
         Crystal thickness in m.
@@ -298,14 +301,8 @@ class Waveplate(LinearRetarder):
         between 0 and 1. Simulates real crystal imperfections.
 
     """
-    def __init__(self, thickness, material='a-BBO', sellmeier_coefs_source=None, sellmeier_coefs=None, **kwargs):
-        super().__init__(**kwargs)
-
-        self.thickness = thickness
-        self.cut_angle = 0
-        self.material = material
-        self.sellmeier_coefs_source = sellmeier_coefs_source
-        self.sellmeier_coefs = sellmeier_coefs
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs, cut_angle=0)
 
     def get_delay(self, wavelength, inc_angle, azim_angle):
         """
@@ -496,6 +493,7 @@ def _calc_delay_uniaxial_crystal(wavelength, inc_angle, azim_angle, ne, no, cut_
     return 2 * np.pi * (thickness / wavelength) * (term_1 + term_2 + term_3)
 
 
+@vectorize([f8(f8, f8, f8, f8, f8, f8), ], nopython=True, fastmath=True, cache=True, )
 def _calc_delay_waveplate(wavelength, inc_angle, azim_angle, ne, no, thickness, ):
     s_inc_angle = np.sin(inc_angle)
     s_inc_angle_2 = s_inc_angle ** 2
