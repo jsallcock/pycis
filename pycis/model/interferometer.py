@@ -302,7 +302,13 @@ class Waveplate(UniaxialCrystal):
 
     """
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        """
+        yooosh this is grim TODO change
+        """
+        if 'cut_angle' not in kwargs:
+            super().__init__(**kwargs, cut_angle=0)
+        else:
+            super().__init__(**kwargs)
 
     def get_delay(self, wavelength, inc_angle, azim_angle):
         """
