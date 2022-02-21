@@ -4,3 +4,5 @@ from .utils import *
 from .img_tools import *
 from .color_system import *
 from .config_tools import MyDumper
+from . generate_gif import *
+from .find_peaks import *
