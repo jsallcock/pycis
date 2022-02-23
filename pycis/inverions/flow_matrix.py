@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import multiprocessing
 from pyEquilibrium.equilibrium import equilibrium
 from pycis.solvers import sart
-from .get import CISImage, get_Bfield
+from pycis.analysis import CISImage, get_Bfield
 from functools import partial
 from scipy import sparse, io
 from progress.bar import Bar
