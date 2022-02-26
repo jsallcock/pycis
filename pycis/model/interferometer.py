@@ -423,7 +423,7 @@ class SavartPlate(LinearRetarder):
                 'sellmeier_coefs_source': self.sellmeier_coefs_source,
             }
             crystal_1 = UniaxialCrystal(orientation=or1, cut_angle=-45, **kwargs, )
-            crystal_2 = UniaxialCrystal(orientation=or2, thickness=t, **kwargs, )
+            crystal_2 = UniaxialCrystal(orientation=or2, **kwargs, )
 
             delay = crystal_1.get_delay(wavelength, inc_angle, azim_angle1, ) - \
                     crystal_2.get_delay(wavelength, inc_angle, azim_angle2, )
