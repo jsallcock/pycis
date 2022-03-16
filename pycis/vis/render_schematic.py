@@ -5,7 +5,7 @@ import yaml
 import vtk
 import vtkmodules.vtkInteractionStyle
 import vtkmodules.vtkRenderingOpenGL2
-from vtk import vtkFeatureEdges, vtkRenderLargeImage
+from vtk import vtkFeatureEdges, vtkRenderLargeImage, vtkLabeledDataMapper, vtkActor2D
 from vtkmodules.vtkCommonMath import vtkMatrix4x4
 from vtkmodules.vtkCommonTransforms import vtkTransform
 from vtkmodules.vtkCommonCore import (
@@ -58,7 +58,7 @@ CYLINDER_RESOLUTION = 100
 TUBE_RADIUS_DEFAULT = 0.02
 
 WIDTHS = {
-    'LinearPolariser': 0.25,
+    'LinearPolariser': 0.2,
     'UniaxialCrystal': 1.25,
 }
 COLORS = {
@@ -77,7 +77,7 @@ FPATH_ROOT = os.path.dirname(os.path.realpath(__file__))
 FPATH_CONFIG = os.path.join(FPATH_ROOT, 'pycis_config.yaml')
 
 
-def render_schematic(fpath_config, fpath_out, show_axes=False, ):
+def render_schematic(fpath_config, fpath_out, show_axes=False, title=None):
     """
     Render a 3-D isometric diagram of the given interferometer configuration
 
@@ -110,7 +110,6 @@ def render_schematic(fpath_config, fpath_out, show_axes=False, ):
     renderer.SetLayer(0)
     renderer.SetUseDepthPeeling(1)
     renderer.SetOcclusionRatio(0.05)
-    # renderer.SetBackgroundAlpha(0.)  # add background opacity value
     renderer.SetMaximumNumberOfPeels(100)
     renderer_lines_fg = vtkRenderer()
     renderer_lines_fg.SetLayer(2)
@@ -120,23 +119,39 @@ def render_schematic(fpath_config, fpath_out, show_axes=False, ):
     render_window.AddRenderer(renderer_lines_fg)
     render_window.AddRenderer(renderer_lines_bg)
 
-    if show_axes:
-        show_axes = vtkAxesActor()
-        show_axes.SetOrigin(0, 0, 0)
-        renderer.AddActor(show_axes)
+    def add_text_3d(txt, x, y, z):
+        """ Add 2D text at point (x, y, z)
+        """
+        points = vtkPoints()
+        p = [x, y, z]
+        points.InsertNextPoint(p)
+        point = vtkPolyData()
+        point.SetPoints(points)
+        text_3d_mapper = vtkLabeledDataMapper()
+        text_3d_mapper.SetInputData(point)
+        text_3d_mapper.SetLabelFormat(txt)
+        text_3d_mapper.GetLabelTextProperty().SetColor(colors.GetColor3d("Black"))
+        text_3d_mapper.GetLabelTextProperty().SetJustificationToCentered()
+        text_3d_mapper.GetLabelTextProperty().SetFontFamilyToArial()
+        text_3d_mapper.GetLabelTextProperty().SetFontSize(42)
+        text_3d_mapper.GetLabelTextProperty().BoldOff()
+        text_3d_mapper.GetLabelTextProperty().ItalicOff()
+        text_3d_mapper.GetLabelTextProperty().ShadowOff()
+        text_3d_actor = vtkActor2D()
+        text_3d_actor.SetMapper(text_3d_mapper)
+        renderer.AddActor(text_3d_actor)
 
     # -------------------------
     # ADD COMPONENTS ONE BY ONE
     width_total = 0
     for ii, cc in enumerate(config['interferometer']):
+        if ii != 0:
+            width_total += WIDTH_SPACING
 
         component_type = list(cc.keys())[0]
         component_orientation_deg = cc[component_type]['orientation']
         component_orientation = component_orientation_deg * np.pi / 180
         component_width = WIDTHS[component_type]
-
-        if ii != 0:
-            width_total += WIDTH_SPACING
 
         # --------
         # CYLINDER
@@ -194,12 +209,12 @@ def render_schematic(fpath_config, fpath_out, show_axes=False, ):
             make_line(
                 0., 1.00 * RADIUS, width_total,
                 0., -1.00 * RADIUS, width_total,
-                tube_radius=0.01,
+                tube_radius=0.012,
             ),
             make_line(
                 1.00 * RADIUS, 0, width_total,
                 -1.00 * RADIUS, 0, width_total,
-                tube_radius=0.01,
+                tube_radius=0.012,
             ),
         ]
 
@@ -240,28 +255,44 @@ def render_schematic(fpath_config, fpath_out, show_axes=False, ):
 
         # -----
         # LABEL
-        txt = vtkTextActor()
-        txt.SetInput(LABELS[component_type] + '\n(' + str(component_orientation_deg) + '°)')
-        txtprop = txt.GetTextProperty()
-        txtprop.SetJustificationToCentered()
-        txtprop.SetFontFamilyToArial()
-        txtprop.SetFontSize(36)
-        txtprop.SetColor(colors.GetColor3d('Black'))
-        txt.SetDisplayPosition(390 + ii * 290, 1 + ii * 110)
+        component_label_text = LABELS[component_type] + '\n(' + str(component_orientation_deg) + '°)'
+        add_text_3d(component_label_text, -0.3 * RADIUS, -1.7 * RADIUS, width_total)
 
+        # ----------------------
+        # ADD IT ALL TO RENDERER
         renderer.AddActor(cylinderActor)
         renderer.AddActor(edge_actor)
-        renderer.AddActor(txt)
         [renderer_lines_fg.AddActor(a) for a in connector_line_actors]
-        [renderer_lines_bg.AddActor(a) for a in component_xy_line_actors]
-        renderer_lines_bg.AddActor(arrowActor)
+        [renderer.AddActor(a) for a in component_xy_line_actors]
+        renderer.AddActor(arrowActor)
         width_total += component_width
+
+    # ------------
+    # OPTICAL AXIS
+    edge_distance = 1.4 * RADIUS
+    def make_line_axis(x1, y1, z1, x2, y2, z2, ):
+        line_source = vtkLineSource()
+        line_source.SetPoint1(x1, y1, z1)
+        line_source.SetPoint2(x2, y2, z2)
+        line_mapper = vtkPolyDataMapper()
+        line_mapper.SetInputConnection(line_source.GetOutputPort())
+        line_actor = vtkActor()
+        line_actor.SetMapper(line_mapper)
+        line_actor.GetProperty().SetColor(colors.GetColor3d('Black'))
+        line_actor.GetProperty().SetLineWidth(3)
+        renderer.AddActor(line_actor)
+    # make_line_axis(0, 0, -edge_distance, 0, 0, width_total + edge_distance)  # z-axis
+    # make_line_xaxis(0, 0, -edge_distance, RADIUS, 0, -edge_distance)  # x-axis
+    # make_line_axis(0, 0, -edge_distance, 0, RADIUS, -edge_distance)  # Y-axis
+
+    if title is not None:
+        add_text_3d(title, 1.2 * RADIUS, 1.2 * RADIUS, 0, )
 
     # -------------
     # DEFINE CAMERA
     camera = renderer.GetActiveCamera()
     camera.ParallelProjectionOn()  # orthographic projection
-    camera.SetParallelScale(4.5)  # tweak as needed
+    camera.SetParallelScale(5.1)  # tweak as needed
     CAMERA_Z_POS = CAMERA_X_POS * np.tan(45 * np.pi / 180)
     CAMERA_Y_POS = np.sqrt(CAMERA_X_POS ** 2 + CAMERA_Z_POS ** 2) * np.tan(30 * np.pi / 180)
     camera.SetPosition(-CAMERA_X_POS, CAMERA_Y_POS, width_total / 2 - CAMERA_Z_POS)
@@ -271,7 +302,7 @@ def render_schematic(fpath_config, fpath_out, show_axes=False, ):
     renderer_lines_bg.SetActiveCamera(camera)
 
     renderer.SetBackground(colors.GetColor3d("BkgColor"))
-    render_window.SetSize(len(config['interferometer']) * 380, 1000)  # width, height
+    render_window.SetSize(len(config['interferometer']) * 400, 1000)  # width, height
     render_window.SetWindowName('CylinderExample')
     render_window.LineSmoothingOn()
     render_window.PolygonSmoothingOn()
@@ -291,7 +322,7 @@ def render_schematic(fpath_config, fpath_out, show_axes=False, ):
     # iren.Start()  #  <---- UNCOMMENT LINE FOR LIVE RENDER
 
 
-def demo_2crystals():
+def make_figure_2crystal_configs():
     """
     splice together images to make a figure showing 3 different 2-crystal interferometer configurations
     """
@@ -301,15 +332,15 @@ def demo_2crystals():
     FLIST_CONFIG = sorted(glob.glob(os.path.join(FPATH_ROOT, 'pycis_config_demo_*delay.yaml')))
     N_IM = len(FLIST_CONFIG)
     flist_out = []
-    for fpath_config in FLIST_CONFIG:
+    titles = ['(a)', '(b)', '(c)', '(d)', '(e)']
+    for fpath_config, title in zip(FLIST_CONFIG, titles):
         fpath_out = fpath_config.split('.')[0] + '.png'
-        render_schematic(fpath_config, fpath_out)
+        render_schematic(fpath_config, fpath_out, title=title)
         flist_out.append(fpath_out)
 
     images = [Image.open(x) for x in flist_out]
     widths, heights = zip(*(i.size for i in images))
-    OVERLAP_FRAC = 0.8
-    # total_height = int(sum(heights) * OVERLAP_FRAC)
+    OVERLAP_FRAC = 0.75
     max_width = max(widths)
     max_height = max(heights)
     total_height = int(max_height * (1 + (OVERLAP_FRAC * (N_IM - 1))))
@@ -335,8 +366,7 @@ def demo_2crystals():
 
     background = Image.new('RGBA', new_im.size, (255, 255, 255))
     alpha_composite = Image.alpha_composite(background, new_im)
-    alpha_composite.convert('RGB').save('demo_2crystals.png')
-    # new_im.convert('RGB').save('demo_2crystals.png')
+    alpha_composite.convert('RGB').save('2crystal_configs.png')
 
     # for f in flist_out:
     #     os.remove(f)
@@ -346,4 +376,4 @@ if __name__ == '__main__':
     # test()
     # hello_cylinder()
     # hello_cylinders_v1()
-    demo_2crystals()
+    make_figure_2crystal_configs()
