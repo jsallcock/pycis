@@ -245,7 +245,9 @@ class UniaxialCrystal(LinearRetarder):
         }
         ne, no = get_refractive_indices(wavelength, self.material, **kwargs)
         args = [wavelength, inc_angle, azim_angle, ne, no, radians(self.cut_angle), self.thickness, ]
-        return xr.apply_ufunc(_calc_delay_uniaxial_crystal, *args, dask='allowed', )
+        # return xr.apply_ufunc(_calc_delay_uniaxial_crystal, *args, dask='allowed', )
+        # return xr.apply_ufunc(_calc_delay_uniaxial_crystal, *args,)
+        return _calc_delay_uniaxial_crystal(*args)
 
     def get_fringe_frequency(self, wavelength, focal_length):
         """
@@ -479,7 +481,7 @@ class HalfWaveplate(IdealWaveplate):
         super().__init__(delay, **kwargs)
 
 
-@vectorize([f8(f8, f8, f8, f8, f8, f8, f8), ], nopython=True, fastmath=True, cache=True, )
+# @vectorize([f8(f8, f8, f8, f8, f8, f8, f8), ], nopython=True, fastmath=True, cache=True, )
 def _calc_delay_uniaxial_crystal(wavelength, inc_angle, azim_angle, ne, no, cut_angle, thickness, ):
     s_inc_angle = np.sin(inc_angle)
     s_inc_angle_2 = s_inc_angle ** 2

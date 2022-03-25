@@ -55,14 +55,23 @@ S_UNPOLARISED = Matrix([s0, 0, 0, 0])
 S_GENERAL = Matrix([s0, s1, s2, s3])
 # i = (polariser(0) * retarder(pi / 4, phi) * polariser(0) * S_GENERAL)[0]
 
-
-phi_1, phi_2, phi_3, m, rho_1, rho_2 = symbols('phi_1 phi_2 phi_3 m rho_1 rho_2')
+phi_1, phi_2, phi_3, m, rho_1, rho_2, rho_3 = symbols('phi_1 phi_2 phi_3 m rho_1 rho_2 rho_3')
 POL_1 = polariser(rho_1)
 RET_1 = retarder(0, phi_1)
 RET_2 = retarder(pi / 4, phi_2)
 RET_3 = retarder(0, phi_3)
 POL_2 = polariser(pi / 4)
-print(trigsimp(POL_2 * RET_3 * RET_2 * RET_1 * POL_1 * S_UNPOLARISED)[0])
+# print(trigsimp(POL_2 * RET_3 * RET_2 * RET_1 * POL_1 * S_UNPOLARISED)[0])
+# print(
+#     simplify(trigsimp(
+#         polariser(rho_3) * retarder(rho_2, phi_2) * retarder(rho_1, phi_1) * polariser(0) * S_UNPOLARISED
+#     )[0])
+# )
+print(
+    simplify(trigsimp(
+        polariser(0) * retarder(rho_2, phi_1) * polariser(rho_1) * S_UNPOLARISED
+    )[0])
+)
 
 
 """

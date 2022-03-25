@@ -2,41 +2,29 @@ import os
 import numpy as np
 import glob
 import yaml
-import vtk
-import vtkmodules.vtkInteractionStyle
-import vtkmodules.vtkRenderingOpenGL2
-from vtk import vtkFeatureEdges, vtkRenderLargeImage, vtkLabeledDataMapper, vtkActor2D
-from vtkmodules.vtkCommonMath import vtkMatrix4x4
-from vtkmodules.vtkCommonTransforms import vtkTransform
+from vtk import vtkFeatureEdges, vtkRenderLargeImage, vtkLabeledDataMapper, vtkActor2D, vtkAngleWidget
 from vtkmodules.vtkCommonCore import (
     vtkPoints,
-    vtkUnsignedCharArray,
-    vtkMath,
-    vtkMinimalStandardRandomSequence,
 )
 from vtkmodules.vtkCommonColor import (
-    vtkColorSeries,
     vtkNamedColors,
 )
 from vtkmodules.vtkFiltersCore import vtkTubeFilter
-from vtkmodules.vtkFiltersGeneral import vtkTransformPolyDataFilter
 from vtkmodules.vtkFiltersSources import (
-    vtkArrowSource,
-    vtkConeSource,
-    vtkCubeSource,
     vtkCylinderSource,
-    vtkSphereSource,
     vtkLineSource,
+    vtkArcSource,
 )
 from vtkmodules.vtkCommonDataModel import (
-    vtkCellArray,
+    vtkPolyData,
+    vtkPolyLine,
+    vtkTriangle,
+    vtkPolygon,
+    vtkRect,
     vtkLine,
-    vtkPolyData
+    vtkCellArray,
 )
-from vtkmodules.vtkFiltersGeneral import vtkAxes
-from vtkmodules.vtkCommonDataModel import vtkSphere, vtkCylinder
 from vtkmodules.vtkIOImage import vtkPNGWriter, vtkPostScriptWriter
-from vtkmodules.vtkRenderingAnnotation import vtkAxesActor
 from vtkmodules.vtkRenderingCore import (
     vtkWindowToImageFilter,
     vtkActor,
@@ -55,21 +43,28 @@ WIDTH_RET = 1.5
 PIX_HEIGHT = 300
 PIX_WIDTH = 300
 CYLINDER_RESOLUTION = 100
+CYLINDER_OPACITY = 0.88
+CYLINDER_EDGE_WIDTH = 6
 TUBE_RADIUS_DEFAULT = 0.02
 
 WIDTHS = {
     'LinearPolariser': 0.2,
-    'UniaxialCrystal': 1.25,
+    'UniaxialCrystal': 1.5,
+    'QuarterWaveplate': 0.2,
 }
 COLORS = {
     'LinearPolariser': 'White',
     'UniaxialCrystal': 'AliceBlue',
+    # 'UniaxialCrystal': 'LightBlue',
+    'QuarterWaveplate': 'Honeydew',
 }
 LABELS = {
     'LinearPolariser': 'POL',
     'UniaxialCrystal': 'RET',
+    'QuarterWaveplate': 'QWP',
 }
 COLOR_LINE_DEFAULT = 'Black'
+COLOR_AXIS = 'DimGray'
 WIDTH_SPACING = 2.6
 CAMERA_X_POS = 4
 USER_MATRIX = True
@@ -77,7 +72,7 @@ FPATH_ROOT = os.path.dirname(os.path.realpath(__file__))
 FPATH_CONFIG = os.path.join(FPATH_ROOT, 'pycis_config.yaml')
 
 
-def render_schematic(fpath_config, fpath_out, show_axes=False, title=None):
+def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=True, title=None):
     """
     Render a 3-D isometric diagram of the given interferometer configuration
 
@@ -94,6 +89,7 @@ def render_schematic(fpath_config, fpath_out, show_axes=False, title=None):
 
     with open(fpath_config) as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
+    n_components = len(config['interferometer'])
 
     # -----
     # SETUP
@@ -102,24 +98,25 @@ def render_schematic(fpath_config, fpath_out, show_axes=False, title=None):
     colors.SetColor("BkgColor", *bkg)
     iren = vtkRenderWindowInteractor()
     render_window = vtkRenderWindow()
-    render_window.SetMultiSamples(500)
+    render_window.SetMultiSamples(1000)
     render_window.SetNumberOfLayers(3)
     render_window.SetAlphaBitPlanes(1)
     iren.SetRenderWindow(render_window)
-    renderer = vtkRenderer()
-    renderer.SetLayer(0)
-    renderer.SetUseDepthPeeling(1)
-    renderer.SetOcclusionRatio(0.05)
-    renderer.SetMaximumNumberOfPeels(100)
+    renderer_main = vtkRenderer()
+    renderer_main.SetLayer(0)
+    renderer_main.SetUseDepthPeeling(1)
+    renderer_main.SetOcclusionRatio(0.05)
+    renderer_main.SetMaximumNumberOfPeels(1000)
+    renderer_main.UseDepthPeelingForVolumesOn()
     renderer_lines_fg = vtkRenderer()
     renderer_lines_fg.SetLayer(2)
     renderer_lines_bg = vtkRenderer()
     renderer_lines_bg.SetLayer(1)
-    render_window.AddRenderer(renderer)
+    render_window.AddRenderer(renderer_main)
     render_window.AddRenderer(renderer_lines_fg)
     render_window.AddRenderer(renderer_lines_bg)
 
-    def add_text_3d(txt, x, y, z):
+    def add_text_3d(txt, x, y, z, color='Black', renderer=renderer_main):
         """ Add 2D text at point (x, y, z)
         """
         points = vtkPoints()
@@ -130,7 +127,7 @@ def render_schematic(fpath_config, fpath_out, show_axes=False, title=None):
         text_3d_mapper = vtkLabeledDataMapper()
         text_3d_mapper.SetInputData(point)
         text_3d_mapper.SetLabelFormat(txt)
-        text_3d_mapper.GetLabelTextProperty().SetColor(colors.GetColor3d("Black"))
+        text_3d_mapper.GetLabelTextProperty().SetColor(colors.GetColor3d(color))
         text_3d_mapper.GetLabelTextProperty().SetJustificationToCentered()
         text_3d_mapper.GetLabelTextProperty().SetFontFamilyToArial()
         text_3d_mapper.GetLabelTextProperty().SetFontSize(42)
@@ -139,7 +136,66 @@ def render_schematic(fpath_config, fpath_out, show_axes=False, title=None):
         text_3d_mapper.GetLabelTextProperty().ShadowOff()
         text_3d_actor = vtkActor2D()
         text_3d_actor.SetMapper(text_3d_mapper)
-        renderer.AddActor(text_3d_actor)
+        renderer_main.AddActor(text_3d_actor)
+
+    def add_line(p1, p2, line_width=1, color=COLOR_LINE_DEFAULT, renderer=renderer_main):
+        lineSource = vtkLineSource()
+        lineSource.SetPoint1(*p1)
+        lineSource.SetPoint2(*p2)
+        lineMapper = vtkPolyDataMapper()
+        lineMapper.SetInputConnection(lineSource.GetOutputPort())
+        lineActor = vtkActor()
+        lineActor.SetMapper(lineMapper)
+        lineActor.GetProperty().SetColor(colors.GetColor3d(color))
+        lineActor.GetProperty().SetLineWidth(line_width)
+        renderer.AddActor(lineActor)
+
+    def add_tube(p1, p2, tube_radius=TUBE_RADIUS_DEFAULT, color=COLOR_LINE_DEFAULT, renderer=renderer_main, ):
+        lineSource = vtkLineSource()
+        lineSource.SetPoint1(*p1)
+        lineSource.SetPoint2(*p2)
+        lineMapper = vtkPolyDataMapper()
+        lineMapper.SetInputConnection(lineSource.GetOutputPort())
+        lineActor = vtkActor()
+        lineActor.SetMapper(lineMapper)
+        lineActor.GetProperty().SetColor(colors.GetColor3d(color))
+        lineActor.GetProperty().SetLineWidth(1)
+        tubeFilter = vtkTubeFilter()
+        tubeFilter.SetInputConnection(lineSource.GetOutputPort())
+        tubeFilter.SetRadius(tube_radius)
+        tubeFilter.SetNumberOfSides(20)
+        tubeFilter.Update()
+        tubeMapper = vtkPolyDataMapper()
+        tubeMapper.SetInputConnection(tubeFilter.GetOutputPort())
+        tubeActor = vtkActor()
+        tubeActor.SetMapper(tubeMapper)
+        tubeActor.GetProperty().SetColor(colors.GetColor3d(color))
+        tubeActor.GetProperty().LightingOff()
+        tubeActor.GetProperty().ShadingOff()
+        renderer.AddActor(tubeActor)
+
+    def add_rect(p1, p2, p3, p4, color='Black', renderer=renderer_main, opacity=1.):
+
+        points = vtkPoints()
+        [points.InsertNextPoint(*p) for p in [p1, p2, p3, p4]]
+        rect = vtkPolygon()
+        rect.GetPointIds().SetNumberOfIds(4)
+        rect.GetPointIds().SetId(0, 0)
+        rect.GetPointIds().SetId(1, 1)
+        rect.GetPointIds().SetId(2, 2)
+        rect.GetPointIds().SetId(3, 3)
+        rects = vtkCellArray()
+        rects.InsertNextCell(rect)
+        rectPolyData = vtkPolyData()
+        rectPolyData.SetPoints(points)
+        rectPolyData.SetPolys(rects)
+        rect_mapper = vtkPolyDataMapper()
+        rect_mapper.SetInputData(rectPolyData)
+        rect_actor = vtkActor()
+        rect_actor.GetProperty().SetColor(colors.GetColor3d(color))
+        rect_actor.SetMapper(rect_mapper)
+        rect_actor.GetProperty().SetOpacity(opacity)
+        renderer.AddActor(rect_actor)
 
     # -------------------------
     # ADD COMPONENTS ONE BY ONE
@@ -167,64 +223,15 @@ def render_schematic(fpath_config, fpath_out, show_axes=False, title=None):
         cylinderActor.GetProperty().SetRepresentationToSurface()
         cylinderActor.GetProperty().BackfaceCullingOn()
         cylinderActor.GetProperty().LightingOff()
-        cylinderActor.GetProperty().SetOpacity(0.92)
+        cylinderActor.GetProperty().SetOpacity(CYLINDER_OPACITY)
 
-        # ----------------
-        # LINES
-        def make_line(x1, y1, z1, x2, y2, z2, tube_radius=TUBE_RADIUS_DEFAULT, color=COLOR_LINE_DEFAULT):
-            lineSource = vtkLineSource()
-            lineSource.SetPoint1(x1, y1, z1)
-            lineSource.SetPoint2(x2, y2, z2)
-            lineMapper = vtkPolyDataMapper()
-            lineMapper.SetInputConnection(lineSource.GetOutputPort())
-            lineActor = vtkActor()
-            lineActor.SetMapper(lineMapper)
-            lineActor.GetProperty().SetColor(colors.GetColor3d(color))
-            lineActor.GetProperty().SetLineWidth(1)
-            tubeFilter = vtkTubeFilter()
-            tubeFilter.SetInputConnection(lineSource.GetOutputPort())
-            tubeFilter.SetRadius(tube_radius)
-            tubeFilter.SetNumberOfSides(20)
-            tubeFilter.Update()
-            tubeMapper = vtkPolyDataMapper()
-            tubeMapper.SetInputConnection(tubeFilter.GetOutputPort())
-            tubeActor = vtkActor()
-            tubeActor.SetMapper(tubeMapper)
-            tubeActor.GetProperty().SetColor(colors.GetColor3d(color))
-            tubeActor.GetProperty().LightingOff()
-            return tubeActor
-        view_angle = 1.14 * np.pi / 4
-        nubbin = 0.05
-        connector_line_actors = [
-            make_line(
-                RADIUS * np.cos(view_angle), RADIUS * np.sin(view_angle), width_total,
-                RADIUS * np.cos(view_angle), RADIUS * np.sin(view_angle), width_total + component_width + 4. * nubbin
-            ),
-            make_line(
-                -RADIUS * np.cos(view_angle), -RADIUS * np.sin(view_angle), width_total,
-                -RADIUS * np.cos(view_angle), -RADIUS * np.sin(view_angle), width_total + component_width + 2. * nubbin
-            )
-        ]
-        component_xy_line_actors = [
-            make_line(
-                0., 1.00 * RADIUS, width_total,
-                0., -1.00 * RADIUS, width_total,
-                tube_radius=0.012,
-            ),
-            make_line(
-                1.00 * RADIUS, 0, width_total,
-                -1.00 * RADIUS, 0, width_total,
-                tube_radius=0.012,
-            ),
-        ]
+        def transform_actor(actor):
+            actor.SetPosition(0.0, 0.0, 0.0)
+            actor.RotateX(90.0)
+            actor.SetPosition(0.0, 0.0, width_total + component_width / 2)
 
-        # -----
-        # ARROW
-        arrowActor = make_line(
-            RADIUS * np.cos(component_orientation), RADIUS * np.sin(component_orientation), width_total,
-            -RADIUS * np.cos(component_orientation), -RADIUS * np.sin(component_orientation), width_total,
-            color='Red'
-        )
+        transform_actor(cylinderActor)
+        cylinder.Update()
 
         # -------------
         # CYLINDER EDGES
@@ -236,63 +243,194 @@ def render_schematic(fpath_config, fpath_out, show_axes=False, title=None):
         feature_edges.NonManifoldEdgesOff()
         feature_edges.FeatureEdgesOff()
         edge_actor = vtkActor()
-        edge_actor.GetProperty().SetColor(0., 0., 0., )
-        edge_actor.GetProperty().SetLineWidth(7)
+        edge_actor.GetProperty().SetLineWidth(CYLINDER_EDGE_WIDTH)
         edge_actor.GetProperty().SetRenderLinesAsTubes(1)
         edge_actor.GetProperty().SetColor(colors.GetColor3d('Black'))
         edge_actor.GetProperty().LightingOff()
         edge_mapper = vtkPolyDataMapper()
         edge_mapper.SetInputConnection(feature_edges.GetOutputPort())
         edge_actor.SetMapper(edge_mapper)
-
-        def transform_actor(actor):
-            actor.SetPosition(0.0, 0.0, 0.0)
-            actor.RotateX(90.0)
-            actor.SetPosition(0.0, 0.0, width_total + component_width / 2)
-
-        transform_actor(cylinderActor)
         transform_actor(edge_actor)
+        cylinderMapper.Update()
+        edge_mapper.Update()
+        renderer_main.AddActor(cylinderActor)
+        renderer_main.AddActor(edge_actor)
+
+        # ----------------
+        # LINES
+        view_angle = 1.14 * np.pi / 4
+        nubbin = 0.05
+        add_line(
+            [RADIUS * np.cos(view_angle), RADIUS * np.sin(view_angle), width_total],
+            [RADIUS * np.cos(view_angle), RADIUS * np.sin(view_angle), width_total + component_width + 4. * nubbin],
+            renderer=renderer_lines_fg, line_width=0.9 * CYLINDER_EDGE_WIDTH,
+        )
+        add_line(
+            [-RADIUS * np.cos(view_angle), -RADIUS * np.sin(view_angle), width_total],
+            [-RADIUS * np.cos(view_angle), -RADIUS * np.sin(view_angle), width_total + component_width + 2.5 * nubbin],
+            renderer=renderer_lines_fg, line_width=0.9 * CYLINDER_EDGE_WIDTH,
+        )
+
+        # -----
+        # ARROW
+        add_tube(
+            [RADIUS * np.cos(component_orientation), RADIUS * np.sin(component_orientation), width_total],
+            [-RADIUS * np.cos(component_orientation), -RADIUS * np.sin(component_orientation), width_total],
+            color='Red',
+            tube_radius=1.75 * TUBE_RADIUS_DEFAULT
+        )
 
         # -----
         # LABEL
         component_label_text = LABELS[component_type] + '\n(' + str(component_orientation_deg) + '°)'
         add_text_3d(component_label_text, -0.3 * RADIUS, -1.7 * RADIUS, width_total)
 
-        # ----------------------
-        # ADD IT ALL TO RENDERER
-        renderer.AddActor(cylinderActor)
-        renderer.AddActor(edge_actor)
-        [renderer_lines_fg.AddActor(a) for a in connector_line_actors]
-        [renderer.AddActor(a) for a in component_xy_line_actors]
-        renderer.AddActor(arrowActor)
+        if show_cut_angle:
+            if component_type == 'UniaxialCrystal':
+                cut_angle = cc[component_type]['cut_angle'] * np.pi / 180
+                add_rect(
+                    [RADIUS * np.cos(component_orientation), RADIUS * np.sin(component_orientation), width_total, ],
+                    [-RADIUS * np.cos(component_orientation), -RADIUS * np.sin(component_orientation), width_total, ],
+                    [-RADIUS * np.cos(component_orientation), -RADIUS * np.sin(component_orientation),
+                     width_total + component_width, ],
+                    [RADIUS * np.cos(component_orientation), RADIUS * np.sin(component_orientation),
+                     width_total + component_width, ],
+                    color='Black', opacity=0.65,
+                )
+                rad_partial = component_width * np.tan(np.pi / 2 - cut_angle)
+                if rad_partial > RADIUS:
+                    x_end = RADIUS * np.cos(component_orientation)
+                    y_end = RADIUS * np.sin(component_orientation)
+                    z_end = width_total + RADIUS * np.tan(cut_angle)
+                else:
+                    x_end = rad_partial * np.cos(component_orientation)
+                    y_end = rad_partial * np.sin(component_orientation)
+                    z_end = width_total + component_width
+
+                # --------------
+                # MARK CUT ANGLE
+                arc = vtkArcSource()
+
+                add_tube(
+                    [0, 0, width_total],
+                    [x_end, y_end, z_end],
+                    color='Red',
+                    tube_radius=0.4 * TUBE_RADIUS_DEFAULT,
+                    renderer=renderer_lines_fg,
+                )
+
+        # --------------------------------
+        # HACK: add top edge to foreground
+        top_edge = vtkPolyData()
+        npts = feature_edges.GetOutput().GetPoints().GetNumberOfPoints()
+        top_edge_pts = vtkPoints()
+        pids = []
+        for ii_pt_all in range(npts):
+            pt = feature_edges.GetOutput().GetPoints().GetPoint(ii_pt_all)
+            if abs(pt[1] + component_width / 2) < 0.01:
+                if pt[0] + pt[2] < 0.:
+                    pids.append(top_edge_pts.InsertNextPoint(*pt))
+        npts_out = len(pids)
+        lines = vtkCellArray()
+        for ii_pt in range(npts_out - 1):
+            line = vtkLine()
+            line.GetPointIds().SetId(0, pids[ii_pt])
+            line.GetPointIds().SetId(1, pids[ii_pt + 1])
+            lines.InsertNextCell(line)
+
+        top_edge.SetPoints(top_edge_pts)
+        top_edge.SetLines(lines)
+        top_edge_actor = vtkActor()
+        top_edge_actor.GetProperty().SetLineWidth(CYLINDER_EDGE_WIDTH)
+        top_edge_actor.GetProperty().SetColor(colors.GetColor3d('Black'))
+        transform_actor(top_edge_actor)
+        top_edge_mapper = vtkPolyDataMapper()
+        top_edge_mapper.SetInputData(top_edge)
+        top_edge_actor.SetMapper(top_edge_mapper)
+        renderer_lines_fg.AddActor(top_edge_actor)
+
         width_total += component_width
 
-    # ------------
-    # OPTICAL AXIS
-    edge_distance = 1.4 * RADIUS
-    def make_line_axis(x1, y1, z1, x2, y2, z2, ):
-        line_source = vtkLineSource()
-        line_source.SetPoint1(x1, y1, z1)
-        line_source.SetPoint2(x2, y2, z2)
-        line_mapper = vtkPolyDataMapper()
-        line_mapper.SetInputConnection(line_source.GetOutputPort())
-        line_actor = vtkActor()
-        line_actor.SetMapper(line_mapper)
-        line_actor.GetProperty().SetColor(colors.GetColor3d('Black'))
-        line_actor.GetProperty().SetLineWidth(3)
-        renderer.AddActor(line_actor)
-    # make_line_axis(0, 0, -edge_distance, 0, 0, width_total + edge_distance)  # z-axis
-    # make_line_xaxis(0, 0, -edge_distance, RADIUS, 0, -edge_distance)  # x-axis
-    # make_line_axis(0, 0, -edge_distance, 0, RADIUS, -edge_distance)  # Y-axis
+    # ---------
+    # SHOW AXIS
+    if show_axes:
+        edge_distance = 1.3 * RADIUS
+
+        def add_line_axis(p1, p2, axis='x', color='Black', renderer=renderer_main):
+            assert axis in ['x', 'y', 'z']
+            line_source = vtkLineSource()
+            line_source.SetPoint1(p1[0], p1[1], p1[2])
+            line_source.SetPoint2(p2[0], p2[1], p2[2])
+            line_mapper = vtkPolyDataMapper()
+            line_mapper.SetInputConnection(line_source.GetOutputPort())
+            line_actor = vtkActor()
+            line_actor.SetMapper(line_mapper)
+            line_actor.GetProperty().SetColor(colors.GetColor3d(color))
+            line_actor.GetProperty().SetLineWidth(2.)
+            renderer.AddActor(line_actor)
+
+            BASE_WIDTH = 0.2
+            HEIGHT = 0.25
+            points = vtkPoints()
+            if axis == 'x':
+                points.InsertNextPoint(p2[0] - HEIGHT, p2[1] - 0.5 * BASE_WIDTH, p2[2])
+                points.InsertNextPoint(p2[0] - HEIGHT, p2[1] + 0.5 * BASE_WIDTH, p2[2])
+                points.InsertNextPoint(p2[0], p2[1], p2[2])
+            elif axis == 'y':
+                points.InsertNextPoint(p2[0] - 0.5 * BASE_WIDTH, p2[1] - HEIGHT, p2[2])
+                points.InsertNextPoint(p2[0] + 0.5 * BASE_WIDTH, p2[1] - HEIGHT, p2[2])
+                points.InsertNextPoint(p2[0], p2[1], p2[2])
+            elif axis == 'z':
+                points.InsertNextPoint(p2[0] - 0.5 * BASE_WIDTH, p2[1], p2[2] - HEIGHT)
+                points.InsertNextPoint(p2[0] + 0.5 * BASE_WIDTH, p2[1], p2[2] - HEIGHT)
+                points.InsertNextPoint(p2[0], p2[1], p2[2])
+            else:
+                raise Exception
+
+            triangle = vtkTriangle()
+            triangle.GetPointIds().SetId(0, 0)
+            triangle.GetPointIds().SetId(1, 1)
+            triangle.GetPointIds().SetId(2, 2)
+            triangles = vtkCellArray()
+            triangles.InsertNextCell(triangle)
+            trianglePolyData = vtkPolyData()
+            trianglePolyData.SetPoints(points)
+            trianglePolyData.SetPolys(triangles)
+            tri_mapper = vtkPolyDataMapper()
+            tri_mapper.SetInputData(trianglePolyData)
+            tri_actor = vtkActor()
+            tri_actor.GetProperty().SetColor(colors.GetColor3d(color))
+            tri_actor.SetMapper(tri_mapper)
+            renderer.AddActor(tri_actor)
+
+        smol = 0.01 * RADIUS
+        add_line_axis(  # z-axis
+            [smol, -smol, -edge_distance],
+            [smol, -smol, width_total + edge_distance * 0.85],
+            axis='z', color=COLOR_AXIS, renderer=renderer_main
+        )
+        add_line_axis(  # x-axis
+            [0, 0, -edge_distance],
+            [RADIUS, 0, -edge_distance],
+            axis='x', color=COLOR_AXIS, renderer=renderer_main
+        )
+        add_line_axis(  # y-axis
+            [0, 0, -edge_distance],
+            [0, RADIUS, -edge_distance],
+            axis='y', color=COLOR_AXIS, renderer=renderer_main
+        )
+        add_text_3d('x', 1.1 * RADIUS, 0, -edge_distance, color=COLOR_AXIS)
+        add_text_3d('y', 0,  1.1 * RADIUS, -edge_distance, color=COLOR_AXIS)
+        add_text_3d('z', 0,  0.1 * RADIUS, width_total + edge_distance * 0.85, color=COLOR_AXIS)
 
     if title is not None:
         add_text_3d(title, 1.2 * RADIUS, 1.2 * RADIUS, 0, )
 
     # -------------
     # DEFINE CAMERA
-    camera = renderer.GetActiveCamera()
+    camera = renderer_main.GetActiveCamera()
     camera.ParallelProjectionOn()  # orthographic projection
-    camera.SetParallelScale(5.1)  # tweak as needed
+    camera.SetParallelScale(5.1 + (n_components - 4) * 0.45)  # tweak as needed
     CAMERA_Z_POS = CAMERA_X_POS * np.tan(45 * np.pi / 180)
     CAMERA_Y_POS = np.sqrt(CAMERA_X_POS ** 2 + CAMERA_Z_POS ** 2) * np.tan(30 * np.pi / 180)
     camera.SetPosition(-CAMERA_X_POS, CAMERA_Y_POS, width_total / 2 - CAMERA_Z_POS)
@@ -301,8 +439,8 @@ def render_schematic(fpath_config, fpath_out, show_axes=False, title=None):
     renderer_lines_fg.SetActiveCamera(camera)
     renderer_lines_bg.SetActiveCamera(camera)
 
-    renderer.SetBackground(colors.GetColor3d("BkgColor"))
-    render_window.SetSize(len(config['interferometer']) * 400, 1000)  # width, height
+    renderer_main.SetBackground(colors.GetColor3d("BkgColor"))
+    render_window.SetSize(n_components * 400, n_components * 250)  # width, height
     render_window.SetWindowName('CylinderExample')
     render_window.LineSmoothingOn()
     render_window.PolygonSmoothingOn()
@@ -322,17 +460,23 @@ def render_schematic(fpath_config, fpath_out, show_axes=False, title=None):
     # iren.Start()  #  <---- UNCOMMENT LINE FOR LIVE RENDER
 
 
-def make_figure_2crystal_configs():
+def for_fun():
+    fpath_config = os.path.join(FPATH_ROOT, 'pycis_config_for_fun.yaml')
+    fpath_out = os.path.join(FPATH_ROOT, 'for_fun.png')
+    render_schematic(fpath_config, fpath_out)
+
+
+def make_figure_2retarder_simple_configs():
     """
     splice together images to make a figure showing 3 different 2-crystal interferometer configurations
     """
     from PIL import Image
     from PIL import ImageFilter
 
-    FLIST_CONFIG = sorted(glob.glob(os.path.join(FPATH_ROOT, 'pycis_config_demo_*delay.yaml')))
+    FLIST_CONFIG = sorted(glob.glob(os.path.join(FPATH_ROOT, 'pycis_config_2retarder_simple_*delay.yaml')))
     N_IM = len(FLIST_CONFIG)
     flist_out = []
-    titles = ['(a)', '(b)', '(c)', '(d)', '(e)']
+    titles = ['(a)', '(b)', '(c)', ]
     for fpath_config, title in zip(FLIST_CONFIG, titles):
         fpath_out = fpath_config.split('.')[0] + '.png'
         render_schematic(fpath_config, fpath_out, title=title)
@@ -366,14 +510,121 @@ def make_figure_2crystal_configs():
 
     background = Image.new('RGBA', new_im.size, (255, 255, 255))
     alpha_composite = Image.alpha_composite(background, new_im)
-    alpha_composite.convert('RGB').save('2crystal_configs.png')
+    alpha_composite.convert('RGB').save('2retarder_simple_configs.png')
 
-    # for f in flist_out:
-    #     os.remove(f)
+    for f in flist_out:
+        os.remove(f)
+
+
+def make_figure_1retarder_configs():
+    """
+    splice together images to make a figure showing 3 different 2-crystal interferometer configurations
+    """
+    from PIL import Image
+    from PIL import ImageFilter
+
+    FLIST_CONFIG = sorted(glob.glob(os.path.join(FPATH_ROOT, 'pycis_config_1retarder_*.yaml')))[::-1]
+    N_IM = len(FLIST_CONFIG)
+    flist_out = []
+    titles = ['(a)', '(b)', ]
+    for fpath_config, title in zip(FLIST_CONFIG, titles):
+        fpath_out = fpath_config.split('.')[0] + '.png'
+        render_schematic(fpath_config, fpath_out, title=title)
+        flist_out.append(fpath_out)
+
+    images = [Image.open(x) for x in flist_out]
+    widths, heights = zip(*(i.size for i in images))
+    OVERLAP_FRAC = 0.75
+    max_width = max(widths)
+    max_height = max(heights)
+    total_height = int(max_height * (1 + (OVERLAP_FRAC * (N_IM - 1))))
+
+    new_im = Image.new('RGBA', (max_width, total_height))
+
+    y_offset = 0
+    for im in images:
+        im = im.convert('RGBA')
+        im_blurred = im.filter(ImageFilter.GaussianBlur(30))
+        data = im.getdata()
+        data_blurred = im_blurred.getdata()
+        newData = []
+        for item, item_blurred in zip(data, data_blurred):
+            if item_blurred[0] == 255 and item_blurred[1] == 255 and item_blurred[2] == 255:
+                newData.append((255, 255, 255, 0))
+            else:
+                newData.append(item)
+
+        im.putdata(newData)
+        new_im.paste(im, (0, y_offset), im)
+        y_offset += int(OVERLAP_FRAC * im.size[1])
+
+    background = Image.new('RGBA', new_im.size, (255, 255, 255))
+    alpha_composite = Image.alpha_composite(background, new_im)
+    alpha_composite.convert('RGB').save('1retarder_configs.png')
+
+    for f in flist_out:
+        os.remove(f)
+
+
+def make_figure_2retarder_pixelated_configs():
+    """
+    splice together images to make a figure showing 3 different 2-crystal interferometer configurations
+    """
+    from PIL import Image
+    from PIL import ImageFilter
+
+    FLIST_CONFIG = sorted(glob.glob(os.path.join(FPATH_ROOT, 'pycis_config_2retarder_pixelated_*delay.yaml')))
+    N_IM = len(FLIST_CONFIG)
+    flist_out = []
+    titles = ['(a)', '(b)', '(c)', ]
+    for fpath_config, title in zip(FLIST_CONFIG, titles):
+        fpath_out = fpath_config.split('.')[0] + '.png'
+        render_schematic(fpath_config, fpath_out, title=title)
+        flist_out.append(fpath_out)
+
+    images = [Image.open(x) for x in flist_out]
+    widths, heights = zip(*(i.size for i in images))
+    OVERLAP_FRAC = 0.75
+    max_width = max(widths)
+    max_height = max(heights)
+    total_height = int(max_height * (1 + (OVERLAP_FRAC * (N_IM - 1))))
+
+    new_im = Image.new('RGBA', (max_width, total_height))
+
+    y_offset = 0
+    for im in images:
+        im = im.convert('RGBA')
+        im_blurred = im.filter(ImageFilter.GaussianBlur(30))
+        data = im.getdata()
+        data_blurred = im_blurred.getdata()
+        newData = []
+        for item, item_blurred in zip(data, data_blurred):
+            if item_blurred[0] == 255 and item_blurred[1] == 255 and item_blurred[2] == 255:
+                newData.append((255, 255, 255, 0))
+            else:
+                newData.append(item)
+
+        im.putdata(newData)
+        new_im.paste(im, (0, y_offset), im)
+        y_offset += int(OVERLAP_FRAC * im.size[1])
+
+    background = Image.new('RGBA', new_im.size, (255, 255, 255))
+    alpha_composite = Image.alpha_composite(background, new_im)
+    alpha_composite.convert('RGB').save('2retarder_pixelated_configs.png')
+
+    for f in flist_out:
+        os.remove(f)
+
+
+def make_figure_2retarder_old():
+    fpath_config = '/Users/jsallcock/py_repo/pycis/pycis/vis/pycis_config_2retarder_old.yaml'
+    fpath_out = fpath_config.split('.')[0] + '.png'
+    render_schematic(fpath_config, fpath_out, )
+
+
+def make_figure_mastu_ciii_3delay_mastu():
+    pass
 
 
 if __name__ == '__main__':
-    # test()
-    # hello_cylinder()
-    # hello_cylinders_v1()
-    make_figure_2crystal_configs()
+    make_figure_2retarder_simple_configs()

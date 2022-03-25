@@ -8,7 +8,7 @@ interferometer:
 
   - UniaxialCrystal:
       orientation: 0
-      cut_angle: -45
+      cut_angle: 45
       thickness: 3.5e-3
       material: 'a-BBO'
 

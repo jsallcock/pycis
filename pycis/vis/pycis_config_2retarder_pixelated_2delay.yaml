@@ -1,0 +1,22 @@
+---
+# INTERFEROMETER
+# --------------
+interferometer:
+
+  - LinearPolariser:
+      orientation: 45
+
+  - UniaxialCrystal:
+      orientation: 0
+      cut_angle: -45
+      thickness: 3.5e-3
+      material: 'a-BBO'
+
+  - UniaxialCrystal:
+      orientation: 45
+      cut_angle: 45
+      thickness: 3.5e-3
+      material: 'a-BBO'
+
+  - QuarterWaveplate:
+      orientation: 90
