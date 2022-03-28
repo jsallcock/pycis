@@ -19,4 +19,18 @@ interferometer:
       material: 'a-BBO'
 
   - LinearPolariser:
-      orientation: 22.5
+      orientation: 0
+
+# CAMERA
+# ------
+# FLIR BlackFly S
+camera:
+  bit_depth: 12
+  sensor_format:
+    - 2448  # x
+    - 2048  # y
+  pixel_size: 3.45e-6  # metres
+  qe: 0.35
+  epercount: 0.46
+  cam_noise: 2.5  # e-
+  type: 'monochrome'

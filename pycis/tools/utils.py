@@ -54,6 +54,7 @@ def get_roi_xr(im, roi_dim=(40, 40)):
     slicey = slice(int(len(im.y) / 2 - roi_dim[1] / 2), int(len(im.y) / 2 + roi_dim[1] / 2))
     return im.isel(x=slicex, y=slicey)
 
+
 def get_roi_mean_phase(im, roi_dim=(200, 200)):
     return circmean(get_roi_xr(im, roi_dim=roi_dim), high=np.pi, low=-np.pi)
 
