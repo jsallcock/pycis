@@ -15,14 +15,16 @@ fig = plt.figure(figsize=(10, 3.5, ))
 axes = fig.subplots(1, 2)
 
 for ax, inst_type in zip(axes, inst_types):
-    print(inst_type)
     inst = Instrument(inst_type + '.yaml')
-    print(inst.type)
     spectrum = get_spectrum_delta(465e-9, 5e3)
     igram = inst.capture(spectrum, )
-
-    pycis.analysis.fourier_demod_2d.fourier_demod_2d(igram, display=True)
-
+    # dim = igram.shape
+    # dim_show = 120
+    # igram_show = igram[
+    #              int(dim[0] / 2) - int(dim_show / 2):int(dim[0] / 2) + int(dim_show / 2),
+    #              int(dim[1] / 2) - int(dim_show / 2):int(dim[1] / 2) + int(dim_show / 2),
+    #              ]
+    pycis.analysis.fourier_demod_2d.fourier_demod_2d(igram, display=False)
     igram.plot(x='x_pixel', y='y_pixel', vmin=0, vmax=1.2 * float(igram.max()), ax=ax, cmap='gray')
     ax.set_aspect('equal')
     ax.set_title(inst_type)

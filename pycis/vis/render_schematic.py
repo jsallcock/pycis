@@ -818,19 +818,19 @@ def make_figure_3panel_demo():
     from pycis import Instrument, get_spectrum_delta, fft2_im
 
     CMAP = 'gray'
-    dim_show = 40
+    dim_show = 120
 
     # -------------
     # RENDER SCHEMATIC
     fpath_config = os.path.join(FPATH_CONFIG, '1retarder', 'pycis_config_1retarder_simple.yaml')
     fpath_out_schematic = os.path.join(FPATH_ROOT, '3panel_demo_schematic.png')
-    fpath_out_plot = os.path.join(FPATH_ROOT, '3panel_demo_plot.png')
+    fpath_out_plot = os.path.join(FPATH_ROOT, '3panel_demo_plot.jpg')
     render_schematic(fpath_config, fpath_out_schematic, show_axes=True, show_cut_angle=True, show_label_details=False)
 
     # ------------------------
     # PLOT INTERFEROGRAM + FFT
     inst = Instrument(config=fpath_config)
-    igram = inst.capture(get_spectrum_delta(465e-9, 4e3), )
+    igram = inst.capture(get_spectrum_delta(465e-9, 5e3), )
     psd = np.log(np.abs(fft2_im(igram)) ** 2)
 
     fig = plt.figure()
@@ -841,7 +841,7 @@ def make_figure_3panel_demo():
                  int(dim[0] / 2) - int(dim_show / 2):int(dim[0] / 2) + int(dim_show / 2),
                  int(dim[1] / 2) - int(dim_show / 2):int(dim[1] / 2) + int(dim_show / 2),
                  ]
-    igram_show.plot(x='x', y='y', ax=axes[0], add_colorbar=False, cmap=CMAP)
+    igram_show.plot(x='x', y='y', ax=axes[0], add_colorbar=False, cmap=CMAP, )
     psd.plot(x='freq_x', y='freq_y', ax=axes[1], add_colorbar=False, cmap=CMAP)
     for ax in axes:
         ax.set_aspect('equal')
