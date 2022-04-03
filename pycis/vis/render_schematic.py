@@ -3,6 +3,8 @@ import numpy as np
 import glob
 import yaml
 from PIL import Image, ImageFilter, ImageChops
+import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
 from vtk import vtkFeatureEdges, vtkRenderLargeImage, vtkLabeledDataMapper, vtkActor2D, vtkAngleWidget
 from vtkmodules.vtkCommonCore import (
     vtkPoints,
@@ -36,6 +38,7 @@ from vtkmodules.vtkRenderingCore import (
     vtkRenderer,
     vtkTextActor,
 )
+from pycis import Instrument, get_spectrum_delta, fft2_im
 
 # ------------
 # USER OPTIONS -- things you might want to change
@@ -53,7 +56,7 @@ PIX_HEIGHT = 300
 PIX_WIDTH = 300
 CYLINDER_RESOLUTION = 100
 CYLINDER_OPACITY = 0.88
-LINEWIDTH_CYLINDER = 5
+LINEWIDTH_CYLINDER = 6
 line_width_axes = 3
 TUBE_RADIUS_DEFAULT = 0.02
 WIDTHS = {
@@ -73,11 +76,12 @@ LABELS = {
 }
 COLOR_LINE_DEFAULT = 'Black'
 COLOR_AXIS = 'DimGray'
-WIDTH_SPACING = 2.6
+WIDTH_SPACING = 2.3
 CAMERA_X_POS = 4.7
 SMOL = 0.01 * RADIUS  # small nudges to avoid rendering artefacts
 FPATH_ROOT = os.path.dirname(os.path.realpath(__file__))
 FPATH_CONFIG = os.path.join(FPATH_ROOT, 'config')
+FPATH_TEMP = os.path.join(FPATH_ROOT, 'temp')
 
 # ---------------------------------
 # POLARISED SENSOR DISPLAY SETTINGS
@@ -89,12 +93,14 @@ line_width_pol = 2
 
 def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=True, show_label_details=True, title=None):
     """
-    Render a schematic diagram of the interferometer with 3-D isometric projection using VTK
+    Render a schematic diagram of the interferometer with 3-D isometric projection using VTK.
 
-    This is still a prototype.
+    :param str fpath_config: \
+        filepath to pycis instrument configuration .yaml file.
 
-    :param str fpath_config:
-    :param str fpath_out:
+    :param str fpath_out: \
+        filepath to use for the output image.
+
     :param bool show_axes:
     :param bool show_cut_angle:
     :param bool show_label_details:
@@ -418,7 +424,7 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
 
     # ----------------
     # PIXELATED SENSOR
-    if config['camera']['type'] == 'monochrome_pixelated':
+    if config['camera']['type'] == 'monochrome_polarised':
         width_total += 1.2 * WIDTH_SPACING
         sd = 2 * RADIUS
         sensor_depth = WIDTHS['LinearPolariser']
@@ -636,21 +642,16 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
     writer.SetInputConnection(w2if.GetOutputPort())
     writer.Write()
 
-
     # remove white-space -- bit of a hack
     im = Image.open(fpath_out)
     im_blurred = im.filter(ImageFilter.GaussianBlur(30))
-
     bg = Image.new(im.mode, im.size, im.getpixel((0, 0)))
     diff = ImageChops.difference(im_blurred, bg)
-    # diff = ImageChops.add(diff, diff, 2.0, -100)
     bbox = diff.getbbox()
     if bbox:
         im = im.crop(bbox)
 
     im.save(fpath_out)
-
-
 
     # Start the event loop.
     # iren.Start()  #  <---- UNCOMMENT LINE FOR LIVE RENDER
@@ -811,38 +812,51 @@ def str_round(n, sf):
     return '{:g}'.format(float('{:.{p}g}'.format(n, p=sf)))
 
 
-def make_figure_3panel_demo():
-    import matplotlib.pyplot as plt
-    from matplotlib.gridspec import GridSpec
-    from PIL import Image
-    from pycis import Instrument, get_spectrum_delta, fft2_im
+def make_3panel_figure_test():
+    fpath_config = os.path.join(FPATH_CONFIG, '2retarder_simple', 'pycis_config_2retarder_simple_4delay.yaml')
+    # fpath_config = os.path.join(FPATH_CONFIG, '1retarder', 'pycis_config_1retarder_simple.yaml')
+    # fpath_config = os.path.join(FPATH_CONFIG, '1retarder', 'pycis_config_1retarder_pixelated.yaml')
+    fpath_out = 'test.jpg'
+    make_3panel_figure(fpath_config, fpath_out)
 
+
+def make_3panel_figure(fpath_config, fpath_out):
+    """
+    make figure showing the instrument schematic diagram + interferogram + FFT.
+
+    :param str fpath_config: \
+        filepath to pycis instrument configuration .yaml file.
+
+    :param str fpath_out: \
+        filepath to use for the output image.
+    """
     CMAP = 'gray'
-    dim_show = 120
+    dim_show = 130
+    dpi = 300
 
     # -------------
     # RENDER SCHEMATIC
-    fpath_config = os.path.join(FPATH_CONFIG, '1retarder', 'pycis_config_1retarder_simple.yaml')
-    fpath_out_schematic = os.path.join(FPATH_ROOT, '3panel_demo_schematic.png')
-    fpath_out_plot = os.path.join(FPATH_ROOT, '3panel_demo_plot.jpg')
+    fpath_out_schematic = os.path.join(FPATH_TEMP, '3panel_schematic.png')
+    fpath_out_plot = os.path.join(FPATH_TEMP, '3panel_plot.jpg')
     render_schematic(fpath_config, fpath_out_schematic, show_axes=True, show_cut_angle=True, show_label_details=False)
 
     # ------------------------
     # PLOT INTERFEROGRAM + FFT
     inst = Instrument(config=fpath_config)
+    print('inst.type', inst.type)
     igram = inst.capture(get_spectrum_delta(465e-9, 5e3), )
     psd = np.log(np.abs(fft2_im(igram)) ** 2)
 
     fig = plt.figure()
-    gs = GridSpec(1, 2, figure=fig, wspace=0.1)
+    gs = GridSpec(1, 2, figure=fig, wspace=0.15)
     axes = [fig.add_subplot(gs[i]) for i in range(2)]
     dim = igram.shape
     igram_show = igram[
                  int(dim[0] / 2) - int(dim_show / 2):int(dim[0] / 2) + int(dim_show / 2),
                  int(dim[1] / 2) - int(dim_show / 2):int(dim[1] / 2) + int(dim_show / 2),
                  ]
-    igram_show.plot(x='x', y='y', ax=axes[0], add_colorbar=False, cmap=CMAP, )
-    psd.plot(x='freq_x', y='freq_y', ax=axes[1], add_colorbar=False, cmap=CMAP)
+    igram_show.plot(x='x', y='y', ax=axes[0], add_colorbar=False, cmap=CMAP, rasterized=True)
+    psd.plot(x='freq_x', y='freq_y', ax=axes[1], add_colorbar=False, cmap=CMAP, rasterized=True)
     for ax in axes:
         ax.set_aspect('equal')
         ax.set_xticks([])
@@ -851,19 +865,15 @@ def make_figure_3panel_demo():
         ax.set_ylabel(None)
         for sp in ax.spines:
             ax.spines[sp].set_visible(False)
-    fig.savefig(fpath_out_plot, bbox_inches='tight')
+    fig.savefig(fpath_out_plot, bbox_inches='tight', dpi=dpi)
     plt.close(fig)
 
     # -------------
     # STITCH IMAGES
     images = [Image.open(x) for x in [fpath_out_schematic, fpath_out_plot]]
 
-    # basewidth = images[0].size[0]
-    # wpercent = (basewidth / float(images[1].size[0]))
-    # hsize = int((float(images[1].size[1]) * float(wpercent)))
-    # images[1] = images[1].resize((basewidth, hsize), Image.ANTIALIAS)
-
-    height0 = images[0].size[1]
+    im_frac = 0.7
+    height0 = int(images[0].size[1] * im_frac)
     hpercent = (height0 / float(images[1].size[1]))
     wsize = int((float(images[1].size[0]) * float(hpercent)))
     images[1] = images[1].resize((wsize, height0), Image.ANTIALIAS)
@@ -871,16 +881,21 @@ def make_figure_3panel_demo():
     widths, heights = zip(*(i.size for i in images))
     total_width = sum(widths)
     max_height = max(heights)
-    new_im = Image.new('RGB', (total_width, max_height))
+    new_im = Image.new('RGB', (total_width, max_height), (255, 255, 255), )
 
     x_offset = 0
+    y_offset = 0
     for im in images:
-        new_im.paste(im, (x_offset, 0))
+        new_im.paste(im, (x_offset, y_offset))
         x_offset += im.size[0]
-    new_im.save('test.jpg')
+        y_offset += int((height0 / im_frac * (1 - im_frac)) / 2)
+    new_im.save(fpath_out)
+
+    os.remove(fpath_out_schematic)
+    os.remove(fpath_out_plot)
 
 
 if __name__ == '__main__':
-    make_figure_3panel_demo()
+    make_3panel_figure_test()
     # make_figure_2retarder_simple_configs()
     # make_figure_2retarder_pixelated_configs()

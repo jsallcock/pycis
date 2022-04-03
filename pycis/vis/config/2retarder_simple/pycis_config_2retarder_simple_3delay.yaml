@@ -34,3 +34,9 @@ camera:
   epercount: 0.46
   cam_noise: 2.5  # e-
   type: 'monochrome'
+
+# OPTICS
+# ------
+lens_1_focal_length: 70.e-3
+lens_2_focal_length: 105.e-3
+lens_3_focal_length: 75.e-3
