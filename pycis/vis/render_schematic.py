@@ -45,7 +45,7 @@ from pycis import Instrument, get_spectrum_delta, fft2_im
 SYMBOL_ORIENTATION_ANGLE = '\\rho'
 SYMBOL_CUT_ANGLE = '\\theta'
 SYMBOL_THICKNESS = 'L'
-FONTSIZE_LABEL = 38
+FONTSIZE_LABEL = 58
 
 # ----------------
 # DIAGRAM SETTINGS -- things you probably don't want to change
@@ -56,18 +56,20 @@ PIX_HEIGHT = 300
 PIX_WIDTH = 300
 CYLINDER_RESOLUTION = 100
 CYLINDER_OPACITY = 0.88
-LINEWIDTH_CYLINDER = 6
+LINEWIDTH_CYLINDER = 7
 line_width_axes = 3
 TUBE_RADIUS_DEFAULT = 0.02
+IMG_BORDER = 30  # whitespace around image, in pixels
 WIDTHS = {
-    'LinearPolariser': 0.25,
-    'UniaxialCrystal': 1.5,
-    'QuarterWaveplate': 0.25,
+    'LinearPolariser': 0.2,
+    'UniaxialCrystal': 1.2,
+    'QuarterWaveplate': 0.2,
 }
 COLORS = {
     'LinearPolariser': 'White',
     'UniaxialCrystal': 'AliceBlue',
-    'QuarterWaveplate': 'Honeydew',
+    'QuarterWaveplate': 'AliceBlue',
+    # 'QuarterWaveplate': 'Honeydew',
 }
 LABELS = {
     'LinearPolariser': 'POL',
@@ -91,7 +93,8 @@ line_width_grid_bold = 3
 line_width_pol = 2
 
 
-def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=True, show_label_details=True, title=None):
+def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=True, show_label_details=True, title=None,
+                     width=None, ):
     """
     Render a schematic diagram of the interferometer with 3-D isometric projection using VTK.
 
@@ -118,8 +121,10 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
     colors.SetColor("BkgColor", *bkg)
     iren = vtkRenderWindowInteractor()
     render_window = vtkRenderWindow()
-    render_window.SetMultiSamples(1000)
+    render_window.SetMultiSamples(2000)
     render_window.SetNumberOfLayers(3)
+    render_window.SetPolygonSmoothing(1)
+    render_window.SetLineSmoothing(1)
     render_window.SetAlphaBitPlanes(1)
     iren.SetRenderWindow(render_window)
     renderer_main = vtkRenderer()
@@ -291,7 +296,7 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
         rad = 1.001 * RADIUS
         add_line(
             [rad * np.cos(view_angle), rad * np.sin(view_angle), width_total],
-            [rad * np.cos(view_angle), rad * np.sin(view_angle), width_total + component_width + 3.5 * nubbin],
+            [rad * np.cos(view_angle), rad * np.sin(view_angle), width_total + component_width + 3. * nubbin],
             renderer=renderer_lines_fg, line_width=0.9 * LINEWIDTH_CYLINDER,
         )
         add_line(
@@ -343,7 +348,7 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
                      width_total + component_width, ],
                     [RADIUS * np.cos(component_orientation), RADIUS * np.sin(component_orientation),
                      width_total + component_width, ],
-                    color='Black', opacity=0.75,
+                    color='Black', opacity=0.6,
                 )
                 rad_partial = component_width * np.tan(np.pi / 2 - cut_angle)
                 if rad_partial > RADIUS:
@@ -426,7 +431,7 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
     # PIXELATED SENSOR
     if config['camera']['type'] == 'monochrome_polarised':
         width_total += 1.2 * WIDTH_SPACING
-        sd = 2 * RADIUS
+        sd = 1.5 * RADIUS
         sensor_depth = WIDTHS['LinearPolariser']
         sensor = vtkCubeSource()
         sensor.SetCenter(0, 0, width_total + sensor_depth / 2)
@@ -605,9 +610,9 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
             [0, RADIUS, -edge_distance],
             axis='y', color=COLOR_AXIS, renderer=renderer_main
         )
-        add_text_3d('x', 1.1 * RADIUS, 0, -edge_distance, color=COLOR_AXIS)
-        add_text_3d('y', 0,  1.3 * RADIUS, -edge_distance, color=COLOR_AXIS)
-        add_text_3d('z', 0,  0.1 * RADIUS, width_total + edge_distance, color=COLOR_AXIS)
+        add_text_3d('x', RADIUS, 0.28 * RADIUS, -edge_distance, color=COLOR_AXIS)
+        add_text_3d('y', 0,  1.33 * RADIUS, -edge_distance, color=COLOR_AXIS)
+        add_text_3d('z', 0,  0.3 * RADIUS, width_total + edge_distance * 0.8, color=COLOR_AXIS)
 
     if title is not None:
         add_text_3d(title, 1.2 * RADIUS, 1.2 * RADIUS, 0, )
@@ -616,7 +621,7 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
     # DEFINE CAMERA
     camera = renderer_main.GetActiveCamera()
     camera.ParallelProjectionOn()  # orthographic projection
-    camera.SetParallelScale(5.5 + (n_components - 4) * 0.65)  # tweak as needed
+    camera.SetParallelScale(7)  # tweak as needed
     CAMERA_Z_POS = CAMERA_X_POS * np.tan(45 * np.pi / 180)
     CAMERA_Y_POS = np.sqrt(CAMERA_X_POS ** 2 + CAMERA_Z_POS ** 2) * np.tan(30 * np.pi / 180)
     camera.SetPosition(-CAMERA_X_POS, CAMERA_Y_POS, width_total / 2 - CAMERA_Z_POS)
@@ -626,12 +631,13 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
     renderer_lines_bg.SetActiveCamera(camera)
 
     renderer_main.SetBackground(colors.GetColor3d("BkgColor"))
-    render_window.SetSize(n_components * 400, n_components * 250)  # width, height
+    render_window.SetSize(3000, 2000)  # width, height
     render_window.SetWindowName('CylinderExample')
     render_window.LineSmoothingOn()
     render_window.PolygonSmoothingOn()
     iren.Initialize()
     render_window.Render()
+
     w2if = vtkWindowToImageFilter()
     w2if.SetInput(render_window)
     w2if.SetInputBufferTypeToRGB()
@@ -642,46 +648,30 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
     writer.SetInputConnection(w2if.GetOutputPort())
     writer.Write()
 
-    # remove white-space -- bit of a hack
+    # remove white-space
     im = Image.open(fpath_out)
-    im_blurred = im.filter(ImageFilter.GaussianBlur(30))
-    bg = Image.new(im.mode, im.size, im.getpixel((0, 0)))
-    diff = ImageChops.difference(im_blurred, bg)
-    bbox = diff.getbbox()
-    if bbox:
-        im = im.crop(bbox)
-
-    im.save(fpath_out)
+    trim(im).save(fpath_out)
 
     # Start the event loop.
     # iren.Start()  #  <---- UNCOMMENT LINE FOR LIVE RENDER
 
 
-def make_figure_2retarder_simple_configs():
+def imsplice(ims, overlap_frac=0.9):
     """
-    splice together images to make a figure showing 3 different 2-crystal interferometer configurations
+    splice two images together vertically, with a given fractional overlap. Assumes both images have a white background
+
+    :param list ims: list of PIL.Images to splice together vertically
+    :param float overlap_frac:
+    :return: im_spliced
     """
-    FLIST_CONFIG = sorted(glob.glob(os.path.join(FPATH_CONFIG, '2retarder_simple', '*.yaml')))
-    N_IM = len(FLIST_CONFIG)
-    flist_out = []
-    titles = ['(a)', '(b)', '(c)', ]
-    for fpath_config, title in zip(FLIST_CONFIG, titles):
-        fpath_out = fpath_config.split('.')[0] + '.png'
-        render_schematic(fpath_config, fpath_out, show_label_details=False, title=title)
-        flist_out.append(fpath_out)
-
-    images = [Image.open(x) for x in flist_out]
-    widths, heights = zip(*(i.size for i in images))
-    OVERLAP_FRAC = 0.8
-    max_width = max(widths)
-    max_height = max(heights)
-    total_height = int(max_height * (1 + (OVERLAP_FRAC * (N_IM - 1))))
-
-    new_im = Image.new('RGBA', (max_width, total_height))
+    widths, heights = zip(*(i.size for i in ims))
+    assert widths[0] == widths[1]
+    total_height = int(np.array(heights[:-1]).sum() * overlap_frac + heights[-1])
+    new_im = Image.new('RGBA', (widths[0], total_height))
     y_offset = 0
-    for im in images:
+    for im in ims:
         im = im.convert('RGBA')
-        im_blurred = im.filter(ImageFilter.GaussianBlur(30))
+        im_blurred = im.filter(ImageFilter.GaussianBlur(20))
         data = im.getdata()
         data_blurred = im_blurred.getdata()
         newData = []
@@ -690,14 +680,44 @@ def make_figure_2retarder_simple_configs():
                 newData.append((255, 255, 255, 0))
             else:
                 newData.append(item)
-
         im.putdata(newData)
         new_im.paste(im, (0, y_offset), im)
-        y_offset += int(OVERLAP_FRAC * im.size[1])
+        y_offset += int(overlap_frac * im.size[1])
 
     background = Image.new('RGBA', new_im.size, (255, 255, 255))
-    alpha_composite = Image.alpha_composite(background, new_im)
-    alpha_composite.convert('RGB').save('2retarder_simple_configs.png')
+    im_out = Image.alpha_composite(background, new_im).convert('RGB')
+    return im_out
+
+
+def trim(im, border=IMG_BORDER):
+    """
+    trim whitespace from an image, leaving specified border.
+    :param im:
+    :param int border:
+    :return:
+    """
+    # set size of white-space border
+    im_blurred = im.filter(ImageFilter.GaussianBlur(border))
+    bg = Image.new(im.mode, im.size, im.getpixel((0, 0)))
+    diff = ImageChops.difference(im_blurred, bg)
+    bbox = diff.getbbox()
+    return im.crop(bbox)
+
+
+def make_figure_2retarder_simple_configs():
+    """
+    splice together images to make a figure showing 3 different 2-crystal interferometer configurations
+    """
+    FLIST_CONFIG = sorted(glob.glob(os.path.join(FPATH_CONFIG, '2retarder_simple', '*.yaml')))
+    flist_out = []
+    titles = ['(a)', '(b)', '(c)', ]
+    for fpath_config, title in zip(FLIST_CONFIG, titles):
+        fpath_out = fpath_config.split('.')[0] + '.png'
+        render_schematic(fpath_config, fpath_out, show_label_details=False, title=title)
+        flist_out.append(fpath_out)
+
+    im_spliced = imsplice([Image.open(x) for x in flist_out], overlap_frac=0.7)
+    im_spliced.save('2retarder_simple_configs.png')
 
     for f in flist_out:
         os.remove(f)
@@ -707,11 +727,8 @@ def make_figure_2retarder_pixelated_configs():
     """
     splice together images to make a figure showing 3 different 2-crystal interferometer configurations
     """
-    from PIL import Image
-    from PIL import ImageFilter
 
     FLIST_CONFIG = sorted(glob.glob(os.path.join(FPATH_CONFIG, '2retarder_pixelated', '*.yaml')))
-    N_IM = len(FLIST_CONFIG)
     flist_out = []
     titles = ['(a)', '(b)', '(c)', ]
     for fpath_config, title in zip(FLIST_CONFIG, titles):
@@ -719,35 +736,8 @@ def make_figure_2retarder_pixelated_configs():
         render_schematic(fpath_config, fpath_out, show_label_details=False, title=title)
         flist_out.append(fpath_out)
 
-    images = [Image.open(x) for x in flist_out]
-    widths, heights = zip(*(i.size for i in images))
-    OVERLAP_FRAC = 0.8
-    max_width = max(widths)
-    max_height = max(heights)
-    total_height = int(max_height * (1 + (OVERLAP_FRAC * (N_IM - 1))))
-
-    new_im = Image.new('RGBA', (max_width, total_height))
-
-    y_offset = 0
-    for im in images:
-        im = im.convert('RGBA')
-        im_blurred = im.filter(ImageFilter.GaussianBlur(30))
-        data = im.getdata()
-        data_blurred = im_blurred.getdata()
-        newData = []
-        for item, item_blurred in zip(data, data_blurred):
-            if item_blurred[0] == 255 and item_blurred[1] == 255 and item_blurred[2] == 255:
-                newData.append((255, 255, 255, 0))
-            else:
-                newData.append(item)
-
-        im.putdata(newData)
-        new_im.paste(im, (0, y_offset), im)
-        y_offset += int(OVERLAP_FRAC * im.size[1])
-
-    background = Image.new('RGBA', new_im.size, (255, 255, 255))
-    alpha_composite = Image.alpha_composite(background, new_im)
-    alpha_composite.convert('RGB').save('2retarder_pixelated_configs.png')
+    im_spliced = imsplice([Image.open(x) for x in flist_out], overlap_frac=0.7)
+    im_spliced.save('2retarder_pixelated_configs.png')
 
     for f in flist_out:
         os.remove(f)
@@ -812,90 +802,147 @@ def str_round(n, sf):
     return '{:g}'.format(float('{:.{p}g}'.format(n, p=sf)))
 
 
-def make_3panel_figure_test():
-    fpath_config = os.path.join(FPATH_CONFIG, '2retarder_simple', 'pycis_config_2retarder_simple_4delay.yaml')
-    # fpath_config = os.path.join(FPATH_CONFIG, '1retarder', 'pycis_config_1retarder_simple.yaml')
-    # fpath_config = os.path.join(FPATH_CONFIG, '1retarder', 'pycis_config_1retarder_pixelated.yaml')
-    fpath_out = 'test.jpg'
-    make_3panel_figure(fpath_config, fpath_out)
+def make_3panel_figure_1retarder():
+    width_schematic = 1000
+    fpath_config = [
+        os.path.join(FPATH_CONFIG, '1retarder', 'pycis_config_1retarder_simple.yaml'),
+        os.path.join(FPATH_CONFIG, '1retarder', 'pycis_config_1retarder_pixelated.yaml'),
+        ]
+    fpath_out = '3panel_1retarder.png'
+    make_3panel_figure(fpath_config, fpath_out, width_schematic=width_schematic)
 
 
-def make_3panel_figure(fpath_config, fpath_out):
+def make_3panel_figure_2retarder_simple():
+    width_schematic = 1000
+    fpath_config = [
+        os.path.join(FPATH_CONFIG, '2retarder_simple', 'pycis_config_2retarder_simple_2delay.yaml'),
+        os.path.join(FPATH_CONFIG, '2retarder_simple', 'pycis_config_2retarder_simple_3delay.yaml'),
+        os.path.join(FPATH_CONFIG, '2retarder_simple', 'pycis_config_2retarder_simple_4delay.yaml'),
+        ]
+    fpath_out = '3panel_2retarder_simple.png'
+    make_3panel_figure(fpath_config, fpath_out, width_schematic=width_schematic)
+
+
+def make_3panel_figure_2retarder_pixelated():
+    width_schematic = 1000
+    fpath_config = [
+        os.path.join(FPATH_CONFIG, '2retarder_pixelated', 'pycis_config_2retarder_pixelated_2delay.yaml'),
+        os.path.join(FPATH_CONFIG, '2retarder_pixelated', 'pycis_config_2retarder_pixelated_3delay.yaml'),
+        ]
+    fpath_out = '3panel_2retarder_pixelated.png'
+    make_3panel_figure(fpath_config, fpath_out, width_schematic=width_schematic)
+
+
+def make_3panel_figure(fpath_config, fpath_out, width_schematic=None):
     """
-    make figure showing the instrument schematic diagram + interferogram + FFT.
+    make figure showing the instrument schematic diagram + modelled interferogram + interferogram FFT.
 
-    :param str fpath_config: \
-        filepath to pycis instrument configuration .yaml file.
+    :param list or str fpath_config: \
+        filepath to pycis instrument configuration .yaml file. Alternatively, a list of filepaths to config files.
 
     :param str fpath_out: \
         filepath to use for the output image.
+
+    :param width_schematic: \
+        resize schematic to a specific height, in pixels, if given.
     """
     CMAP = 'gray'
-    dim_show = 130
-    dpi = 300
+    dim_show = 30
+    dpi = 350
 
-    # -------------
-    # RENDER SCHEMATIC
-    fpath_out_schematic = os.path.join(FPATH_TEMP, '3panel_schematic.png')
-    fpath_out_plot = os.path.join(FPATH_TEMP, '3panel_plot.jpg')
-    render_schematic(fpath_config, fpath_out_schematic, show_axes=True, show_cut_angle=True, show_label_details=False)
+    if type(fpath_config) is str:
+        fpath_config = [fpath_config, ]
+    elif type(fpath_config) is not list:
+        raise ValueError
 
-    # ------------------------
-    # PLOT INTERFEROGRAM + FFT
-    inst = Instrument(config=fpath_config)
-    print('inst.type', inst.type)
-    igram = inst.capture(get_spectrum_delta(465e-9, 5e3), )
-    psd = np.log(np.abs(fft2_im(igram)) ** 2)
+    fpath_out_schem = []
+    fpath_out_plot = []
+    for ii, fp_config in enumerate(fpath_config):
+        # ----------------
+        # RENDER SCHEMATIC
+        fp_out_schem = os.path.join(FPATH_TEMP, 'schematic_' + str(ii).zfill(2) + '.png')
+        fp_out_plot = os.path.join(FPATH_TEMP, 'plot_' + str(ii).zfill(2) + '.png')
+        render_schematic(fp_config, fp_out_schem, show_axes=True, show_cut_angle=True, show_label_details=False,
+                         width=width_schematic)
+        # ------------------------
+        # PLOT INTERFEROGRAM + FFT
+        inst = Instrument(config=fp_config)
+        igram = inst.capture(get_spectrum_delta(465e-9, 5e3), )
+        psd = np.log(np.abs(fft2_im(igram)) ** 2)
+        fig = plt.figure(figsize=(2, 3 / 2))
+        gs = GridSpec(1, 2, figure=fig, wspace=0.12)
+        axes = [fig.add_subplot(gs[i]) for i in range(2)]
+        dim = igram.shape
+        igram_show = igram[
+                     int(dim[0] / 2) - int(dim_show / 2):int(dim[0] / 2) + int(dim_show / 2),
+                     int(dim[1] / 2) - int(dim_show / 2):int(dim[1] / 2) + int(dim_show / 2),
+                     ]
+        vmax = float(1.05 * igram_show.max())
+        igram_show.plot(x='x', y='y', ax=axes[0], add_colorbar=False, cmap=CMAP, rasterized=True, vmax=vmax,
+                        xincrease=False)
+        psd.plot(x='freq_x', y='freq_y', ax=axes[1], add_colorbar=False, cmap=CMAP, rasterized=True,
+                 xincrease=False)
+        for ax in axes:
+            ax.set_aspect('equal')
+            ax.set_xticks([])
+            ax.set_yticks([])
+            ax.set_xlabel(None)
+            ax.set_ylabel(None)
+            for sp in ax.spines:
+                ax.spines[sp].set_visible(False)
+        fig.savefig(fp_out_plot, bbox_inches='tight', dpi=dpi)
+        plt.cla()
+        plt.clf()
+        plt.close('all')
+        fpath_out_schem.append(fp_out_schem)
+        fpath_out_plot.append(fp_out_plot)
 
-    fig = plt.figure()
-    gs = GridSpec(1, 2, figure=fig, wspace=0.15)
-    axes = [fig.add_subplot(gs[i]) for i in range(2)]
-    dim = igram.shape
-    igram_show = igram[
-                 int(dim[0] / 2) - int(dim_show / 2):int(dim[0] / 2) + int(dim_show / 2),
-                 int(dim[1] / 2) - int(dim_show / 2):int(dim[1] / 2) + int(dim_show / 2),
-                 ]
-    igram_show.plot(x='x', y='y', ax=axes[0], add_colorbar=False, cmap=CMAP, rasterized=True)
-    psd.plot(x='freq_x', y='freq_y', ax=axes[1], add_colorbar=False, cmap=CMAP, rasterized=True)
-    for ax in axes:
-        ax.set_aspect('equal')
-        ax.set_xticks([])
-        ax.set_yticks([])
-        ax.set_xlabel(None)
-        ax.set_ylabel(None)
-        for sp in ax.spines:
-            ax.spines[sp].set_visible(False)
-    fig.savefig(fpath_out_plot, bbox_inches='tight', dpi=dpi)
-    plt.close(fig)
+    # ---------------------------------
+    # PAD + RESIZE IMAGES FOR STITCHING
+    ims_schem_og = [Image.open(x) for x in fpath_out_schem]
+    ims_plot_og = [Image.open(x) for x in fpath_out_plot]
+    w_schem_og, h_schem_og = zip(*(i.size for i in ims_schem_og))
+    w_schem_max = max(w_schem_og)
+    h_schem_max = max(h_schem_og)
+    ims_schem = []
+    ims_plot = []
+    for im_schem_og, im_plot_og in zip(ims_schem_og, ims_plot_og):
+        # pad narrower / shorter schematic images with white space
+        w_schem_og, h_schem_og = im_schem_og.size
+        if w_schem_og < w_schem_max or h_schem_og < h_schem_max:
+            im_schem = Image.new('RGB', (w_schem_max, h_schem_max), (255, 255, 255), )
+            im_schem.paste(im_schem_og, (0, h_schem_max - h_schem_og))
+            ims_schem.append(im_schem)
+        else:
+            ims_schem.append(im_schem_og)
+        # resize plot images
+        hf = 0.65
+        w_plot_og, h_plot_og = im_plot_og.size
+        im_plot = im_plot_og.resize((int(w_plot_og * hf * h_schem_max / h_plot_og), int(hf * h_schem_max)), Image.ANTIALIAS)
+        ims_plot.append(im_plot)
 
-    # -------------
-    # STITCH IMAGES
-    images = [Image.open(x) for x in [fpath_out_schematic, fpath_out_plot]]
+    ims_3p = []
+    for im_schem, im_plot in zip(ims_schem, ims_plot):
+        w_tot = im_schem.size[0] + im_plot.size[0]
+        im_3p = Image.new('RGB', (w_tot, im_schem.size[1]), (255, 255, 255), )
+        x_offset = 0
+        y_offset = 0
+        for im in [im_schem, im_plot]:
+            im_3p.paste(im, (x_offset, y_offset))
+            x_offset += im.size[0]
+            y_offset += int(h_schem_max * (1 - hf) / 2)
+        ims_3p.append(im_3p)
 
-    im_frac = 0.7
-    height0 = int(images[0].size[1] * im_frac)
-    hpercent = (height0 / float(images[1].size[1]))
-    wsize = int((float(images[1].size[0]) * float(hpercent)))
-    images[1] = images[1].resize((wsize, height0), Image.ANTIALIAS)
+    im_final = imsplice(ims_3p, overlap_frac=0.78)
+    trim(im_final).save(fpath_out)
 
-    widths, heights = zip(*(i.size for i in images))
-    total_width = sum(widths)
-    max_height = max(heights)
-    new_im = Image.new('RGB', (total_width, max_height), (255, 255, 255), )
-
-    x_offset = 0
-    y_offset = 0
-    for im in images:
-        new_im.paste(im, (x_offset, y_offset))
-        x_offset += im.size[0]
-        y_offset += int((height0 / im_frac * (1 - im_frac)) / 2)
-    new_im.save(fpath_out)
-
-    os.remove(fpath_out_schematic)
-    os.remove(fpath_out_plot)
+    # os.remove(fpath_out_schematic)
+    # os.remove(fpath_out_plot)
 
 
 if __name__ == '__main__':
-    make_3panel_figure_test()
+    make_3panel_figure_2retarder_simple()
+    make_3panel_figure_2retarder_pixelated()
+    make_3panel_figure_1retarder()
     # make_figure_2retarder_simple_configs()
     # make_figure_2retarder_pixelated_configs()

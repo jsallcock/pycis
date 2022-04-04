@@ -9,7 +9,7 @@ interferometer:
   - UniaxialCrystal:
       orientation: 0
       cut_angle: 45
-      thickness: 8.0e-3
+      thickness: 8.e-3
       material: 'a-BBO'
 
   - UniaxialCrystal:
@@ -33,4 +33,10 @@ camera:
   qe: 0.35
   epercount: 0.46
   cam_noise: 2.5  # e-
-  type: 'monochrome_pixelated'
+  type: 'monochrome_polarised'
+
+# OPTICS
+# ------
+lens_1_focal_length: 70.e-3
+lens_2_focal_length: 105.e-3
+lens_3_focal_length: 50.e-3
