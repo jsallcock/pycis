@@ -146,6 +146,27 @@ class Instrument:
                 if all(conditions_met):
                     type = 'single_delay_pixelated'
 
+            elif len(self.interferometer) == 4:
+
+                # check for correct component types and relative orientations
+                types = [LinearPolariser, UniaxialCrystal, UniaxialCrystal, QuarterWaveplate, ]
+                relative_orientations_2_delay = [0, -45, 0, 45, ]
+                relative_orientations_3_delay = [0, -22.5, 22.5, 67.5, ]
+
+                conditions_met = []
+                for idx, (typ, rel_or_2, rel_or_3) in enumerate(zip(types, relative_orientations_2_delay, relative_orientations_3_delay)):
+                    component = self.interferometer[idx]
+                    conditions_met.append(isinstance(component, typ))
+                    if isclose(component.orientation - self.polarisers[0].orientation, rel_or_2):
+                        conditions_met.append(True)
+                    elif isclose(component.orientation - self.polarisers[0].orientation, rel_or_3):
+                        conditions_met.append(True)
+                    else:
+                        conditions_met.append(False)
+
+                if all(conditions_met):
+                    type = 'multi_delay_pixelated'
+
             # multi-delay polarised
             elif len(self.interferometer) == 5:
 
