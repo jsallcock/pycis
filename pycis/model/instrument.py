@@ -164,6 +164,8 @@ class Instrument:
                     else:
                         conditions_met.append(False)
 
+                print(conditions_met)
+
                 if all(conditions_met):
                     type = 'multi_delay_pixelated'
 
