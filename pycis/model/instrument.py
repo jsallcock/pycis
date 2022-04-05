@@ -146,7 +146,7 @@ class Instrument:
                 if all(conditions_met):
                     type = 'single_delay_pixelated'
 
-            if len(self.interferometer) == 4:
+            elif len(self.interferometer) == 4:
 
                 # check for correct component types and relative orientations
                 types = [LinearPolariser, UniaxialCrystal, UniaxialCrystal, QuarterWaveplate, ]
