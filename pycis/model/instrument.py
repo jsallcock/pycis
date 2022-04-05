@@ -166,10 +166,6 @@ class Instrument:
                     else:
                         conditions_met.append(False)
 
-                    print(idx, typ, rel_or_2, rel_or_3)
-
-                print(conditions_met)
-
                 if all(conditions_met):
                     type = 'multi_delay_pixelated'
 
