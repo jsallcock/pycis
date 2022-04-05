@@ -5,7 +5,7 @@ import yaml
 from PIL import Image, ImageFilter, ImageChops
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
-from vtk import vtkFeatureEdges, vtkRenderLargeImage, vtkLabeledDataMapper, vtkActor2D, vtkAngleWidget
+from vtk import vtkFeatureEdges, vtkRenderLargeImage, vtkLabeledDataMapper, vtkActor2D, vtkAngleWidget, vtkLight
 from vtkmodules.vtkCommonCore import (
     vtkPoints,
 )
@@ -55,15 +55,18 @@ WIDTH_RET = 1.5
 PIX_HEIGHT = 300
 PIX_WIDTH = 300
 CYLINDER_RESOLUTION = 100
-CYLINDER_OPACITY = 0.88
-LINEWIDTH_CYLINDER = 7
+# CYLINDER_OPACITY = 0.88
+CYLINDER_OPACITY = 0.8
+# CYLINDER_OPACITY = 1.
+# LINEWIDTH_CYLINDER = 7
+LINEWIDTH_CYLINDER = 5.
 line_width_axes = 3
 TUBE_RADIUS_DEFAULT = 0.02
 IMG_BORDER = 30  # whitespace around image, in pixels
 WIDTHS = {
-    'LinearPolariser': 0.2,
+    'LinearPolariser': 0.,
     'UniaxialCrystal': 1.2,
-    'QuarterWaveplate': 0.2,
+    'QuarterWaveplate': 0.,
 }
 COLORS = {
     'LinearPolariser': 'White',
@@ -250,20 +253,23 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
         cylinder.SetHeight(component_width)
         cylinderMapper = vtkPolyDataMapper()
         cylinderMapper.SetInputConnection(cylinder.GetOutputPort())
-        cylinderActor = vtkActor()
-        cylinderActor.SetMapper(cylinderMapper)
-        cylinderActor.GetProperty().SetColor(colors.GetColor3d(COLORS[component_type]))
-        cylinderActor.GetProperty().SetRepresentationToSurface()
-        cylinderActor.GetProperty().BackfaceCullingOn()
-        cylinderActor.GetProperty().LightingOff()
-        cylinderActor.GetProperty().SetOpacity(CYLINDER_OPACITY)
+        cyl_actor = vtkActor()
+        cyl_actor.SetMapper(cylinderMapper)
+        cyl_actor.GetProperty().SetColor(colors.GetColor3d(COLORS[component_type]))
+        cyl_actor.GetProperty().BackfaceCullingOn()
+        cyl_actor.GetProperty().ShadingOn()
+        cyl_actor.GetProperty().SetAmbient(0.94)
+        cyl_actor.GetProperty().SetDiffuse(0.03)
+        cyl_actor.GetProperty().SetSpecular(0.03)
+        cyl_actor.GetProperty().LightingOn()
+        cyl_actor.GetProperty().SetOpacity(CYLINDER_OPACITY)
 
         def transform_actor(actor):
             actor.SetPosition(0.0, 0.0, 0.0)
             actor.RotateX(90.0)
             actor.SetPosition(0.0, 0.0, width_total + component_width / 2)
 
-        transform_actor(cylinderActor)
+        transform_actor(cyl_actor)
         cylinder.Update()
 
         # -------------
@@ -286,7 +292,7 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
         transform_actor(edge_actor)
         cylinderMapper.Update()
         edge_mapper.Update()
-        renderer_main.AddActor(cylinderActor)
+        renderer_main.AddActor(cyl_actor)
         renderer_main.AddActor(edge_actor)
 
         # ----------------
@@ -296,22 +302,21 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
         rad = 1.001 * RADIUS
         add_line(
             [rad * np.cos(view_angle), rad * np.sin(view_angle), width_total],
-            [rad * np.cos(view_angle), rad * np.sin(view_angle), width_total + component_width + 3. * nubbin],
+            [rad * np.cos(view_angle), rad * np.sin(view_angle), width_total + component_width + 2. * nubbin],
             renderer=renderer_lines_fg, line_width=0.9 * LINEWIDTH_CYLINDER,
         )
         add_line(
             [-rad * np.cos(view_angle), -rad * np.sin(view_angle), width_total],
-            [-rad * np.cos(view_angle), -rad * np.sin(view_angle), width_total + component_width + 2.75 * nubbin],
+            [-rad * np.cos(view_angle), -rad * np.sin(view_angle), width_total + component_width + 2. * nubbin],
             renderer=renderer_lines_fg, line_width=0.9 * LINEWIDTH_CYLINDER,
         )
 
         # --------------------
         # INDICATE COMPONENT ORIENTATION
-        add_tube(
-            [RADIUS * np.cos(component_orientation), RADIUS * np.sin(component_orientation), width_total],
-            [-RADIUS * np.cos(component_orientation), -RADIUS * np.sin(component_orientation), width_total],
-            color='Red',
-            tube_radius=1.75 * TUBE_RADIUS_DEFAULT
+        add_line(
+            [RADIUS * np.cos(component_orientation), RADIUS * np.sin(component_orientation), width_total - SMOL],
+            [-RADIUS * np.cos(component_orientation), -RADIUS * np.sin(component_orientation), width_total - SMOL],
+            color='Red', line_width=1.5 * LINEWIDTH_CYLINDER
         )
         # add_line(
         #     [0., 1.00 * RADIUS, width_total - SMOL],
@@ -423,7 +428,7 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
         top_edge_mapper = vtkPolyDataMapper()
         top_edge_mapper.SetInputData(top_edge)
         top_edge_actor.SetMapper(top_edge_mapper)
-        renderer_lines_fg.AddActor(top_edge_actor)
+        # renderer_lines_fg.AddActor(top_edge_actor)
 
         width_total += component_width
 
@@ -617,8 +622,8 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
     if title is not None:
         add_text_3d(title, 1.2 * RADIUS, 1.2 * RADIUS, 0, )
 
-    # -------------
-    # DEFINE CAMERA
+    # ------
+    # CAMERA
     camera = renderer_main.GetActiveCamera()
     camera.ParallelProjectionOn()  # orthographic projection
     camera.SetParallelScale(7)  # tweak as needed
@@ -629,6 +634,23 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
     camera.SetFocalPoint(0, 0, width_total / 2)
     renderer_lines_fg.SetActiveCamera(camera)
     renderer_lines_bg.SetActiveCamera(camera)
+
+    # -----
+    # LIGHT
+    # light = vtkLight()
+    # light.SetIntensity(0.2)
+    # light.SetPosition(-CAMERA_X_POS, CAMERA_Y_POS, width_total / 2 - CAMERA_Z_POS)
+    # light.SetAmbientColor(1., 1., 1.)
+    # light.SetSpecularColor(1., 1., 1.)
+    # light.SetDiffuseColor(0.7, 0.7, 0.7)
+    # light.SetLightTypeToHeadlight()
+    # print('intensity', light.GetIntensity())
+    # print('position', light.GetPosition())
+    # print('ambient color', light.GetAmbientColor())
+    # print('specular color', light.GetSpecularColor())
+    # print('diffuse color', light.GetDiffuseColor())
+    # print('positional', light.GetPositional())
+    # renderer_main.AddLight(light)
 
     renderer_main.SetBackground(colors.GetColor3d("BkgColor"))
     render_window.SetSize(3000, 2000)  # width, height
@@ -653,7 +675,7 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
     trim(im).save(fpath_out)
 
     # Start the event loop.
-    # iren.Start()  #  <---- UNCOMMENT LINE FOR LIVE RENDER
+    # iren.Start()  # <-- UNCOMMENT LINE FOR LIVE RENDER
 
 
 def imsplice(ims, overlap_frac=0.9):
