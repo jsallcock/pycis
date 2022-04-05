@@ -152,8 +152,8 @@ class Instrument:
 
                 # check for correct component types and relative orientations
                 types = [LinearPolariser, UniaxialCrystal, UniaxialCrystal, QuarterWaveplate, ]
-                relative_orientations_2_delay = [45, 0, 45, 90, ]
-                relative_orientations_3_delay = [22.5, 0, 45, 90, ]
+                relative_orientations_2_delay = [0, -45, 0, 45, ]
+                relative_orientations_3_delay = [0, -22.5, 22.5, 67.5, ]
 
                 conditions_met = []
                 for idx, (typ, rel_or_2, rel_or_3) in enumerate(zip(types, relative_orientations_2_delay, relative_orientations_3_delay)):
