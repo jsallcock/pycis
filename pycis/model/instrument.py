@@ -128,6 +128,8 @@ class Instrument:
             return 'mueller'
 
         type = None
+        print(self.camera.type)
+        print(self.interferometer)
         if self.camera.type == 'monochrome_polarised':
 
             # single-delay polarised
