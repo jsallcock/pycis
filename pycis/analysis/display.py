@@ -52,7 +52,7 @@ def cis_imshow(ax, im, cbar_label, vmin=None, vmax=None, **kwargs):
     ax.tick_params(labelsize=fsize_label)
 
     cbar = plt.colorbar(im_obj, ax=ax)
-    cbar.ax.tick_params(labelsize=fsize_cbar)
+    cbar.ax1.tick_params(labelsize=fsize_cbar)
     cbar.set_label(cbar_label, size=fsize_cbar)
 
 

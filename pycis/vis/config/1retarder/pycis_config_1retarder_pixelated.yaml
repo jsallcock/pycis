@@ -1,6 +1,4 @@
 ---
-# demo instrument configuration file for pycis.model, for the single_delay_pixelated instrument type
-
 # CAMERA
 # ------
 # example is FLIR BlackFly S polarised camera
@@ -20,7 +18,7 @@ camera:
 # Focal lengths (in metres) of lenses. Lens order is front-to-back.
 lens_1_focal_length: 70.e-3
 lens_2_focal_length: 105.e-3
-lens_3_focal_length: 150.e-3
+lens_3_focal_length: 50.e-3
 
 
 # INTERFEROMETER
@@ -31,13 +29,13 @@ lens_3_focal_length: 150.e-3
 interferometer:
 
   - LinearPolariser:
-      orientation: 0.
+      orientation: 0
 
   - UniaxialCrystal:
-      orientation: 45.
+      orientation: 45
       cut_angle: 0.
       thickness: 6.5e-3
       material: 'a-BBO'
 
   - QuarterWaveplate:
-      orientation: 90.
+      orientation: 90

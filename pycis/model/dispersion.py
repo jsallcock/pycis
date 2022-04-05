@@ -1,4 +1,9 @@
 import copy
+import numpy as np
+import matplotlib.pyplot as plt
+import pycis
+from matplotlib.gridspec import GridSpec
+from scipy.constants import c
 
 DWL = 1.e-10
 sellmeier_coefs_source_defaults = {
@@ -8,6 +13,7 @@ sellmeier_coefs_source_defaults = {
     'YVO': 'shi',
     'lithium_niobate': 'zelmon',
 }
+
 
 def get_refractive_indices(wavelength, material='a-BBO', sellmeier_coefs_source=None, sellmeier_coefs=None, ):
     """
@@ -181,6 +187,34 @@ sellmeier_coefs_all = {
               },
          },
 
+    'appel':
+            {'material': 'a-BBO',
+             'sellmeier_coefs':
+                 {'Ae': 2.3174,
+                  'Be': 0.01224,
+                  'Ce': -0.01667,
+                  'De': -0.01516,
+                  'Ao': 2.7471,
+                  'Bo': 0.01878,
+                  'Co': -0.01822,
+                  'Do': -0.01354,
+                  },
+             },
+
+    'shi':
+        {'material': 'a-BBO',
+         'sellmeier_coefs':
+             {'Ae': 2.37153,
+              'Be': 0.01224,
+              'Ce': -0.01667,
+              'De': -0.01516,
+              'Ao': 2.7471,
+              'Bo': 0.01878,
+              'Co': -0.01822,
+              'Do': -0.01354,
+              },
+         },
+
     'agoptics':
         {'material': 'a-BBO',
          'sellmeier_coefs':
@@ -224,19 +258,19 @@ sellmeier_coefs_all = {
               'Eo': 120,
               }
          },
-    'shi':
-        {'material': 'YVO',
-         'sellmeier_coefs':
-             {'Ae': 4.607200,
-              'Be': 0.108087,
-              'Ce': 0.052495,
-              'De': 0.014305,
-              'Ao': 3.778790,
-              'Bo': 0.070479,
-              'Co': 0.045731,
-              'Do': 0.009701,
-              },
-         },
+    # 'shi':
+    #     {'material': 'YVO',
+    #      'sellmeier_coefs':
+    #          {'Ae': 4.607200,
+    #           'Be': 0.108087,
+    #           'Ce': 0.052495,
+    #           'De': 0.014305,
+    #           'Ao': 3.778790,
+    #           'Bo': 0.070479,
+    #           'Co': 0.045731,
+    #           'Do': 0.009701,
+    #           },
+    #      },
 
     'zelmon':  # D.E. Zelmon, D. L. Small, J. Opt. Soc. Am. B/Vol. 14, No. 12/December 1997
         {'material': 'lithium_niobate',
@@ -256,3 +290,99 @@ sellmeier_coefs_all = {
               },
          },
 }
+
+
+def plot_dispersion():
+    fig = plt.figure(figsize=(6.104, 6.9))
+    gs = GridSpec(1, 3, figure=fig, wspace=0.4)
+    axes = [fig.add_subplot(gs[i]) for i in range(3)]
+    ax1, ax2, ax3 = axes
+    wl = np.linspace(400e-9, 700e-9, 500)
+    wl_nm = wl * 1e9
+
+    materials = ['a-BBO',
+                 'a-BBO',
+                 'a-BBO',
+                 # 'a-BBO',
+                 'a-BBO',
+                 'b-BBO',
+                 'b-BBO',
+                 'b-BBO',
+                 ]
+    sources = ['agoptics',
+               'kim',
+               'newlightphotonics',
+               # 'appel',
+               'shi',
+               'eimerl',
+               'kato1986',
+               'kato2010',
+               ]
+    labels = ['$\\alpha$/1',
+              '$\\alpha$/2',
+              '$\\alpha$/3',
+              # '$\\alpha$/4',
+              '$\\alpha$/5',
+              '$\\beta$/1',
+              '$\\beta$/2',
+              '$\\beta$/3',
+              ]
+
+    for ii, (material, source, label) in enumerate(zip(materials, sources, labels)):
+        color = 'C' + str(ii)
+        ne, no = pycis.get_refractive_indices(wl, material=material, sellmeier_coefs_source=source)
+        b = ne - no
+        ax1.plot(wl_nm, no, color=color, label=label)
+        ax2.plot(wl_nm, ne, color=color, label=label)
+        ax3.plot(wl_nm, b, color=color, label=label)
+
+        if ii == 0:
+            no_l, no_u = no.min(), no.max()
+            ne_l, ne_u = ne.min(), ne.max()
+            b_l, b_u = b.min(), b.max()
+        else:
+            if no.min() < no_l:
+                no_l = no.min()
+            if no.max() > no_u:
+                no_u = no.max()
+            if ne.min() < ne_l:
+                ne_l = ne.min()
+            if ne.max() > ne_u:
+                ne_u = ne.max()
+            if b.min() < b_l:
+                b_l = b.min()
+            if b.max() > b_u:
+                b_u = b.max()
+
+    lims = [[no_l, no_u],
+            [ne_l, ne_u],
+            [b_l, b_u],
+            ]
+    titles = ['(a) $n_\\mathrm{O}(\\lambda)$',
+              '(b) $n_\\mathrm{E}(\\lambda)$',
+              '(c) $B(\\lambda)\\equiv{}n_\\mathrm{E}(\\lambda)-n_\\mathrm{O}(\\lambda)$', ]
+    for ax, title, lim in zip(axes, titles, lims):
+        ax.set_xlim(wl_nm.min(), wl_nm.max())
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.grid(alpha=0.6)
+        ax.set_xlabel('$\\lambda$ (nm)')
+        ax.set_title(title)
+        ax.set_ylim(lim)
+
+    txts = ['$\\alpha$-BBO', '$\\beta$-BBO']
+    xys = [[550, -0.1216], [500, -0.119]]
+    rots = [55, 60]
+    for txt, xy, rot in zip(txts, xys, rots):
+        ax3.annotate(txt, xy, xycoords='data', rotation=rot, rotation_mode='default')
+
+    # ax3.set_ylabel('Birefringence')
+    leg1 = ax1.legend(ncol=1, fontsize=10, title='Sellmeier\ncoefficients:')
+    # fpath_fig = os.path.join(dir, 'sellmeier_dispersion.pdf')
+    # fig.savefig(fpath_fig, bbox_inches='tight')
+    plt.show()
+
+
+
+if __name__ == '__main__':
+    plot_dispersion()

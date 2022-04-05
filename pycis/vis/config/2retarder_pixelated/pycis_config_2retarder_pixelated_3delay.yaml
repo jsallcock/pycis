@@ -1,0 +1,42 @@
+---
+# INTERFEROMETER
+# --------------
+interferometer:
+
+  - LinearPolariser:
+      orientation: 22.5
+
+  - UniaxialCrystal:
+      orientation: 0
+      cut_angle: 45
+      thickness: 8.e-3
+      material: 'a-BBO'
+
+  - UniaxialCrystal:
+      orientation: 45
+      cut_angle: 0
+      thickness: 9.8e-3
+      material: 'a-BBO'
+
+  - QuarterWaveplate:
+      orientation: 90
+
+# CAMERA
+# ------
+# FLIR BlackFly S
+camera:
+  bit_depth: 12
+  sensor_format:
+    - 2448  # x
+    - 2048  # y
+  pixel_size: 3.45e-6  # metres
+  qe: 0.35
+  epercount: 0.46
+  cam_noise: 2.5  # e-
+  type: 'monochrome_polarised'
+
+# OPTICS
+# ------
+lens_1_focal_length: 70.e-3
+lens_2_focal_length: 105.e-3
+lens_3_focal_length: 50.e-3

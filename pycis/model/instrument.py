@@ -79,7 +79,7 @@ class Instrument:
             camera = Camera(**config['camera'])
             optics = [config['lens_' + str(i + 1) + '_focal_length'] for i in range(3)]
             ic = config['interferometer']
-            interferometer = [getattr(pycis, [*ic[i]][0])(**[*ic[i].values()][0]) for i in range(3)]
+            interferometer = [getattr(pycis, [*ic[i]][0])(**[*ic[i].values()][0]) for i in range(len(ic))]
 
         except:
             raise ValueError('pycis: could not interpret config file')

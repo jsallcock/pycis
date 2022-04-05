@@ -44,7 +44,7 @@ def get_roi(input_image, centre=None, roi_dim=(250, 250), ):
     return input_image[y_lo:y_hi, x_lo:x_hi]
 
 
-def get_roi_xr(im, roi_dim=(200, 200)):
+def get_roi_xr(im, roi_dim=(40, 40)):
     """
     :param xarray.DataArray im:
     :param tuple roi_dim: (x, y)
@@ -53,6 +53,7 @@ def get_roi_xr(im, roi_dim=(200, 200)):
     slicex = slice(int(len(im.x) / 2 - roi_dim[0] / 2), int(len(im.x) / 2 + roi_dim[0] / 2))
     slicey = slice(int(len(im.y) / 2 - roi_dim[1] / 2), int(len(im.y) / 2 + roi_dim[1] / 2))
     return im.isel(x=slicex, y=slicey)
+
 
 def get_roi_mean_phase(im, roi_dim=(200, 200)):
     return circmean(get_roi_xr(im, roi_dim=roi_dim), high=np.pi, low=-np.pi)

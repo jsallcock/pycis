@@ -121,17 +121,17 @@ def fourier_demod_column(col, nfringes=None, apodise=False, display=False):
         ax3 = plt.subplot(gs[2])
         ax4 = plt.subplot(gs[3])
 
-        ax1.plot_raw(abs(fft_col))
+        ax1.plot_frame(abs(fft_col))
         ax1.semilogy()
 
-        ax2.plot_raw(abs(fft_col))
-        ax2.plot_raw(abs(fft_dc))
-        ax2.plot_raw((1 - window) * np.max(abs(fft_col)), lw=1)
+        ax2.plot_frame(abs(fft_col))
+        ax2.plot_frame(abs(fft_dc))
+        ax2.plot_frame((1 - window) * np.max(abs(fft_col)), lw=1)
         ax2.semilogy()
 
-        ax3.plot_raw(abs(fft_col))
-        ax3.plot_raw(abs(fft_carrier), lw=1)
-        ax3.plot_raw(window * np.max(abs(fft_col)), lw=1)
+        ax3.plot_frame(abs(fft_col))
+        ax3.plot_frame(abs(fft_carrier), lw=1)
+        ax3.plot_frame(window * np.max(abs(fft_col)), lw=1)
         ax3.semilogy()
 
         fig2 = plt.figure()

@@ -10,23 +10,19 @@ def demod_single_delay_pixelated(im):
     :param im: xr.DataArray image to be demodulation. Must have dimensions 'x' and 'y'.
     :return:
     """
-
     sensor_format = [len(im.x), len(im.y)]
     idxs1, idxs2, idxs3, idxs4 = get_pixel_idxs(sensor_format)
     im = im.astype(float)
     xs, ys = get_superpixel_position(im.x, im.y, )
-
     m1 = im.isel(x=idxs1[0], y=idxs1[1], ).assign_coords({'x': xs, 'y': ys})
     m2 = im.isel(x=idxs2[0], y=idxs2[1], ).assign_coords({'x': xs, 'y': ys})
     m3 = im.isel(x=idxs3[0], y=idxs3[1], ).assign_coords({'x': xs, 'y': ys})
     m4 = im.isel(x=idxs4[0], y=idxs4[1], ).assign_coords({'x': xs, 'y': ys})
-
     m = np.arange(4)
     im = xr.concat([m1, m2, m3, m4], dim='m').assign_coords({'m': m, })
     i0 = im.sum(dim='m')
     phase = np.arctan2(im.sel(m=3) - im.sel(m=1), im.sel(m=0) - im.sel(m=2))
     contrast = 1 / i0 * np.sqrt(8 * np.power(im - i0 / 4, 2, ).sum(dim='m'))
-
     return i0 / 4, phase, contrast
 
 
@@ -39,23 +35,23 @@ def demod_single_delay_pixelated_mod(im):
     """
     if im.dims[0] != 'x':
         im = im.transpose('x', 'y')
+    xs, ys = get_superpixel_position(im.x, im.y, )
 
     fft = fft2_im(im)
     pm = get_pixelated_phase_mask(im.shape)
     sp = im * np.exp(-1j * pm)
     fft_sp = fft2_im(sp)
-
     window_lowpass = make_lowpass_window(fft_sp, 100)
-
     fft_dc = fft * window_lowpass
     fft_carrier = fft_sp * window_lowpass
-
     dc = xr.DataArray(ifft2(ifftshift(fft_dc.data)), coords=im.coords, dims=im.dims).real
     carrier = xr.DataArray(ifft2(ifftshift(fft_carrier.data)), coords=im.coords, dims=im.dims)
-
     phase = xr.ufuncs.angle(carrier)
     contrast = np.abs(carrier) / dc
 
+    dc = dc.interp(x=xs, y=ys)
+    phase = phase.interp(x=xs, y=ys)
+    contrast = contrast.interp(x=xs, y=ys)
     return dc, phase, contrast
 
 
