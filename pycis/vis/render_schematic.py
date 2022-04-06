@@ -2,9 +2,11 @@ import os
 import numpy as np
 import glob
 import yaml
-from PIL import Image, ImageFilter, ImageChops
+import string
+from PIL import Image, ImageFilter, ImageChops, ImageDraw, ImageFont
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
+import matplotlib.font_manager
 from vtk import vtkFeatureEdges, vtkRenderLargeImage, vtkLabeledDataMapper, vtkActor2D, vtkAngleWidget, vtkLight
 from vtkmodules.vtkCommonCore import (
     vtkPoints,
@@ -55,24 +57,20 @@ WIDTH_RET = 1.5
 PIX_HEIGHT = 300
 PIX_WIDTH = 300
 CYLINDER_RESOLUTION = 100
-# CYLINDER_OPACITY = 0.88
-CYLINDER_OPACITY = 0.8
-# CYLINDER_OPACITY = 1.
-# LINEWIDTH_CYLINDER = 7
+CYLINDER_OPACITY = 0.82
 LINEWIDTH_CYLINDER = 5.
 line_width_axes = 3
 TUBE_RADIUS_DEFAULT = 0.02
-IMG_BORDER = 30  # whitespace around image, in pixels
+IMG_BORDER = 40  # whitespace around image, in pixels
 WIDTHS = {
-    'LinearPolariser': 0.,
-    'UniaxialCrystal': 1.2,
-    'QuarterWaveplate': 0.,
+    'LinearPolariser': 0.1,
+    'UniaxialCrystal': 1.,
+    'QuarterWaveplate': 0.1,
 }
 COLORS = {
     'LinearPolariser': 'White',
     'UniaxialCrystal': 'AliceBlue',
     'QuarterWaveplate': 'AliceBlue',
-    # 'QuarterWaveplate': 'Honeydew',
 }
 LABELS = {
     'LinearPolariser': 'POL',
@@ -97,7 +95,7 @@ line_width_pol = 2
 
 
 def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=True, show_label_details=True, title=None,
-                     width=None, ):
+                     border=IMG_BORDER):
     """
     Render a schematic diagram of the interferometer with 3-D isometric projection using VTK.
 
@@ -635,23 +633,6 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
     renderer_lines_fg.SetActiveCamera(camera)
     renderer_lines_bg.SetActiveCamera(camera)
 
-    # -----
-    # LIGHT
-    # light = vtkLight()
-    # light.SetIntensity(0.2)
-    # light.SetPosition(-CAMERA_X_POS, CAMERA_Y_POS, width_total / 2 - CAMERA_Z_POS)
-    # light.SetAmbientColor(1., 1., 1.)
-    # light.SetSpecularColor(1., 1., 1.)
-    # light.SetDiffuseColor(0.7, 0.7, 0.7)
-    # light.SetLightTypeToHeadlight()
-    # print('intensity', light.GetIntensity())
-    # print('position', light.GetPosition())
-    # print('ambient color', light.GetAmbientColor())
-    # print('specular color', light.GetSpecularColor())
-    # print('diffuse color', light.GetDiffuseColor())
-    # print('positional', light.GetPositional())
-    # renderer_main.AddLight(light)
-
     renderer_main.SetBackground(colors.GetColor3d("BkgColor"))
     render_window.SetSize(3000, 2000)  # width, height
     render_window.SetWindowName('CylinderExample')
@@ -672,7 +653,8 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
 
     # remove white-space
     im = Image.open(fpath_out)
-    trim(im).save(fpath_out)
+    im = borderfy(im, border=border)
+    im.save(fpath_out)
 
     # Start the event loop.
     # iren.Start()  # <-- UNCOMMENT LINE FOR LIVE RENDER
@@ -711,19 +693,26 @@ def imsplice(ims, overlap_frac=0.9):
     return im_out
 
 
-def trim(im, border=IMG_BORDER):
+def borderfy(im, border=IMG_BORDER, ):
     """
-    trim whitespace from an image, leaving specified border.
+    reduce / expand the image bounding box to the specified number of pixels
+
     :param im:
-    :param int border:
-    :return:
+    :param border:
+    :return: bordered image.
     """
-    # set size of white-space border
-    im_blurred = im.filter(ImageFilter.GaussianBlur(border))
-    bg = Image.new(im.mode, im.size, im.getpixel((0, 0)))
-    diff = ImageChops.difference(im_blurred, bg)
+    color = im.getpixel((0, 0))
+    bg = Image.new(im.mode, im.size, color)
+    diff = ImageChops.difference(im, bg)
     bbox = diff.getbbox()
-    return im.crop(bbox)
+    if border == 0:
+        return im.crop(bbox)
+    else:
+        border2 = 2 * border
+        size_new = (bbox[2] - bbox[0] + border2, bbox[3] - bbox[1] + border2)
+        im_new = Image.new(im.mode, size_new, color)
+        im_new.paste(im.crop(bbox), (border, border))
+        return im_new
 
 
 def make_figure_2retarder_simple_configs():
@@ -825,37 +814,34 @@ def str_round(n, sf):
 
 
 def make_3panel_figure_1retarder():
-    width_schematic = 1000
     fpath_config = [
         os.path.join(FPATH_CONFIG, '1retarder', 'pycis_config_1retarder_simple.yaml'),
         os.path.join(FPATH_CONFIG, '1retarder', 'pycis_config_1retarder_pixelated.yaml'),
         ]
     fpath_out = '3panel_1retarder.png'
-    make_3panel_figure(fpath_config, fpath_out, width_schematic=width_schematic)
+    make_3panel_figure(fpath_config, fpath_out)
 
 
 def make_3panel_figure_2retarder_simple():
-    width_schematic = 1000
     fpath_config = [
         os.path.join(FPATH_CONFIG, '2retarder_simple', 'pycis_config_2retarder_simple_2delay.yaml'),
         os.path.join(FPATH_CONFIG, '2retarder_simple', 'pycis_config_2retarder_simple_3delay.yaml'),
         os.path.join(FPATH_CONFIG, '2retarder_simple', 'pycis_config_2retarder_simple_4delay.yaml'),
         ]
     fpath_out = '3panel_2retarder_simple.png'
-    make_3panel_figure(fpath_config, fpath_out, width_schematic=width_schematic)
+    make_3panel_figure(fpath_config, fpath_out)
 
 
 def make_3panel_figure_2retarder_pixelated():
-    width_schematic = 1000
     fpath_config = [
         os.path.join(FPATH_CONFIG, '2retarder_pixelated', 'pycis_config_2retarder_pixelated_2delay.yaml'),
         os.path.join(FPATH_CONFIG, '2retarder_pixelated', 'pycis_config_2retarder_pixelated_3delay.yaml'),
         ]
     fpath_out = '3panel_2retarder_pixelated.png'
-    make_3panel_figure(fpath_config, fpath_out, width_schematic=width_schematic)
+    make_3panel_figure(fpath_config, fpath_out)
 
 
-def make_3panel_figure(fpath_config, fpath_out, width_schematic=None):
+def make_3panel_figure(fpath_config, fpath_out, label_subplots=True):
     """
     make figure showing the instrument schematic diagram + modelled interferogram + interferogram FFT.
 
@@ -868,15 +854,18 @@ def make_3panel_figure(fpath_config, fpath_out, width_schematic=None):
     :param width_schematic: \
         resize schematic to a specific height, in pixels, if given.
     """
-    CMAP = 'gray'
-    dim_show = 30
+    cmap = 'gray'
+    dim_show = 30  # pixel dimension of interferogram crop displayed
     dpi = 350
-
+    bfrac = 0.13  # border width as fraction of single plot
+    plot_dim_inches = 1.5
+    border_inches = bfrac * plot_dim_inches
+    figsize = (plot_dim_inches * (2 + bfrac), plot_dim_inches)  # inches
+    hfrac = 0.5  # fractional height of row taken up by the plot
     if type(fpath_config) is str:
         fpath_config = [fpath_config, ]
     elif type(fpath_config) is not list:
         raise ValueError
-
     fpath_out_schem = []
     fpath_out_plot = []
     for ii, fp_config in enumerate(fpath_config):
@@ -885,24 +874,24 @@ def make_3panel_figure(fpath_config, fpath_out, width_schematic=None):
         fp_out_schem = os.path.join(FPATH_TEMP, 'schematic_' + str(ii).zfill(2) + '.png')
         fp_out_plot = os.path.join(FPATH_TEMP, 'plot_' + str(ii).zfill(2) + '.png')
         render_schematic(fp_config, fp_out_schem, show_axes=True, show_cut_angle=True, show_label_details=False,
-                         width=width_schematic)
+                         border=0, )
         # ------------------------
         # PLOT INTERFEROGRAM + FFT
         inst = Instrument(config=fp_config)
         igram = inst.capture(get_spectrum_delta(465e-9, 5e3), )
         psd = np.log(np.abs(fft2_im(igram)) ** 2)
-        fig = plt.figure(figsize=(2, 3 / 2))
-        gs = GridSpec(1, 2, figure=fig, wspace=0.12)
-        axes = [fig.add_subplot(gs[i]) for i in range(2)]
+        fig = plt.figure(figsize=figsize)
+        axes = [fig.add_axes([0, 0, 1 / (2 + bfrac), 1, ]),
+                fig.add_axes([((1 + bfrac) / (2 + bfrac)), 0, 1 / (2 + bfrac), 1, ])]
         dim = igram.shape
         igram_show = igram[
                      int(dim[0] / 2) - int(dim_show / 2):int(dim[0] / 2) + int(dim_show / 2),
                      int(dim[1] / 2) - int(dim_show / 2):int(dim[1] / 2) + int(dim_show / 2),
                      ]
         vmax = float(1.05 * igram_show.max())
-        igram_show.plot(x='x', y='y', ax=axes[0], add_colorbar=False, cmap=CMAP, rasterized=True, vmax=vmax,
+        igram_show.plot(x='x', y='y', ax=axes[0], add_colorbar=False, cmap=cmap, rasterized=True, vmax=vmax,
                         xincrease=False)
-        psd.plot(x='freq_x', y='freq_y', ax=axes[1], add_colorbar=False, cmap=CMAP, rasterized=True,
+        psd.plot(x='freq_x', y='freq_y', ax=axes[1], add_colorbar=False, cmap=cmap, rasterized=True,
                  xincrease=False)
         for ax in axes:
             ax.set_aspect('equal')
@@ -912,13 +901,12 @@ def make_3panel_figure(fpath_config, fpath_out, width_schematic=None):
             ax.set_ylabel(None)
             for sp in ax.spines:
                 ax.spines[sp].set_visible(False)
-        fig.savefig(fp_out_plot, bbox_inches='tight', dpi=dpi)
+        fig.savefig(fp_out_plot, bbox_inches='tight', dpi=dpi, pad_inches=0., )
         plt.cla()
         plt.clf()
         plt.close('all')
         fpath_out_schem.append(fp_out_schem)
         fpath_out_plot.append(fp_out_plot)
-
     # ---------------------------------
     # PAD + RESIZE IMAGES FOR STITCHING
     ims_schem_og = [Image.open(x) for x in fpath_out_schem]
@@ -938,26 +926,43 @@ def make_3panel_figure(fpath_config, fpath_out, width_schematic=None):
         else:
             ims_schem.append(im_schem_og)
         # resize plot images
-        hf = 0.65
         w_plot_og, h_plot_og = im_plot_og.size
-        im_plot = im_plot_og.resize((int(w_plot_og * hf * h_schem_max / h_plot_og), int(hf * h_schem_max)), Image.ANTIALIAS)
+        w_plot = int(w_plot_og * hfrac * h_schem_max / h_plot_og)
+        h_plot = int(hfrac * h_schem_max)
+        im_plot = im_plot_og.resize((w_plot, h_plot), Image.ANTIALIAS)
         ims_plot.append(im_plot)
-
+    labels = ['(' + lttr + ')' for lttr in string.ascii_lowercase[:3 * len(fpath_config)]]
+    brdr_lab = 3
+    fpath_font = [i for i in matplotlib.font_manager.findSystemFonts(fontpaths=None, fontext='ttf') if 'Arial.ttf' in i or 'arial.ttf' in i][0]
+    font = ImageFont.truetype(fpath_font, FONTSIZE_LABEL + 2)
+    brdr = int(hfrac * bfrac * h_schem_max)
+    brdr2 = brdr * 2
     ims_3p = []
-    for im_schem, im_plot in zip(ims_schem, ims_plot):
-        w_tot = im_schem.size[0] + im_plot.size[0]
+    for ii, (im_schem, im_plot) in enumerate(zip(ims_schem, ims_plot)):
+        w_tot = im_schem.size[0] + brdr2 + im_plot.size[0] + brdr
         im_3p = Image.new('RGB', (w_tot, im_schem.size[1]), (255, 255, 255), )
         x_offset = 0
         y_offset = 0
         for im in [im_schem, im_plot]:
             im_3p.paste(im, (x_offset, y_offset))
-            x_offset += im.size[0]
-            y_offset += int(h_schem_max * (1 - hf) / 2)
+            x_offset += im.size[0] + brdr2
+            y_offset += int(h_schem_max * (1 - hfrac) / 2)
+        if label_subplots:
+            draw = ImageDraw.Draw(im_3p)
+            h_lab = int(h_schem_max * (1 - hfrac) / 2) + 4 * brdr_lab
+            w_labs = [
+                4 * brdr_lab,
+                w_schem_max + brdr2 + 4 * brdr_lab,
+                w_schem_max + brdr2 + (w_plot - brdr) / 2 + brdr + 4 * brdr_lab
+            ]
+            for lab, w_lab in zip(labels[3 * ii:3 * ii + 3], w_labs):
+                size = font.getsize(lab)
+                draw.rectangle(xy=(w_lab - brdr_lab, h_lab - brdr_lab, w_lab + size[0] + brdr_lab, h_lab + size[1] + brdr_lab), fill=(255, 255, 255))
+                draw.text((w_lab, h_lab), lab, (0, 0, 0), font=font)
         ims_3p.append(im_3p)
-
-    im_final = imsplice(ims_3p, overlap_frac=0.78)
-    trim(im_final).save(fpath_out)
-
+    im_final = imsplice(ims_3p, overlap_frac=0.85)
+    im_final = borderfy(im_final, border=IMG_BORDER)
+    im_final.save(fpath_out)
     # os.remove(fpath_out_schematic)
     # os.remove(fpath_out_plot)
 
@@ -966,5 +971,3 @@ if __name__ == '__main__':
     make_3panel_figure_2retarder_simple()
     make_3panel_figure_2retarder_pixelated()
     make_3panel_figure_1retarder()
-    # make_figure_2retarder_simple_configs()
-    # make_figure_2retarder_pixelated_configs()
