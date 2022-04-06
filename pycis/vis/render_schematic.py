@@ -90,7 +90,7 @@ FPATH_TEMP = os.path.join(FPATH_ROOT, 'temp')
 npix = 8  # no. pixels in each dimension x & y
 line_width_grid = 1
 line_width_grid_bold = 3
-line_width_pol = 2
+line_width_pol = 3
 
 
 def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=True, show_label_details=True, title=None,
