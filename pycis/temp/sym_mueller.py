@@ -49,6 +49,8 @@ def retarder(rho, phi):
     return rot(-rho) * retarder * rot(rho)
 
 
+# def 2retarder_
+
 s0, s1, s2, s3 = symbols('s0 s1 s2 s3')
 phi = symbols('phi')
 S_UNPOLARISED = Matrix([s0, 0, 0, 0])

@@ -85,7 +85,6 @@ SMOL = 0.01 * RADIUS  # small nudges to avoid rendering artefacts
 FPATH_ROOT = os.path.dirname(os.path.realpath(__file__))
 FPATH_CONFIG = os.path.join(FPATH_ROOT, 'config')
 FPATH_TEMP = os.path.join(FPATH_ROOT, 'temp')
-
 # ---------------------------------
 # POLARISED SENSOR DISPLAY SETTINGS
 npix = 8  # no. pixels in each dimension x & y
@@ -242,7 +241,6 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
             thickness_mm = thickness * 1e3
         else:
             cut_angle_deg = cut_angle = thickness = thickness_mm = NotImplemented
-
         # --------
         # CYLINDER
         cylinder = vtkCylinderSource()
@@ -619,7 +617,6 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
 
     if title is not None:
         add_text_3d(title, 1.2 * RADIUS, 1.2 * RADIUS, 0, )
-
     # ------
     # CAMERA
     camera = renderer_main.GetActiveCamera()
@@ -660,190 +657,9 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
     # iren.Start()  # <-- UNCOMMENT LINE FOR LIVE RENDER
 
 
-def imsplice(ims, overlap_frac=0.9):
-    """
-    splice two images together vertically, with a given fractional overlap. Assumes both images have a white background
-
-    :param list ims: list of PIL.Images to splice together vertically
-    :param float overlap_frac:
-    :return: im_spliced
-    """
-    widths, heights = zip(*(i.size for i in ims))
-    assert widths[0] == widths[1]
-    total_height = int(np.array(heights[:-1]).sum() * overlap_frac + heights[-1])
-    new_im = Image.new('RGBA', (widths[0], total_height))
-    y_offset = 0
-    for im in ims:
-        im = im.convert('RGBA')
-        im_blurred = im.filter(ImageFilter.GaussianBlur(20))
-        data = im.getdata()
-        data_blurred = im_blurred.getdata()
-        newData = []
-        for item, item_blurred in zip(data, data_blurred):
-            if item_blurred[0] == 255 and item_blurred[1] == 255 and item_blurred[2] == 255:
-                newData.append((255, 255, 255, 0))
-            else:
-                newData.append(item)
-        im.putdata(newData)
-        new_im.paste(im, (0, y_offset), im)
-        y_offset += int(overlap_frac * im.size[1])
-
-    background = Image.new('RGBA', new_im.size, (255, 255, 255))
-    im_out = Image.alpha_composite(background, new_im).convert('RGB')
-    return im_out
-
-
-def borderfy(im, border=IMG_BORDER, ):
-    """
-    reduce / expand the image bounding box to the specified number of pixels
-
-    :param im:
-    :param border:
-    :return: bordered image.
-    """
-    color = im.getpixel((0, 0))
-    bg = Image.new(im.mode, im.size, color)
-    diff = ImageChops.difference(im, bg)
-    bbox = diff.getbbox()
-    if border == 0:
-        return im.crop(bbox)
-    else:
-        border2 = 2 * border
-        size_new = (bbox[2] - bbox[0] + border2, bbox[3] - bbox[1] + border2)
-        im_new = Image.new(im.mode, size_new, color)
-        im_new.paste(im.crop(bbox), (border, border))
-        return im_new
-
-
-def make_figure_2retarder_simple_configs():
-    """
-    splice together images to make a figure showing 3 different 2-crystal interferometer configurations
-    """
-    FLIST_CONFIG = sorted(glob.glob(os.path.join(FPATH_CONFIG, '2retarder_simple', '*.yaml')))
-    flist_out = []
-    titles = ['(a)', '(b)', '(c)', ]
-    for fpath_config, title in zip(FLIST_CONFIG, titles):
-        fpath_out = fpath_config.split('.')[0] + '.png'
-        render_schematic(fpath_config, fpath_out, show_label_details=False, title=title)
-        flist_out.append(fpath_out)
-
-    im_spliced = imsplice([Image.open(x) for x in flist_out], overlap_frac=0.7)
-    im_spliced.save('2retarder_simple_configs.png')
-
-    for f in flist_out:
-        os.remove(f)
-
-
-def make_figure_2retarder_pixelated_configs():
-    """
-    splice together images to make a figure showing 3 different 2-crystal interferometer configurations
-    """
-
-    FLIST_CONFIG = sorted(glob.glob(os.path.join(FPATH_CONFIG, '2retarder_pixelated', '*.yaml')))
-    flist_out = []
-    titles = ['(a)', '(b)', '(c)', ]
-    for fpath_config, title in zip(FLIST_CONFIG, titles):
-        fpath_out = fpath_config.split('.')[0] + '.png'
-        render_schematic(fpath_config, fpath_out, show_label_details=False, title=title)
-        flist_out.append(fpath_out)
-
-    im_spliced = imsplice([Image.open(x) for x in flist_out], overlap_frac=0.7)
-    im_spliced.save('2retarder_pixelated_configs.png')
-
-    for f in flist_out:
-        os.remove(f)
-
-
-def make_figure_1retarder_configs():
-    """
-    splice together images to make a figure showing 3 different 2-crystal interferometer configurations
-    """
-    from PIL import Image
-    from PIL import ImageFilter
-
-    FLIST_CONFIG = sorted(glob.glob(os.path.join(FPATH_ROOT, 'pycis_config_1retarder_*.yaml')))[::-1]
-    N_IM = len(FLIST_CONFIG)
-    flist_out = []
-    titles = ['(a)', '(b)', ]
-    for fpath_config, title in zip(FLIST_CONFIG, titles):
-        fpath_out = fpath_config.split('.')[0] + '.png'
-        render_schematic(fpath_config, fpath_out, title=title)
-        flist_out.append(fpath_out)
-
-    images = [Image.open(x) for x in flist_out]
-    widths, heights = zip(*(i.size for i in images))
-    OVERLAP_FRAC = 0.8
-    max_width = max(widths)
-    max_height = max(heights)
-    total_height = int(max_height * (1 + (OVERLAP_FRAC * (N_IM - 1))))
-
-    new_im = Image.new('RGBA', (max_width, total_height))
-
-    y_offset = 0
-    for im in images:
-        im = im.convert('RGBA')
-        im_blurred = im.filter(ImageFilter.GaussianBlur(30))
-        data = im.getdata()
-        data_blurred = im_blurred.getdata()
-        newData = []
-        for item, item_blurred in zip(data, data_blurred):
-            if item_blurred[0] == 255 and item_blurred[1] == 255 and item_blurred[2] == 255:
-                newData.append((255, 255, 255, 0))
-            else:
-                newData.append(item)
-
-        im.putdata(newData)
-        new_im.paste(im, (0, y_offset), im)
-        y_offset += int(OVERLAP_FRAC * im.size[1])
-
-    background = Image.new('RGBA', new_im.size, (255, 255, 255))
-    alpha_composite = Image.alpha_composite(background, new_im)
-    alpha_composite.convert('RGB').save('1retarder_configs.png')
-
-    for f in flist_out:
-        os.remove(f)
-
-
-def str_round(n, sf):
-    """
-    convert float to string, rounding to the given number of significant figures.
-    from Falken's answer at
-    https://stackoverflow.com/questions/3410976/how-to-round-a-number-to-significant-figures-in-python
-    """
-    return '{:g}'.format(float('{:.{p}g}'.format(n, p=sf)))
-
-
-def make_3panel_figure_1retarder():
-    fpath_config = [
-        os.path.join(FPATH_CONFIG, '1retarder', 'pycis_config_1retarder_simple.yaml'),
-        os.path.join(FPATH_CONFIG, '1retarder', 'pycis_config_1retarder_pixelated.yaml'),
-        ]
-    fpath_out = '3panel_1retarder.png'
-    make_3panel_figure(fpath_config, fpath_out)
-
-
-def make_3panel_figure_2retarder_simple():
-    fpath_config = [
-        os.path.join(FPATH_CONFIG, '2retarder_simple', 'pycis_config_2retarder_simple_2delay.yaml'),
-        os.path.join(FPATH_CONFIG, '2retarder_simple', 'pycis_config_2retarder_simple_3delay.yaml'),
-        os.path.join(FPATH_CONFIG, '2retarder_simple', 'pycis_config_2retarder_simple_4delay.yaml'),
-        ]
-    fpath_out = '3panel_2retarder_simple.png'
-    make_3panel_figure(fpath_config, fpath_out)
-
-
-def make_3panel_figure_2retarder_pixelated():
-    fpath_config = [
-        os.path.join(FPATH_CONFIG, '2retarder_pixelated', 'pycis_config_2retarder_pixelated_2delay.yaml'),
-        os.path.join(FPATH_CONFIG, '2retarder_pixelated', 'pycis_config_2retarder_pixelated_3delay.yaml'),
-        ]
-    fpath_out = '3panel_2retarder_pixelated.png'
-    make_3panel_figure(fpath_config, fpath_out)
-
-
 def make_3panel_figure(fpath_config, fpath_out, label_subplots=True):
     """
-    make figure showing the instrument schematic diagram + modelled interferogram + interferogram FFT.
+    given an instrument config file, make figure showing the schematic diagram + modelled interferogram + interferogram FFT.
 
     :param list or str fpath_config: \
         filepath to pycis instrument configuration .yaml file. Alternatively, a list of filepaths to config files.
@@ -851,8 +667,8 @@ def make_3panel_figure(fpath_config, fpath_out, label_subplots=True):
     :param str fpath_out: \
         filepath to use for the output image.
 
-    :param width_schematic: \
-        resize schematic to a specific height, in pixels, if given.
+    :param bool label_subplots: \
+        labels the figure subplots '(a)', '(b)', '(c)' etc.
     """
     cmap = 'gray'
     dim_show = 30  # pixel dimension of interferogram crop displayed
@@ -963,11 +779,116 @@ def make_3panel_figure(fpath_config, fpath_out, label_subplots=True):
     im_final = imsplice(ims_3p, overlap_frac=0.85)
     im_final = borderfy(im_final, border=IMG_BORDER)
     im_final.save(fpath_out)
-    # os.remove(fpath_out_schematic)
-    # os.remove(fpath_out_plot)
+
+    for fp_out_schem, fp_out_plot in zip(fpath_out_schem, fpath_out_plot):
+        os.remove(fp_out_schem)
+        os.remove(fp_out_plot)
+
+
+# ---------------------
+# MAKE SPECIFIC FIGURES
+# ---------------------
+
+# kept here for the moment as examples.
+
+
+def make_3panel_figure_1retarder():
+    fpath_config = [
+        os.path.join(FPATH_CONFIG, '1retarder', 'pycis_config_1retarder_simple.yaml'),
+        os.path.join(FPATH_CONFIG, '1retarder', 'pycis_config_1retarder_pixelated.yaml'),
+        ]
+    fpath_out = '3panel_1retarder.png'
+    make_3panel_figure(fpath_config, fpath_out)
+
+
+def make_3panel_figure_2retarder_linear():
+    fpath_config = [
+        os.path.join(FPATH_CONFIG, '2retarder_linear', 'pycis_config_2retarder_linear_2delay.yaml'),
+        os.path.join(FPATH_CONFIG, '2retarder_linear', 'pycis_config_2retarder_linear_3delay.yaml'),
+        os.path.join(FPATH_CONFIG, '2retarder_linear', 'pycis_config_2retarder_linear_4delay.yaml'),
+        ]
+    fpath_out = '3panel_2retarder_linear.png'
+    make_3panel_figure(fpath_config, fpath_out)
+
+
+def make_3panel_figure_2retarder_pixelated():
+    fpath_config = [
+        os.path.join(FPATH_CONFIG, '2retarder_pixelated', 'pycis_config_2retarder_pixelated_2delay.yaml'),
+        os.path.join(FPATH_CONFIG, '2retarder_pixelated', 'pycis_config_2retarder_pixelated_3delay.yaml'),
+        ]
+    fpath_out = '3panel_2retarder_pixelated.png'
+    make_3panel_figure(fpath_config, fpath_out)
+
+
+# -----
+# TOOLS
+# -----
+
+def imsplice(ims, overlap_frac=0.9):
+    """
+    splice two images together vertically, with a given fractional overlap. Assumes both images have a white background
+
+    :param list ims: list of PIL.Images to splice together vertically
+    :param float overlap_frac:
+    :return: im_spliced
+    """
+    widths, heights = zip(*(i.size for i in ims))
+    assert widths[0] == widths[1]
+    total_height = int(np.array(heights[:-1]).sum() * overlap_frac + heights[-1])
+    new_im = Image.new('RGBA', (widths[0], total_height))
+    y_offset = 0
+    for im in ims:
+        im = im.convert('RGBA')
+        im_blurred = im.filter(ImageFilter.GaussianBlur(20))
+        data = im.getdata()
+        data_blurred = im_blurred.getdata()
+        newData = []
+        for item, item_blurred in zip(data, data_blurred):
+            if item_blurred[0] == 255 and item_blurred[1] == 255 and item_blurred[2] == 255:
+                newData.append((255, 255, 255, 0))
+            else:
+                newData.append(item)
+        im.putdata(newData)
+        new_im.paste(im, (0, y_offset), im)
+        y_offset += int(overlap_frac * im.size[1])
+
+    background = Image.new('RGBA', new_im.size, (255, 255, 255))
+    im_out = Image.alpha_composite(background, new_im).convert('RGB')
+    return im_out
+
+
+def borderfy(im, border=IMG_BORDER, ):
+    """
+    reduce / expand the image bounding box to the specified number of pixels
+
+    :param im:
+    :param border:
+    :return: bordered image.
+    """
+    color = im.getpixel((0, 0))
+    bg = Image.new(im.mode, im.size, color)
+    diff = ImageChops.difference(im, bg)
+    bbox = diff.getbbox()
+    if border == 0:
+        return im.crop(bbox)
+    else:
+        border2 = 2 * border
+        size_new = (bbox[2] - bbox[0] + border2, bbox[3] - bbox[1] + border2)
+        im_new = Image.new(im.mode, size_new, color)
+        im_new.paste(im.crop(bbox), (border, border))
+        return im_new
+
+
+def str_round(n, sf):
+    """
+    convert float to string, rounding to the given number of significant figures.
+    from Falken's answer at
+    https://stackoverflow.com/questions/3410976/how-to-round-a-number-to-significant-figures-in-python
+    """
+    return '{:g}'.format(float('{:.{p}g}'.format(n, p=sf)))
 
 
 if __name__ == '__main__':
-    make_3panel_figure_2retarder_simple()
+    make_3panel_figure_2retarder_linear()
     make_3panel_figure_2retarder_pixelated()
     make_3panel_figure_1retarder()
