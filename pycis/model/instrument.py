@@ -8,6 +8,7 @@ import numpy as np
 import xarray as xr
 from math import isclose, radians
 from numba import vectorize, f8
+from fnmatch import fnmatch
 import pycis
 from pycis.model import mueller_product, LinearPolariser, Camera, QuarterWaveplate, Component, LinearRetarder, \
     UniaxialCrystal, TiltableComponent
@@ -276,7 +277,7 @@ class Instrument:
             orientation_delay = -2 * radians(self.polarisers[0].orientation)
             delay = self.retarders[0].get_delay(wavelength, inc_angle, azim_angle, ) + orientation_delay
 
-        elif self.type in ['2_delay_pixelated','3_delay_pixelated','4_delay_pixelated']:
+        elif fnmatch(self.type, '?_delay_pixelated'):
             # generalise to arbitrary interferometer orientations
             orientation_delay = -2 * radians(self.polarisers[0].orientation)
             delay_1 = self.retarders[0].get_delay(wavelength, inc_angle, azim_angle, )
