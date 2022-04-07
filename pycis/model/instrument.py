@@ -322,35 +322,46 @@ class Instrument:
             apply_polarisers = None
 
         else:
-            delay = self.get_delay(spectrum.wavelength, x, y)
-            apply_polarisers = False
+            try:
+                delay = self.get_delay(spectrum.wavelength, x, y)
+                apply_polarisers = False
 
-            if self.type == 'single_delay_linear' and 'stokes' not in spectrum.dims:
-                contrast = np.array([crystal.contrast for crystal in self.retarders]).prod()
-                spectrum = spectrum / 4 * (1 + contrast * np.cos(delay))
+                if self.type == 'single_delay_linear' and 'stokes' not in spectrum.dims:
+                    contrast = np.array([crystal.contrast for crystal in self.retarders]).prod()
+                    spectrum = spectrum / 4 * (1 + contrast * np.cos(delay))
 
-            elif self.type == 'single_delay_pixelated' and 'stokes' not in spectrum.dims:
-                contrast = self.retarders[0].contrast
-                phase_mask = self.camera.get_pixelated_phase_mask()
-                spectrum = spectrum / 4 * (1 + contrast * np.cos(delay + phase_mask))
+                elif self.type == 'single_delay_pixelated' and 'stokes' not in spectrum.dims:
+                    contrast = self.retarders[0].contrast
+                    phase_mask = self.camera.get_pixelated_phase_mask()
+                    spectrum = spectrum / 4 * (1 + contrast * np.cos(delay + phase_mask))
 
-            elif self.type == 'multi_delay_pixelated' and 'stokes' not in spectrum.dims:
+                elif self.type == 'multi_delay_pixelated' and 'stokes' not in spectrum.dims:
 
-                phase_mask = self.camera.get_pixelated_phase_mask()
+                    phase_mask = self.camera.get_pixelated_phase_mask()
 
-                delay_1, delay_2, delay_sum, delay_diff = delay
-                contrast_1 = self.retarders[0].contrast
-                contrast_2 = self.retarders[0].contrast
-                contrast_sum = contrast_diff = contrast_1 * contrast_2
+                    delay_1, delay_2, delay_sum, delay_diff = delay
+                    contrast_1 = self.retarders[0].contrast
+                    contrast_2 = self.retarders[0].contrast
+                    contrast_sum = contrast_diff = contrast_1 * contrast_2
 
-                spectrum = spectrum / 8 * (1 +
-                                           contrast_1 * np.cos(delay_1) +
-                                           contrast_2 * np.cos(delay_2 + phase_mask) +
-                                           1 / 2 * contrast_sum * np.cos(delay_sum + phase_mask) +
-                                           1 / 2 * contrast_diff * np.cos(delay_diff + phase_mask)
-                                           )
-            else:
-                raise NotImplementedError
+                    spectrum = spectrum / 8 * (1 +
+                                               contrast_1 * np.cos(delay_1) +
+                                               contrast_2 * np.cos(delay_2 + phase_mask) +
+                                               1 / 2 * contrast_sum * np.cos(delay_sum + phase_mask) +
+                                               1 / 2 * contrast_diff * np.cos(delay_diff + phase_mask)
+                                               )
+                else:
+                    raise NotImplementedError
+            except NotImplementedError:
+                # else resort to full Mueller calculation.
+                # TODO this logic should be cleared up to avoid repeated code
+                if 'stokes' not in spectrum.dims:
+                    a0 = xr.zeros_like(spectrum)
+                    spectrum = xr.combine_nested([spectrum, a0, a0, a0], concat_dim=('stokes',))
+
+                mueller_matrix_total = self.get_mueller_matrix(spectrum.wavelength, x, y)
+                spectrum = mueller_product(mueller_matrix_total, spectrum)
+                apply_polarisers = None
 
         image = self.camera.capture(spectrum, apply_polarisers=apply_polarisers, clean=clean)
         return image

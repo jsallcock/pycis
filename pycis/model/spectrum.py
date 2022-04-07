@@ -6,6 +6,7 @@ from pycis.temp.zeeman import zeeman
 """
 simple example spectra for testing
 """
+D_WL = 1e-13
 
 
 def get_spectrum_delta(wl0, ph, ):
@@ -14,14 +15,48 @@ def get_spectrum_delta(wl0, ph, ):
     :param float ph: total photon fluence
     :return:
     """
-    dwl = 1e-13
-    wavelength = np.linspace(wl0 - dwl, wl0 + dwl, 3)
+    wavelength = np.linspace(wl0 - D_WL, wl0 + D_WL, 3)
     wavelength = xr.DataArray(wavelength, coords=(wavelength, ), dims=('wavelength', ), )
     spectrum = xr.DataArray([0., 1., 0.], coords=(wavelength, ), dims=('wavelength', ))
     return spectrum * ph / spectrum.integrate(coord='wavelength')
 
 
-def get_doppler_broadened_singlet (temperature, wl, mass, domain='frequency', nbins=1000,):
+def get_spectrum_delta_pol(wl0, ph, p, psi, xi):
+    """
+    :param wl0:
+    :param ph:
+    :param p:
+    :param psi:
+    :param xi:
+    :return:
+    """
+    wavelength = np.linspace(wl0 - D_WL, wl0 + D_WL, 3)
+    wavelength = xr.DataArray(wavelength, coords=(wavelength,), dims=('wavelength',), )
+    stokes = np.arange(4)
+    stokes = xr.DataArray(stokes, coords=(stokes, ), dims=('stokes', ), )
+    spectrum = np.array(
+        [
+            [0., 1., 0., ],
+            [0., 1., 0., ],
+            [0., 1., 0., ],
+            [0., 1., 0., ],
+        ]
+    )
+    spectrum = xr.DataArray(spectrum, coords=(stokes, wavelength,), dims=('stokes', 'wavelength',), )
+    norm = np.array(
+        [
+            ph,
+            ph * p * np.cos(2 * psi) * np.cos(2 * xi),
+            ph * p * np.sin(2 * psi) * np.cos(2 * xi),
+            ph * p * np.sin(2 * xi),
+        ]
+    )
+    norm = xr.DataArray(norm, coords=(stokes, ), dims=('stokes', ), )
+    out = spectrum * norm / spectrum.integrate(coord='wavelength')
+    return out
+
+
+def get_doppler_broadened_singlet(temperature, wl, mass, domain='frequency', nbins=1000,):
     """
     return area-normalised spectrum of the Doppler-broadened C III triplet at 464.9 nm.
 

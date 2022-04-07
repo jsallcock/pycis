@@ -89,25 +89,25 @@ def qwp(rho):
 # ----------------------------------------------------------------------------------------------------------------------
 # EXAMPLES - SPECTROSCOPY
 # ----------------------------------------------------------------------------------------------------------------------
-def signal_1retarder_linear():
+def spec_1retarder_linear():
     phi = symbols('phi')
     mueller = polariser(0) * retarder(pi / 4, phi) * polariser(0)
     i_out = (mueller * S_UNPOLARISED)[0]
-    print('1retarder_linear:')
+    print('spec_1retarder_linear:')
     print(simplify(trigsimp(i_out)))
     print(' ')
 
 
-def signal_1retarder_pixelated():
+def spec_1retarder_pixelated():
     phi, m = symbols('phi m')
     mueller = polariser(m * pi / 4) * qwp(pi / 2) * retarder(pi / 4, phi) * polariser(0)
     i_out = (mueller * S_UNPOLARISED)[0]
-    print('1retarder_pixelated:')
+    print('spec_1retarder_pixelated:')
     print(simplify(trigsimp(i_out)))
     print(' ')
 
 
-def signal_2retarder_linear():
+def spec_2retarder_linear():
     phi_1, phi_2 = symbols('phi_1 phi_2')
     mueller = [
         polariser(0) * retarder(pi / 4, phi_2) * retarder(0, phi_1) * polariser(pi / 4),
@@ -119,7 +119,7 @@ def signal_2retarder_linear():
         '3-delay:',
         '4-delay:',
     ]
-    print('2retarder_linear:')
+    print('spec_2retarder_linear:')
     for m, lab in zip(mueller, labs):
         i_out = (m * S_UNPOLARISED)[0]
         print(lab, simplify(trigsimp(i_out)))
@@ -130,7 +130,20 @@ def signal_2retarder_linear():
 # EXAMPLES - SPECTRO-POLARIMETRY
 # ----------------------------------------------------------------------------------------------------------------------
 
+def specpol_2retarder_linear():
+    """
+    generalised full-stokes polarimeter
+    """
+    phi = symbols('phi')
+    mueller = polariser(0) * retarder(pi / 4, phi) * retarder(0, phi)
+    i_out = (mueller * S_GENERAL)[0]
+    print('specpol_1retarder_linear:')
+    print(simplify(trigsimp(i_out)))
+    print(' ')
+
+
 if __name__ == '__main__':
-    signal_1retarder_linear()
-    signal_1retarder_pixelated()
-    signal_2retarder_linear()
+    # spec_1retarder_linear()
+    # spec_1retarder_pixelated()
+    # spec_2retarder_linear()
+    specpol_2retarder_linear()

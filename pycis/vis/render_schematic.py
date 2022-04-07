@@ -20,6 +20,7 @@ from vtkmodules.vtkFiltersSources import (
     vtkLineSource,
     vtkArcSource,
     vtkCubeSource,
+    vtkEllipseArcSource,
 )
 from vtkmodules.vtkCommonDataModel import (
     vtkPolyData,
@@ -40,63 +41,104 @@ from vtkmodules.vtkRenderingCore import (
     vtkRenderer,
     vtkTextActor,
 )
-from pycis import Instrument, get_spectrum_delta, fft2_im
+from pycis import Instrument, get_spectrum_delta, get_spectrum_delta_pol, fft2_im
 
-# ------------
-# USER OPTIONS -- things you might want to change
+# ----------------------------------------------------------------------------------------------------------------------
+# Settings you might want to change
+# ----------------------------------------------------------------------------------------------------------------------
 SYMBOL_ORIENTATION_ANGLE = '\\rho'
 SYMBOL_CUT_ANGLE = '\\theta'
 SYMBOL_THICKNESS = 'L'
 FONTSIZE_LABEL = 58
-
-# ----------------
-# DIAGRAM SETTINGS -- things you probably don't want to change
-RADIUS = 2
-WIDTH_POL = 0.5
-WIDTH_RET = 1.5
-PIX_HEIGHT = 300
-PIX_WIDTH = 300
-CYLINDER_RESOLUTION = 100
-CYLINDER_OPACITY = 0.82
-LINEWIDTH_CYLINDER = 5.
-line_width_axes = 3
-TUBE_RADIUS_DEFAULT = 0.02
-IMG_BORDER = 40  # whitespace around image, in pixels
-WIDTHS = {
-    'LinearPolariser': 0.1,
-    'UniaxialCrystal': 1.,
-    'QuarterWaveplate': 0.1,
-}
 COLORS = {
     'LinearPolariser': 'White',
     'UniaxialCrystal': 'AliceBlue',
     'QuarterWaveplate': 'AliceBlue',
 }
+COLOR_ORIENTATION = 'Red'
+COLOR_LIGHT = 'Red'
+COLOR_LINE_DEFAULT = 'Black'
+COLOR_AXES = 'DimGray'
 LABELS = {
     'LinearPolariser': 'POL',
     'UniaxialCrystal': 'RET',
     'QuarterWaveplate': 'QWP',
 }
-COLOR_LINE_DEFAULT = 'Black'
-COLOR_AXIS = 'DimGray'
+# ----------------------------------------------------------------------------------------------------------------------
+# Settings you probably don't want to change
+# ----------------------------------------------------------------------------------------------------------------------
+RADIUS = 2  # radius of interferometer components
+RADIUS_LIGHT = 0.4 * RADIUS
+WIDTH_POL = 0.5
+WIDTH_RET = 1.5
+PIX_HEIGHT = 300
+PIX_WIDTH = 300
+CYLINDER_RESOLUTION = 100
+CYLINDER_OPACITY = 0.84
+LINEWIDTH_CYLINDER = 5.
+LINEWIDTH_ORIENTATION = 1.2 * LINEWIDTH_CYLINDER
+LINEWIDTH_LIGHT = LINEWIDTH_CYLINDER
+LINEWIDTH_AXIS = 3
+ARROW_BASE_WIDTH_AXIS = 0.2
+ARROW_HEIGHT_AXIS = 0.25
+ARROW_BASE_WIDTH_LIGHT = 0.15
+ARROW_HEIGHT_LIGHT = 0.2
+TUBE_RADIUS_DEFAULT = 0.02
+IMG_BORDER = 40  # whitespace around image, in pixels
+X_LABEL = -0.5 * RADIUS
+Y_LABEL = -1.2 * RADIUS
+X_LABEL_LIGHT = -0. * RADIUS_LIGHT
+Y_LABEL_LIGHT = - RADIUS_LIGHT - 0.3 * RADIUS
+WIDTHS = {
+    'LinearPolariser': 0.1,
+    'UniaxialCrystal': 1.,
+    'QuarterWaveplate': 0.1,
+}
 WIDTH_SPACING = 2.3
 CAMERA_X_POS = 4.7
 SMOL = 0.01 * RADIUS  # small nudges to avoid rendering artefacts
 FPATH_ROOT = os.path.dirname(os.path.realpath(__file__))
 FPATH_CONFIG = os.path.join(FPATH_ROOT, 'config')
 FPATH_TEMP = os.path.join(FPATH_ROOT, 'temp')
-# ---------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
 # POLARISED SENSOR DISPLAY SETTINGS
+# ----------------------------------------------------------------------------------------------------------------------
 npix = 8  # no. pixels in each dimension x & y
 line_width_grid = 1
 line_width_grid_bold = 3
 line_width_pol = 3
+# ----------------------------------------------------------------------------------------------------------------------
+# INCIDENT LIGHT STATE
+# ----------------------------------------------------------------------------------------------------------------------
+LIGHT_STATE_UNPOLARISED = {  # see e.g. https://en.wikipedia.org/wiki/Stokes_parameters for full definitions
+    'p': 0.,  # degree of polarization, 0 <= p <= 1
+    'psi': np.pi / 4,  # angle of polarisation
+    'xi': np.pi / 8,  # angle determining degree of ellipticity
+}
+LIGHT_STATE_LINEAR0 = {
+    'p': 1.,
+    'psi': 0.,
+    'xi': 0.,
+}
+LIGHT_STATE_LINEAR45 = {
+    'p': 1.,
+    'psi': np.pi / 4,
+    'xi': 0.,
+}
+LIGHT_STATE_RHC = {
+    'p': 1.,
+    'psi': 0.,
+    'xi': np.pi / 4,
+}
+LIGHT_STATE_DEFAULT = LIGHT_STATE_UNPOLARISED
 
 
-def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=True, show_label_details=True, title=None,
-                     border=IMG_BORDER):
+def render_schematic(fpath_config, fpath_out, axes=True, show_cut_angle=True, show_label_details=True,
+                     show_light=True, show_label_light=True, light_state=LIGHT_STATE_DEFAULT, border=IMG_BORDER):
     """
     Render a schematic diagram of the interferometer with 3-D isometric projection using VTK.
+
+    Currently uses some dirty short-cuts, so won't look good if e.g. the camera position / projection method is changed.
 
     :param str fpath_config: \
         filepath to pycis instrument configuration .yaml file.
@@ -104,18 +146,16 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
     :param str fpath_out: \
         filepath to use for the output image.
 
-    :param bool show_axes:
+    :param bool axes:
     :param bool show_cut_angle:
     :param bool show_label_details:
-    :param str title:
     """
-
     with open(fpath_config) as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
     n_components = len(config['interferometer'])
-
-    # -----
+    # ------------------------------------------------------------------------------------------------------------------
     # SETUP
+    # ------------------------------------------------------------------------------------------------------------------
     colors = vtkNamedColors()
     bkg = map(lambda x: x / 255.0, [255, 255, 255, 255])
     colors.SetColor("BkgColor", *bkg)
@@ -133,15 +173,15 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
     renderer_main.SetOcclusionRatio(0.05)
     renderer_main.SetMaximumNumberOfPeels(1000)
     renderer_main.UseDepthPeelingForVolumesOn()
-    renderer_lines_fg = vtkRenderer()
-    renderer_lines_fg.SetLayer(2)
+    renderer_fg = vtkRenderer()
+    renderer_fg.SetLayer(2)
     renderer_lines_bg = vtkRenderer()
     renderer_lines_bg.SetLayer(1)
     render_window.AddRenderer(renderer_main)
-    render_window.AddRenderer(renderer_lines_fg)
+    render_window.AddRenderer(renderer_fg)
     render_window.AddRenderer(renderer_lines_bg)
 
-    def add_text_3d(txt, x, y, z, color='Black', renderer=renderer_main):
+    def add_text_3d(txt, x, y, z, color='Black', renderer=renderer_main, font_size=FONTSIZE_LABEL):
         """ Add 2D text at point (x, y, z)
         """
         points = vtkPoints()
@@ -155,7 +195,7 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
         text_3d_mapper.GetLabelTextProperty().SetColor(colors.GetColor3d(color))
         text_3d_mapper.GetLabelTextProperty().SetJustificationToCentered()
         text_3d_mapper.GetLabelTextProperty().SetFontFamilyToArial()
-        text_3d_mapper.GetLabelTextProperty().SetFontSize(FONTSIZE_LABEL)
+        text_3d_mapper.GetLabelTextProperty().SetFontSize(font_size)
         text_3d_mapper.GetLabelTextProperty().BoldOff()
         text_3d_mapper.GetLabelTextProperty().ItalicOff()
         text_3d_mapper.GetLabelTextProperty().ShadowOff()
@@ -223,8 +263,30 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
         rect_actor.GetProperty().SetOpacity(opacity)
         renderer.AddActor(rect_actor)
 
-    # -------------------------
-    # ADD COMPONENTS ONE BY ONE
+    def add_tri(p1, p2, p3, color='Black', renderer=renderer_main, opacity=1.):
+        tri_points = vtkPoints()
+        [tri_points.InsertNextPoint(*p) for p in [p1, p2, p3]]
+        tri = vtkTriangle()
+        tri.GetPointIds().SetId(0, 0)
+        tri.GetPointIds().SetId(1, 1)
+        tri.GetPointIds().SetId(2, 2)
+        tris = vtkCellArray()
+        tris.InsertNextCell(tri)
+        tri_poly_data = vtkPolyData()
+        tri_poly_data.SetPoints(tri_points)
+        tri_poly_data.SetPolys(tris)
+        tri_mapper = vtkPolyDataMapper()
+        tri_mapper.SetInputData(tri_poly_data)
+        tri_actor = vtkActor()
+        tri_actor.GetProperty().SetColor(colors.GetColor3d(color))
+        tri_actor.SetMapper(tri_mapper)
+        tri_actor.GetProperty().LightingOff()
+        tri_actor.GetProperty().SetOpacity(opacity)
+        renderer.AddActor(tri_actor)
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # ADD INTERFEROMETER COMPONENTS ONE BY ONE
+    # ------------------------------------------------------------------------------------------------------------------
     width_total = 0
     for ii, cc in enumerate(config['interferometer']):
         if ii != 0:
@@ -241,8 +303,9 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
             thickness_mm = thickness * 1e3
         else:
             cut_angle_deg = cut_angle = thickness = thickness_mm = NotImplemented
-        # --------
+        # --------------------------------------------------------------------------------------------------------------
         # CYLINDER
+        # --------------------------------------------------------------------------------------------------------------
         cylinder = vtkCylinderSource()
         cylinder.SetResolution(CYLINDER_RESOLUTION)
         cylinder.SetRadius(RADIUS)
@@ -267,9 +330,9 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
 
         transform_actor(cyl_actor)
         cylinder.Update()
-
-        # -------------
+        # --------------------------------------------------------------------------------------------------------------
         # CYLINDER EDGES
+        # --------------------------------------------------------------------------------------------------------------
         feature_edges = vtkFeatureEdges()
         feature_edges.ColoringOff()
         feature_edges.SetInputConnection(cylinder.GetOutputPort())
@@ -290,41 +353,33 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
         edge_mapper.Update()
         renderer_main.AddActor(cyl_actor)
         renderer_main.AddActor(edge_actor)
-
-        # ----------------
-        # LINES
+        # --------------------------------------------------------------------------------------------------------------
+        # HACK: LINES TO COMPLETE CYLINDER OUTLINE
+        # --------------------------------------------------------------------------------------------------------------
         view_angle = 1.14 * np.pi / 4
         nubbin = 0.05
         rad = 1.001 * RADIUS
         add_line(
             [rad * np.cos(view_angle), rad * np.sin(view_angle), width_total],
             [rad * np.cos(view_angle), rad * np.sin(view_angle), width_total + component_width + 2. * nubbin],
-            renderer=renderer_lines_fg, line_width=0.9 * LINEWIDTH_CYLINDER,
+            renderer=renderer_fg, line_width=0.9 * LINEWIDTH_CYLINDER,
         )
         add_line(
             [-rad * np.cos(view_angle), -rad * np.sin(view_angle), width_total],
             [-rad * np.cos(view_angle), -rad * np.sin(view_angle), width_total + component_width + 2. * nubbin],
-            renderer=renderer_lines_fg, line_width=0.9 * LINEWIDTH_CYLINDER,
+            renderer=renderer_fg, line_width=0.9 * LINEWIDTH_CYLINDER,
         )
-
-        # --------------------
+        # --------------------------------------------------------------------------------------------------------------
         # INDICATE COMPONENT ORIENTATION
+        # --------------------------------------------------------------------------------------------------------------
         add_line(
             [RADIUS * np.cos(component_orientation), RADIUS * np.sin(component_orientation), width_total - SMOL],
             [-RADIUS * np.cos(component_orientation), -RADIUS * np.sin(component_orientation), width_total - SMOL],
-            color='Red', line_width=1.5 * LINEWIDTH_CYLINDER
+            color=COLOR_ORIENTATION, line_width=LINEWIDTH_ORIENTATION,
         )
-        # add_line(
-        #     [0., 1.00 * RADIUS, width_total - SMOL],
-        #     [0., -1.00 * RADIUS, width_total - SMOL],
-        # )
-        # add_line(
-        #     [1.00 * RADIUS, 0, width_total - SMOL],
-        #     [-1.00 * RADIUS, 0, width_total - SMOL],
-        # )
-
-        # ---------------
+        # --------------------------------------------------------------------------------------------------------------
         # LABEL COMPONENT
+        # --------------------------------------------------------------------------------------------------------------
         if component_type == 'UniaxialCrystal' and show_label_details:
             if thickness_mm < 10:
                 sf = 2
@@ -338,7 +393,7 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
         else:
             component_txt = LABELS[component_type] + \
                             '\n$' + SYMBOL_ORIENTATION_ANGLE + '=$' + str(component_orientation_deg) + '°'
-        add_text_3d(component_txt, -0.5 * RADIUS, -1.2 * RADIUS, width_total + component_width / 2)
+        add_text_3d(component_txt, X_LABEL, Y_LABEL, width_total + component_width / 2)
 
         if show_cut_angle:
             if component_type == 'UniaxialCrystal':
@@ -360,9 +415,9 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
                     x_end = rad_partial * np.cos(component_orientation)
                     y_end = rad_partial * np.sin(component_orientation)
                     z_end = width_total + component_width
-
-                # --------------
+                # ------------------------------------------------------------------------------------------------------
                 # MARK CUT ANGLE
+                # ------------------------------------------------------------------------------------------------------
                 arc_rad = 0.33 * RADIUS
                 arc = vtkArcSource()
                 arc.SetPoint1(
@@ -386,18 +441,18 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
                 arc_actor = vtkActor()
                 arc_actor.SetMapper(arc_mapper)
                 arc_actor.GetProperty().SetColor(colors.GetColor3d('Red'))
-                renderer_lines_fg.AddActor(arc_actor)
+                renderer_fg.AddActor(arc_actor)
 
                 add_tube(
                     [0, 0, width_total],
                     [x_end, y_end, z_end],
                     color='Red',
                     tube_radius=0.4 * TUBE_RADIUS_DEFAULT,
-                    renderer=renderer_lines_fg,
+                    renderer=renderer_fg,
                 )
-
-        # --------------------------------
+        # --------------------------------------------------------------------------------------------------------------
         # HACK: re-add top edge to foreground to avoid rendering artefacts
+        # --------------------------------------------------------------------------------------------------------------
         top_edge = vtkPolyData()
         npts = feature_edges.GetOutput().GetPoints().GetNumberOfPoints()
         top_edge_pts = vtkPoints()
@@ -428,8 +483,9 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
 
         width_total += component_width
 
-    # ----------------
+    # ------------------------------------------------------------------------------------------------------------------
     # PIXELATED SENSOR
+    # ------------------------------------------------------------------------------------------------------------------
     if config['camera']['type'] == 'monochrome_polarised':
         width_total += 1.2 * WIDTH_SPACING
         sd = 1.5 * RADIUS
@@ -543,12 +599,11 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
 
         width_total += sensor_depth + RADIUS / 4
         n_components += 1
-
-    # ---------
-    # SHOW AXIS
-    if show_axes:
+    # ------------------------------------------------------------------------------------------------------------------
+    # COORDINATE AXES
+    # ------------------------------------------------------------------------------------------------------------------
+    if axes:
         edge_distance = 1.3 * RADIUS
-
         def add_line_axis(p1, p2, axis='x', color='Black', renderer=renderer_main):
             assert axis in ['x', 'y', 'z']
             line_source = vtkLineSource()
@@ -559,66 +614,102 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
             line_actor = vtkActor()
             line_actor.SetMapper(line_mapper)
             line_actor.GetProperty().SetColor(colors.GetColor3d(color))
-            line_actor.GetProperty().SetLineWidth(line_width_axes)
+            line_actor.GetProperty().SetLineWidth(LINEWIDTH_AXIS)
             renderer.AddActor(line_actor)
-
-            BASE_WIDTH = 0.2
-            HEIGHT = 0.25
-            points = vtkPoints()
             if axis == 'x':
-                points.InsertNextPoint(p2[0] - HEIGHT / 2, p2[1] - 0.5 * BASE_WIDTH, p2[2])
-                points.InsertNextPoint(p2[0] - HEIGHT / 2, p2[1] + 0.5 * BASE_WIDTH, p2[2])
-                points.InsertNextPoint(p2[0] + HEIGHT / 2, p2[1], p2[2])
+                tri_p1 = [p2[0] - ARROW_HEIGHT_AXIS / 2, p2[1] - 0.5 * ARROW_BASE_WIDTH_AXIS, p2[2]]
+                tri_p2 = [p2[0] - ARROW_HEIGHT_AXIS / 2, p2[1] + 0.5 * ARROW_BASE_WIDTH_AXIS, p2[2]]
+                tri_p3 = [p2[0] + ARROW_HEIGHT_AXIS / 2, p2[1], p2[2]]
             elif axis == 'y':
-                points.InsertNextPoint(p2[0] - 0.5 * BASE_WIDTH, p2[1] - HEIGHT / 2, p2[2])
-                points.InsertNextPoint(p2[0] + 0.5 * BASE_WIDTH, p2[1] - HEIGHT / 2, p2[2])
-                points.InsertNextPoint(p2[0], p2[1] + HEIGHT / 2, p2[2])
+                tri_p1 = [p2[0] - 0.5 * ARROW_BASE_WIDTH_AXIS, p2[1] - ARROW_HEIGHT_AXIS / 2, p2[2]]
+                tri_p2 = [p2[0] + 0.5 * ARROW_BASE_WIDTH_AXIS, p2[1] - ARROW_HEIGHT_AXIS / 2, p2[2]]
+                tri_p3 = [p2[0], p2[1] + ARROW_HEIGHT_AXIS / 2, p2[2]]
             elif axis == 'z':
-                points.InsertNextPoint(p2[0] - 0.5 * BASE_WIDTH, p2[1], p2[2] - HEIGHT / 2)
-                points.InsertNextPoint(p2[0] + 0.5 * BASE_WIDTH, p2[1], p2[2] - HEIGHT / 2)
-                points.InsertNextPoint(p2[0], p2[1], p2[2] + HEIGHT / 2)
+                tri_p1 = [p2[0] - 0.5 * ARROW_BASE_WIDTH_AXIS, p2[1], p2[2] - ARROW_HEIGHT_AXIS / 2]
+                tri_p2 = [p2[0] + 0.5 * ARROW_BASE_WIDTH_AXIS, p2[1], p2[2] - ARROW_HEIGHT_AXIS / 2]
+                tri_p3 = [p2[0], p2[1], p2[2] + ARROW_HEIGHT_AXIS / 2]
             else:
                 raise Exception
-
-            triangle = vtkTriangle()
-            triangle.GetPointIds().SetId(0, 0)
-            triangle.GetPointIds().SetId(1, 1)
-            triangle.GetPointIds().SetId(2, 2)
-            triangles = vtkCellArray()
-            triangles.InsertNextCell(triangle)
-            trianglePolyData = vtkPolyData()
-            trianglePolyData.SetPoints(points)
-            trianglePolyData.SetPolys(triangles)
-            tri_mapper = vtkPolyDataMapper()
-            tri_mapper.SetInputData(trianglePolyData)
-            tri_actor = vtkActor()
-            tri_actor.GetProperty().SetColor(colors.GetColor3d(color))
-            tri_actor.SetMapper(tri_mapper)
-            renderer.AddActor(tri_actor)
+            add_tri(tri_p1, tri_p2, tri_p3, color=color, renderer=renderer)
 
         add_line_axis(  # z-axis
             [SMOL, -SMOL, -edge_distance],
             [SMOL, -SMOL, width_total + edge_distance * 0.85],
-            axis='z', color=COLOR_AXIS, renderer=renderer_main
+            axis='z', color=COLOR_AXES, renderer=renderer_main
         )
         add_line_axis(  # x-axis
             [0, 0, -edge_distance],
             [RADIUS, 0, -edge_distance],
-            axis='x', color=COLOR_AXIS, renderer=renderer_main
+            axis='x', color=COLOR_AXES, renderer=renderer_main
         )
         add_line_axis(  # y-axis
             [0, 0, -edge_distance],
             [0, RADIUS, -edge_distance],
-            axis='y', color=COLOR_AXIS, renderer=renderer_main
+            axis='y', color=COLOR_AXES, renderer=renderer_main
         )
-        add_text_3d('x', RADIUS, 0.28 * RADIUS, -edge_distance, color=COLOR_AXIS)
-        add_text_3d('y', 0,  1.33 * RADIUS, -edge_distance, color=COLOR_AXIS)
-        add_text_3d('z', 0,  0.3 * RADIUS, width_total + edge_distance * 0.8, color=COLOR_AXIS)
+        add_text_3d('x', RADIUS, 0.28 * RADIUS, -edge_distance, color=COLOR_AXES)
+        add_text_3d('y', 0, 1.33 * RADIUS, -edge_distance, color=COLOR_AXES)
+        add_text_3d('z', 0, 0.3 * RADIUS, width_total + edge_distance * 0.8, color=COLOR_AXES)
+    # ------------------------------------------------------------------------------------------------------------------
+    # INCIDENT LIGHT
+    # ------------------------------------------------------------------------------------------------------------------
+    if show_light:
+        z_light = -edge_distance
+        def add_linear_pol_state(angle):
+            """ angle in rad """
+            p1 = [RADIUS_LIGHT * np.cos(angle), RADIUS_LIGHT * np.sin(angle), z_light]
+            p2 = [-RADIUS_LIGHT * np.cos(angle), -RADIUS_LIGHT * np.sin(angle), z_light]
+            add_line(p1, p2, line_width=LINEWIDTH_LIGHT, color=COLOR_LIGHT, renderer=renderer_fg)
+            tri2_p1 = [
+                p2[0] + (ARROW_HEIGHT_LIGHT / 2) * np.cos(angle) + (ARROW_BASE_WIDTH_LIGHT / 2) * np.sin(angle),
+                p2[1] + (ARROW_HEIGHT_LIGHT / 2) * np.sin(angle) - (ARROW_BASE_WIDTH_LIGHT / 2) * np.cos(angle),
+                z_light,
+            ]
+            tri2_p2 = [
+                p2[0] + (ARROW_HEIGHT_LIGHT / 2) * np.cos(angle) - (ARROW_BASE_WIDTH_LIGHT / 2) * np.sin(angle),
+                p2[1] + (ARROW_HEIGHT_LIGHT / 2) * np.sin(angle) + (ARROW_BASE_WIDTH_LIGHT / 2) * np.cos(angle),
+                z_light,
+            ]
+            tri2_p3 = [
+                p2[0] - (ARROW_HEIGHT_LIGHT / 2) * np.cos(angle),
+                p2[1] - (ARROW_HEIGHT_LIGHT / 2) * np.sin(angle),
+                z_light,
+            ]
+            tri2_ps = [tri2_p1, tri2_p2, tri2_p3]
+            tri1_ps = [[-p[0], -p[1], p[2]] for p in tri2_ps]
+            add_tri(*tri2_ps, color=COLOR_LIGHT, renderer=renderer_fg)
+            add_tri(*tri1_ps, color=COLOR_LIGHT, renderer=renderer_fg)
+        # special cases
+        if light_state['p'] == 0:
+            n_pol = 5
+            for ii_pol in range(n_pol):
+                add_linear_pol_state(ii_pol * np.pi / n_pol)
+        elif light_state['xi'] == 0:
+            add_linear_pol_state(light_state['psi'])
+        else:
+            # draw polarisation ellipse
+            ell = vtkEllipseArcSource()
+            ell.SetResolution(CYLINDER_RESOLUTION)
+            ell.SetCenter(0, 0, z_light)
+            ell.SetNormal(0, 0, z_light)
+            ell.SetMajorRadiusVector(RADIUS_LIGHT * np.cos(light_state['psi']), RADIUS_LIGHT * np.sin(light_state['psi']), 0)
+            ell.SetRatio(np.tan(light_state['xi']))
+            ell.SetSegmentAngle(360)
+            ell_mapper = vtkPolyDataMapper()
+            ell_mapper.SetInputConnection(ell.GetOutputPort())
+            ell_actor = vtkActor()
+            ell_actor.SetMapper(ell_mapper)
+            ell_actor.GetProperty().SetColor(colors.GetColor3d(COLOR_LIGHT))
+            ell_actor.GetProperty().ShadingOn()
+            ell_actor.GetProperty().LightingOn()
+            ell_actor.GetProperty().SetLineWidth(LINEWIDTH_LIGHT)
+            renderer_fg.AddActor(ell_actor)
 
-    if title is not None:
-        add_text_3d(title, 1.2 * RADIUS, 1.2 * RADIUS, 0, )
-    # ------
+        if show_label_light:
+            add_text_3d('Incident\nlight', X_LABEL_LIGHT, Y_LABEL_LIGHT, z_light)
+    # ------------------------------------------------------------------------------------------------------------------
     # CAMERA
+    # ------------------------------------------------------------------------------------------------------------------
     camera = renderer_main.GetActiveCamera()
     camera.ParallelProjectionOn()  # orthographic projection
     camera.SetParallelScale(7)  # tweak as needed
@@ -627,7 +718,7 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
     camera.SetPosition(-CAMERA_X_POS, CAMERA_Y_POS, width_total / 2 - CAMERA_Z_POS)
     camera.SetViewUp(0.0, 1.0, 0.0)
     camera.SetFocalPoint(0, 0, width_total / 2)
-    renderer_lines_fg.SetActiveCamera(camera)
+    renderer_fg.SetActiveCamera(camera)
     renderer_lines_bg.SetActiveCamera(camera)
 
     renderer_main.SetBackground(colors.GetColor3d("BkgColor"))
@@ -657,7 +748,8 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
     # iren.Start()  # <-- UNCOMMENT LINE FOR LIVE RENDER
 
 
-def make_3panel_figure(fpath_config, fpath_out, label_subplots=True):
+def make_3panel_figure(fpath_config, fpath_out, label_subplots=True, show_light=True, light_state=LIGHT_STATE_DEFAULT,
+                       ):
     """
     given an instrument config file, make figure showing the schematic diagram + modelled interferogram + interferogram FFT.
 
@@ -669,6 +761,14 @@ def make_3panel_figure(fpath_config, fpath_out, label_subplots=True):
 
     :param bool label_subplots: \
         labels the figure subplots '(a)', '(b)', '(c)' etc.
+
+    :param bool show_light: \
+        Whether to show the polarisation state of the incident light.
+
+    :param dict or list of dicts light_state: \
+        Specify polarisation state of the incident light. If a dict is given, this state is applied across all
+        instrument configs given. If a list of dicts is given, this must have the same length as the list of .yaml
+        config files provided.
     """
     cmap = 'gray'
     dim_show = 30  # pixel dimension of interferogram crop displayed
@@ -682,19 +782,33 @@ def make_3panel_figure(fpath_config, fpath_out, label_subplots=True):
         fpath_config = [fpath_config, ]
     elif type(fpath_config) is not list:
         raise ValueError
+    n_config = len(fpath_config)
+    if show_light:
+        if type(light_state) is dict:
+            light_state = [light_state, ] * n_config
+        else:
+            assert type(light_state) is list
+            assert len(light_state) == n_config
     fpath_out_schem = []
     fpath_out_plot = []
     for ii, fp_config in enumerate(fpath_config):
-        # ----------------
+        # --------------------------------------------------------------------------------------------------------------
         # RENDER SCHEMATIC
+        # --------------------------------------------------------------------------------------------------------------
         fp_out_schem = os.path.join(FPATH_TEMP, 'schematic_' + str(ii).zfill(2) + '.png')
         fp_out_plot = os.path.join(FPATH_TEMP, 'plot_' + str(ii).zfill(2) + '.png')
-        render_schematic(fp_config, fp_out_schem, show_axes=True, show_cut_angle=True, show_label_details=False,
-                         border=0, )
-        # ------------------------
+        if ii == 0:
+            label_light = True
+        else:
+            label_light = False
+        render_schematic(fp_config, fp_out_schem, axes=True, show_cut_angle=True, show_label_details=False,
+                         show_light=show_light, light_state=light_state[ii], show_label_light=label_light, border=0, )
+        # --------------------------------------------------------------------------------------------------------------
         # PLOT INTERFEROGRAM + FFT
+        # --------------------------------------------------------------------------------------------------------------
         inst = Instrument(config=fp_config)
-        igram = inst.capture(get_spectrum_delta(465e-9, 5e3), )
+        spec = get_spectrum_delta_pol(465e-9, 5e3, light_state[ii]['p'], light_state[ii]['psi'], light_state[ii]['xi'])
+        igram = inst.capture(spec, )
         psd = np.log(np.abs(fft2_im(igram)) ** 2)
         fig = plt.figure(figsize=figsize)
         axes = [fig.add_axes([0, 0, 1 / (2 + bfrac), 1, ]),
@@ -705,7 +819,7 @@ def make_3panel_figure(fpath_config, fpath_out, label_subplots=True):
                      int(dim[1] / 2) - int(dim_show / 2):int(dim[1] / 2) + int(dim_show / 2),
                      ]
         vmax = float(1.05 * igram_show.max())
-        igram_show.plot(x='x', y='y', ax=axes[0], add_colorbar=False, cmap=cmap, rasterized=True, vmax=vmax,
+        igram_show.plot(x='x', y='y', ax=axes[0], add_colorbar=False, cmap=cmap, rasterized=True, vmin=0, vmax=vmax,
                         xincrease=False)
         psd.plot(x='freq_x', y='freq_y', ax=axes[1], add_colorbar=False, cmap=cmap, rasterized=True,
                  xincrease=False)
@@ -723,8 +837,9 @@ def make_3panel_figure(fpath_config, fpath_out, label_subplots=True):
         plt.close('all')
         fpath_out_schem.append(fp_out_schem)
         fpath_out_plot.append(fp_out_plot)
-    # ---------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
     # PAD + RESIZE IMAGES FOR STITCHING
+    # ------------------------------------------------------------------------------------------------------------------
     ims_schem_og = [Image.open(x) for x in fpath_out_schem]
     ims_plot_og = [Image.open(x) for x in fpath_out_plot]
     w_schem_og, h_schem_og = zip(*(i.size for i in ims_schem_og))
@@ -776,18 +891,17 @@ def make_3panel_figure(fpath_config, fpath_out, label_subplots=True):
                 draw.rectangle(xy=(w_lab - brdr_lab, h_lab - brdr_lab, w_lab + size[0] + brdr_lab, h_lab + size[1] + brdr_lab), fill=(255, 255, 255))
                 draw.text((w_lab, h_lab), lab, (0, 0, 0), font=font)
         ims_3p.append(im_3p)
-    im_final = imsplice(ims_3p, overlap_frac=0.85)
+    im_final = imsplice(ims_3p, overlap_frac=0.88)
     im_final = borderfy(im_final, border=IMG_BORDER)
     im_final.save(fpath_out)
-
     for fp_out_schem, fp_out_plot in zip(fpath_out_schem, fpath_out_plot):
         os.remove(fp_out_schem)
         os.remove(fp_out_plot)
 
 
-# ---------------------
+# ----------------------------------------------------------------------------------------------------------------------
 # MAKE SPECIFIC FIGURES
-# ---------------------
+# ----------------------------------------------------------------------------------------------------------------------
 
 # kept here for the moment as examples.
 
@@ -798,7 +912,7 @@ def make_3panel_figure_1retarder():
         os.path.join(FPATH_CONFIG, '1retarder', 'pycis_config_1retarder_pixelated.yaml'),
         ]
     fpath_out = '3panel_1retarder.png'
-    make_3panel_figure(fpath_config, fpath_out)
+    make_3panel_figure(fpath_config, fpath_out, show_light=True, light_state=LIGHT_STATE_UNPOLARISED)
 
 
 def make_3panel_figure_2retarder_linear():
@@ -808,7 +922,7 @@ def make_3panel_figure_2retarder_linear():
         os.path.join(FPATH_CONFIG, '2retarder_linear', 'pycis_config_2retarder_linear_4delay.yaml'),
         ]
     fpath_out = '3panel_2retarder_linear.png'
-    make_3panel_figure(fpath_config, fpath_out)
+    make_3panel_figure(fpath_config, fpath_out, show_light=True, light_state=LIGHT_STATE_UNPOLARISED)
 
 
 def make_3panel_figure_2retarder_pixelated():
@@ -817,12 +931,25 @@ def make_3panel_figure_2retarder_pixelated():
         os.path.join(FPATH_CONFIG, '2retarder_pixelated', 'pycis_config_2retarder_pixelated_3delay.yaml'),
         ]
     fpath_out = '3panel_2retarder_pixelated.png'
-    make_3panel_figure(fpath_config, fpath_out)
+    make_3panel_figure(fpath_config, fpath_out, show_light=True, light_state=LIGHT_STATE_UNPOLARISED)
 
 
-# -----
+def make_3panel_figure_2retarder_specpol():
+
+    fpath_out = '3panel_2retarder_specpol.png'
+    light_state = [
+        LIGHT_STATE_UNPOLARISED,
+        LIGHT_STATE_LINEAR0,
+        LIGHT_STATE_LINEAR45,
+        LIGHT_STATE_RHC,
+    ]
+    fpath_config = [os.path.join(FPATH_CONFIG, 'specpol', 'pycis_config_2retarder_specpol.yaml'), ] * len(light_state)
+    make_3panel_figure(fpath_config, fpath_out, show_light=True, light_state=light_state)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # TOOLS
-# -----
+# ----------------------------------------------------------------------------------------------------------------------
 
 def imsplice(ims, overlap_frac=0.9):
     """
@@ -833,13 +960,14 @@ def imsplice(ims, overlap_frac=0.9):
     :return: im_spliced
     """
     widths, heights = zip(*(i.size for i in ims))
-    assert widths[0] == widths[1]
+    if len(widths) > 1:
+        assert widths[0] == widths[1]
     total_height = int(np.array(heights[:-1]).sum() * overlap_frac + heights[-1])
     new_im = Image.new('RGBA', (widths[0], total_height))
     y_offset = 0
     for im in ims:
         im = im.convert('RGBA')
-        im_blurred = im.filter(ImageFilter.GaussianBlur(20))
+        im_blurred = im.filter(ImageFilter.GaussianBlur(10))
         data = im.getdata()
         data_blurred = im_blurred.getdata()
         newData = []
@@ -889,6 +1017,7 @@ def str_round(n, sf):
 
 
 if __name__ == '__main__':
-    make_3panel_figure_2retarder_linear()
-    make_3panel_figure_2retarder_pixelated()
-    make_3panel_figure_1retarder()
+    make_3panel_figure_2retarder_specpol()
+    # make_3panel_figure_2retarder_linear()
+    # make_3panel_figure_2retarder_pixelated()
+    # make_3panel_figure_1retarder()
