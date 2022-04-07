@@ -119,7 +119,7 @@ class Instrument:
         - 'mueller': Full Mueller calculation
         - 'single_delay_linear'
         - 'single_delay_pixelated'
-        - 'multi_delay_pixelated'
+        - '2/3/4_delay_pixelated'
 
         :return: type (str)
         """
@@ -137,35 +137,22 @@ class Instrument:
                 types = [LinearPolariser, UniaxialCrystal, QuarterWaveplate, ]
                 relative_orientations = [0, 45, 90, ]
 
-                conditions_met = []
-                for idx, (typ, rel_or) in enumerate(zip(types, relative_orientations)):
-                    component = self.interferometer[idx]
-                    conditions_met.append(isinstance(component, typ))
-                    conditions_met.append(isclose(component.orientation - self.polarisers[0].orientation, rel_or))
-
-                if all(conditions_met):
+                correct = self._check_interferometer_config(types, relative_orientations)
+                if correct:
                     type = 'single_delay_pixelated'
 
             elif len(self.interferometer) == 4:
 
                 # check for correct component types and relative orientations
                 types = [LinearPolariser, UniaxialCrystal, UniaxialCrystal, QuarterWaveplate, ]
-                relative_orientations_2_delay = [0, -45, 0, 45, ]
-                relative_orientations_3_delay = [0, -22.5, 22.5, 67.5, ]
+                relative_orientations_2_delay = [[0, -45, 0, 45], '2_delay_pixelated']
+                relative_orientations_3_delay = [[0, -22.5, 22.5, 67.5], '3_delay_pixelated']
 
-                conditions_met = []
-                for idx, (typ, rel_or_2, rel_or_3) in enumerate(zip(types, relative_orientations_2_delay, relative_orientations_3_delay)):
-                    component = self.interferometer[idx]
-                    conditions_met.append(isinstance(component, typ))
-                    if isclose(component.orientation - self.polarisers[0].orientation, rel_or_2):
-                        conditions_met.append(True)
-                    elif isclose(component.orientation - self.polarisers[0].orientation, rel_or_3):
-                        conditions_met.append(True)
-                    else:
-                        conditions_met.append(False)
+                for rel_or in [relative_orientations_2_delay, relative_orientations_3_delay]:
+                    correct = self._check_interferometer_config(types, rel_or[0])
 
-                if all(conditions_met):
-                    type = 'multi_delay_pixelated'
+                    if correct:
+                        type = rel_or[1]
 
             # multi-delay polarised
             elif len(self.interferometer) == 5:
@@ -174,14 +161,9 @@ class Instrument:
                 types = [LinearPolariser, UniaxialCrystal, LinearPolariser, UniaxialCrystal, QuarterWaveplate, ]
                 relative_orientations = [0, 45, 0, 45, 90, ]
 
-                conditions_met = []
-                for idx, (typ, rel_or) in enumerate(zip(types, relative_orientations)):
-                    component = self.interferometer[idx]
-                    conditions_met.append(isinstance(component, typ))
-                    conditions_met.append(isclose(component.orientation - self.polarisers[0].orientation, rel_or))
-
-                if all(conditions_met):
-                    type = 'multi_delay_pixelated'
+                correct = self._check_interferometer_config(types, relative_orientations)
+                if correct:
+                    type = '4_delay_pixelated'
 
         # are there two polarisers, at the front and back of the interferometer?
         elif len(self.polarisers) == 2 and (isinstance(self.interferometer[0], LinearPolariser) and
@@ -294,7 +276,7 @@ class Instrument:
             orientation_delay = -2 * radians(self.polarisers[0].orientation)
             delay = self.retarders[0].get_delay(wavelength, inc_angle, azim_angle, ) + orientation_delay
 
-        elif self.type == 'multi_delay_pixelated':
+        elif self.type in ['2_delay_pixelated','3_delay_pixelated','4_delay_pixelated']:
             # generalise to arbitrary interferometer orientations
             orientation_delay = -2 * radians(self.polarisers[0].orientation)
             delay_1 = self.retarders[0].get_delay(wavelength, inc_angle, azim_angle, )
@@ -355,6 +337,7 @@ class Instrument:
                 phase_mask = self.camera.get_pixelated_phase_mask()
                 spectrum = spectrum / 4 * (1 + contrast * np.cos(delay + phase_mask))
 
+            #TODO Generalise this for multiple delays
             elif self.type == 'multi_delay_pixelated' and 'stokes' not in spectrum.dims:
 
                 phase_mask = self.camera.get_pixelated_phase_mask()
@@ -403,6 +386,16 @@ class Instrument:
             raise NotImplementedError
 
         return spatial_freq_x, spatial_freq_y
+
+    def _check_interferometer_config(self, types, relative_orientations):
+
+        conditions_met = []
+        for idx, (typ, rel_or) in enumerate(zip(types, relative_orientations)):
+            component = self.interferometer[idx]
+            conditions_met.append(isinstance(component, typ))
+            conditions_met.append(isclose(component.orientation - self.polarisers[0].orientation, rel_or))
+
+        return all(conditions_met)
 
     def __eq__(self, inst_other):
         condition_1 = all([getattr(self, attr) == getattr(inst_other, attr) for attr in ['camera', 'optics', ]])
