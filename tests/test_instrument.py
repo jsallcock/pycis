@@ -103,9 +103,47 @@ class TestInstrument(unittest.TestCase):
 
         assert_almost_equal(igram.values, igram_fm.values)
 
-    def test_multi_delay_pixelated_versus_mueller(self, ):
+    def test_triple_delay_pixelated_versus_mueller(self, ):
         """
-        Test that the output of the 'multi_delay_polarised' instrument_type is the same as for the full Mueller matrix
+        Test that the output of the 'triple_delay_polarised' instrument_type is the same as for the full Mueller matrix
+        calculation
+
+        """
+        camera.type = 'monochrome_polarised'
+
+        interferometer = [
+            LinearPolariser(
+                orientation=22.5 + angle,
+            ),
+            UniaxialCrystal(
+                orientation=0 + angle,
+                thickness=8e-3,
+                cut_angle=45,
+            ),
+            UniaxialCrystal(
+                orientation=45 + angle,
+                thickness=9.8e-3,
+                cut_angle=0,
+            ),
+            QuarterWaveplate(
+                orientation=90 + angle,
+            )
+                          ]
+
+        instrument = Instrument(camera=camera, optics=optics, interferometer=interferometer, force_mueller=False)
+        instrument_fm = Instrument(camera=camera, optics=optics, interferometer=interferometer, force_mueller=True)
+
+        self.assertEqual(instrument.type, 'triple_delay_pixelated')
+        self.assertEqual(instrument_fm.type, 'mueller')
+
+        igram = instrument.capture(spectrum, clean=True, )
+        igram_fm = instrument_fm.capture(spectrum, clean=True, )
+
+        assert_almost_equal(igram.values, igram_fm.values)
+
+    def test_quad_delay_pixelated_versus_mueller(self, ):
+        """
+        Test that the output of the 'quad_delay_polarised' instrument_type is the same as for the full Mueller matrix
         calculation
 
         """
@@ -136,7 +174,7 @@ class TestInstrument(unittest.TestCase):
         instrument = Instrument(camera=camera, optics=optics, interferometer=interferometer, force_mueller=False)
         instrument_fm = Instrument(camera=camera, optics=optics, interferometer=interferometer, force_mueller=True)
 
-        self.assertEqual(instrument.type, 'multi_delay_pixelated')
+        self.assertEqual(instrument.type, 'quad_delay_pixelated')
         self.assertEqual(instrument_fm.type, 'mueller')
 
         igram = instrument.capture(spectrum, clean=True, )
