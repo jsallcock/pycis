@@ -146,24 +146,24 @@ class Instrument:
 
                 # check for correct component types and relative orientations
                 types = [LinearPolariser, UniaxialCrystal, UniaxialCrystal, QuarterWaveplate, ]
-                relative_orientations_2_delay = [[0, -45, 0, 45], 'double_delay_pixelated']
+                # relative_orientations_2_delay = [[0, -45, 0, 45], 'double_delay_pixelated']
                 relative_orientations_3_delay = [[0, -22.5, 22.5, 67.5], 'triple_delay_pixelated']
 
-                for rel_or in [relative_orientations_2_delay, relative_orientations_3_delay]:
+                for rel_or in [relative_orientations_3_delay]:
                     correct = self._check_interferometer_config(types, rel_or[0])
 
                     if correct:
                         type = rel_or[1]
 
-            elif len(self.interferometer) == 5:
-
-                # check for correct component types and relative orientations
-                types = [LinearPolariser, UniaxialCrystal, LinearPolariser, UniaxialCrystal, QuarterWaveplate, ]
-                relative_orientations = [0, 45, 0, 45, 90, ]
-
-                correct = self._check_interferometer_config(types, relative_orientations)
-                if correct:
-                    type = 'quad_delay_pixelated'
+            # elif len(self.interferometer) == 5:
+            #
+            #     # check for correct component types and relative orientations
+            #     types = [LinearPolariser, UniaxialCrystal, LinearPolariser, UniaxialCrystal, QuarterWaveplate, ]
+            #     relative_orientations = [0, 45, 0, 45, 90, ]
+            #
+            #     correct = self._check_interferometer_config(types, relative_orientations)
+            #     if correct:
+            #         type = 'quad_delay_pixelated'
 
         # are there two polarisers, at the front and back of the interferometer?
         elif len(self.polarisers) == 2 and (isinstance(self.interferometer[0], LinearPolariser) and
