@@ -4,111 +4,132 @@ import numpy as np
 import pycis
 import scipy.signal
 import scipy.ndimage
+import scipy.fft
 
 
-def fourier_demod_column(col, nfringes=None, apodise=False, display=False):
+def fourier_demod_column(max_grad, window_width, ilim, wtype1, wtype2, wtype3, wfactor, filtval, col, apodise=False, display=False):
     """ 1-D Fourier demodulation of single CIS interferogram raw_data column, extracting the DC component (intensity), phase and contrast.
+
+        Parameters:
+
+            col   (np.array)       : Array containing Raw CIS Data Column
+            max_grad  (float)      : Maximum intensity gradient considered a 'sharp edge' for filtering
+            window_width (int)     : Width of appodisation window in pixels
+            ilim  (int)            : Minimum Intensity value considered in demod - anything below this is set to 0
+            wtype (str)            : Window function type for phase demodulation - 'hanning', 'blackmanharris' or 'tukey'
+            wfactor (float)        : A multiplicative factor determining the width of the filters, multiplies nfringes.
+            filtval  (int)         : Size (in pixels) of convolved filter applied pre-demod
+            apodise  (bool)        : Turn apodisation on
     
-    :param col: CIS interferogram column to be demodulated.
-    :type col: array_like, 1-D.
-    :param nfringes: Manually set the carrier (fringe) frequency to be demodulated, in units of cycles per sequence -- approximately the number of fringes present in the image. If no value is given, the fringe frequency is found automatically.
-    :type nfringes: int.
-    :param apodise: Apodise the extracted carrier at points of steep intensity gradient to minimise influence of artefacts and noise (See SS thesis.)
-    :type apodise: bool.
-    :param display: Display a plot.
-    :type display: bool. 
-    
-    :return: A tuple containing the DC component (intensity), phase and contrast.
+        Returns:
+            A tuple containing the DC component (intensity), phase and contrast.
     """
 
+    # Setup initial variables for use later
     col = col.astype(np.float64)
     col_length = np.size(col)
-
     pixels = np.linspace(1, col_length, col_length)
 
-    # locate carrier (fringe) frequency
-
+    # Initial fft just for the purposes of detecting the fringe frequency
     fft_col = np.fft.rfft(col)
+    fft_length = np.size(fft_col)
 
-    if nfringes is None:
-        nfringes_min, nfringes_max = (40, 160) # Range of carrier frequencies within which to search
-        nfringes = pycis.tools.indexes(abs(fft_col[nfringes_min:nfringes_max]), thres=0.7, min_dist=50)
+    # Fringe frequency peak detection - multiple free tuning parameters
+    # TODO - Would like this to be automatic
+    peaks, peakheights = pycis.tools.PeakDetect(range(fft_length), abs(fft_col), w=31, thres=0.05)
 
-        if np.size(nfringes) != 1:
-            dc = 2 * col
-            phase = 0 * col
-            contrast = 0 * col
+    if peaks.size != 0 and 130>=max(peaks)>=100:
+        index = peakheights[peaks >= 100].argmax()
+        nfringes = peaks[peaks >= 100][index]
+    else:
+        nfringes = 113
 
-            if display:
-                print('no carrier frequency found.')
+    # Setup the fringe width and window function widths
+    fringe_width = int(round(col_length/nfringes))
+    if fringe_width % 2 == 0:
+        fringe_width += 1
+    bandwidth = wfactor
+    N = int(round(bandwidth*nfringes))
+    if N % 2 == 0:
+        N = N+1
 
-            return dc, phase, contrast
+    halfwidth = int((N-1)/2)
 
-        else:
-            nfringes = nfringes.squeeze() + nfringes_min  # remove single-dimensional entries from the shape of array
+    # Creating window function to filter out upper and lower fringe peaks in fourier space
+    wdw = np.ones(fft_length)
 
-    # generate window function
-    fft_length = int(col_length / 2)
-    window = pycis.analysis.window(fft_length, nfringes)
+    lower_peak = nfringes
 
-    # isolate DC
-    fft_dc = np.multiply(fft_col, 1 - window)
-    dc = np.fft.irfft(fft_dc)
-    dc_smooth = scipy.ndimage.gaussian_filter(dc, 10)
+    fns = {'hanning': scipy.signal.hanning,
+           'blackmanharris': scipy.signal.windows.blackmanharris,
+           'tukey': scipy.signal.windows.tukey}
 
-    fft_carrier = fft_col - fft_dc
-    carrier = np.fft.irfft(fft_carrier)
+    fn_convolve = fns[wtype1]
+    fn_I0 = fns[wtype2]
 
+    # Convolve the Image column with a window function pre-demod to reduce ringing artefacts
+    win = fn_convolve(filtval)
+    col_filt = scipy.signal.convolve(col, win, mode='same', method='direct')/sum(win)
+
+    wdw[lower_peak-int(halfwidth):lower_peak + int(halfwidth+1)] = 1 - fn_I0(N)
+
+    # FFT new image column and applies window function
+    fft_col = scipy.fft.rfft(col_filt)
+    fft_dc = fft_col*wdw.T
+
+    # Invert this filtered column to extract the I_0 component of the Raw CIS data - smooth across the fringe width
+    dc = 2*scipy.fft.irfft(fft_dc)
+    dc = scipy.ndimage.filters.median_filter(dc, fringe_width)
+    dc_smooth = dc
+
+    # Divide the I_0 (dc) data to leave just the sinusoidal fringe pattern
+    col_in = np.copy(col_filt)
+    col_in[dc >= ilim] = 2 * col_in[dc >= ilim] / dc[dc >= ilim]
+    col_in[dc < ilim] = 1
+
+    col_in -= 1
+    col_in[col_in < 0] = 0
+
+    # Apodisation routine to reduce ringing artefacts further through smoothing input data around high I_0 gradients
     if apodise:
         # locate sharp edges:
+        grad = abs(np.gradient(dc_smooth)) / dc_smooth
 
-        carrier_apodised = np.copy(carrier)
+        # Find high spatial intensity gradients - # TODO change this to other peak finding routine
+        window_width = int(window_width)
+        locs, _ = scipy.signal.find_peaks(grad, height=max_grad, distance=window_width)
+        window_apod = 1 - scipy.signal.windows.hann(window_width*2)
 
-        grad = np.ones_like(dc, dtype=np.float32)
-        grad[dc_smooth >= 0] = abs(np.gradient(dc_smooth[dc_smooth >= 0])) / dc_smooth[dc_smooth >= 0]
-
-        max_grad, window_width = (0.05, 26)
-
-        thres_normalised = (max_grad - min(grad)) / (max(grad) - min(grad))
-        locs = pycis.tools.indexes(grad, thres=thres_normalised)
-        window_apod = 1 - np.hanning(window_width*2)
-
+        # Apply apodisation window
+        locs = locs[locs >= 20]
         if np.size(locs) != 0:
             for i in range(0,np.size(locs)):
-                if locs[i] > window_width and locs[i] < np.size(carrier) - window_width:
-                    carrier_apodised[locs[i] - window_width: locs[i] + window_width] = carrier_apodised[locs[i] - window_width: locs[i] + window_width]*window_apod
+                if window_width < locs[i] < np.size(col) - window_width:
+                    col_in[locs[i] - window_width: locs[i] + window_width] = col_in[locs[i] - window_width: locs[i] + window_width]*window_apod
                 elif locs[i] < window_width:
-                    carrier_apodised[locs[i]:locs[i] + window_width] = carrier_apodised[locs[i]:locs[i] + window_width] * window_apod[window_width : (2*window_width) + 1]
+                    col_in[locs[i]:locs[i] + window_width] = col_in[locs[i]:locs[i] + window_width] * window_apod[window_width : (2*window_width) + 1]
 
-        analytic_signal_apodised = scipy.signal.hilbert(carrier_apodised)
-        analytic_signal = scipy.signal.hilbert(carrier)
-        phase = np.angle(analytic_signal_apodised)
-        contrast = np.divide(abs(analytic_signal), dc_smooth)
+        # Smooth ends for column to remove artefacts created by apodisation
+        col_in *= scipy.signal.windows.tukey(col_in.shape[0], alpha=0.1)
 
-    else:
+    # FFT this apodised column for Phase and Contrast demodulation
+    fn_phase = fns[wtype3]
+    fft_carrier = scipy.fft.fft(col_in)
+    wdw_carrier = np.zeros(col_length)
+    wdw_carrier[nfringes-halfwidth:nfringes+halfwidth+1] = 2*fn_phase(N)
 
-        analytic_signal_1 = scipy.signal.hilbert(carrier)
+    fft_carrier = fft_carrier*wdw_carrier
+    carrier = scipy.fft.ifft(fft_carrier)
 
-
-        # plt.figure()
-        # plt.plot(pixels, np.real(analytic_signal_1))
-        # plt.plot(pixels, np.imag(analytic_signal_1))
-        #
-        # plt.show()
-
-
-        phase = np.angle(analytic_signal_1)
-        contrast = np.divide(abs(analytic_signal_1), dc)
+    phase = np.angle(carrier)
+    contrast = np.abs(carrier)
 
     # contrast[contrast > 1.] = 1.
     # contrast[contrast < 0.] = 0.
 
     # Calculate upper and lower bounds for contrast envelope:
-    contrast_envelope_lower = dc * (1 + contrast)
-    contrast_envelope_upper = dc * (1 - contrast)
-
-    # Now calculate interferogram using extracted quantities for comparison:
-    S = dc * (1 + (contrast * np.cos(phase)))
+    # contrast_envelope_lower = dc * (1 + contrast)
+    # contrast_envelope_upper = dc * (1 - contrast)
 
     # Optional plot output:
     if display:
@@ -156,8 +177,6 @@ def fourier_demod_column(col, nfringes=None, apodise=False, display=False):
         plt.ylabel('[dimensionless]', size=9)
         plt.xlim(0, np.size(pixels) + 1)
 
-
-
         plt.subplot(2, 2, 3)
         plt.plot(contrast, label='zeta')
         plt.title(r'$\zeta$', size=15)
@@ -175,13 +194,5 @@ def fourier_demod_column(col, nfringes=None, apodise=False, display=False):
 
         plt.tight_layout()
         plt.show()
-
+     
     return dc, phase, contrast
-
-
-
-
-
-
-
-
