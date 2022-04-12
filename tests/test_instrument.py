@@ -103,6 +103,44 @@ class TestInstrument(unittest.TestCase):
 
         assert_almost_equal(igram.values, igram_fm.values)
 
+    def test_double_delay_pixelated_versus_mueller(self, ):
+        """
+        Test that the output of the 'triple_delay_polarised' instrument_type is the same as for the full Mueller matrix
+        calculation
+
+        """
+        camera.type = 'monochrome_polarised'
+
+        interferometer = [
+            LinearPolariser(
+                orientation=45 + angle,
+            ),
+            UniaxialCrystal(
+                orientation=0 + angle,
+                thickness=8e-3,
+                cut_angle=45,
+            ),
+            UniaxialCrystal(
+                orientation=45 + angle,
+                thickness=9.8e-3,
+                cut_angle=0,
+            ),
+            QuarterWaveplate(
+                orientation=90 + angle,
+            )
+                          ]
+
+        instrument = Instrument(camera=camera, optics=optics, interferometer=interferometer, force_mueller=False)
+        instrument_fm = Instrument(camera=camera, optics=optics, interferometer=interferometer, force_mueller=True)
+
+        self.assertEqual(instrument.type, 'double_delay_pixelated')
+        self.assertEqual(instrument_fm.type, 'mueller')
+
+        igram = instrument.capture(spectrum, clean=True, )
+        igram_fm = instrument_fm.capture(spectrum, clean=True, )
+
+        assert_almost_equal(igram.values, igram_fm.values)
+
     def test_triple_delay_pixelated_versus_mueller(self, ):
         """
         Test that the output of the 'triple_delay_polarised' instrument_type is the same as for the full Mueller matrix
