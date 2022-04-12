@@ -151,9 +151,9 @@ class LinearRetarder(OrientableComponent, TiltableComponent):
     """
     Base class for a general linear retarder
     """
-    def __init__(self, inst_contrast=1, **kwargs):
+    def __init__(self, contrast_inst=1, **kwargs):
         super().__init__(**kwargs)
-        self.inst_contrast = inst_contrast
+        self.contrast_inst = contrast_inst
 
     def get_mueller_matrix(self, *args, **kwargs):
         """
@@ -164,8 +164,8 @@ class LinearRetarder(OrientableComponent, TiltableComponent):
 
         m1 = xr.ones_like(delay)
         m0 = xr.zeros_like(delay)
-        cc = self.inst_contrast * np.cos(delay)
-        cs = self.inst_contrast * np.sin(delay)
+        cc = self.contrast_inst * np.cos(delay)
+        cs = self.contrast_inst * np.sin(delay)
 
         m = [[m1,  m0,  m0,  m0],
              [m0,  m1,  m0,  m0],
