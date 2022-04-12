@@ -105,7 +105,7 @@ class TestInstrument(unittest.TestCase):
 
     def test_double_delay_pixelated_versus_mueller(self, ):
         """
-        Test that the output of the 'triple_delay_polarised' instrument_type is the same as for the full Mueller matrix
+        Test that the output of the 'double_delay_polarised' instrument_type is the same as for the full Mueller matrix
         calculation
 
         """
