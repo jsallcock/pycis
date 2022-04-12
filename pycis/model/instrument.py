@@ -390,7 +390,6 @@ class Instrument:
                                 + root2 / 4 * contrast_inst_diff * np.cos(delay_diff + phase_mask)
                                 - root2 / 4 * contrast_inst_sum * np.cos(delay_sum + phase_mask)
                         )
-
                     else:
                         raise NotImplementedError
                 else:
