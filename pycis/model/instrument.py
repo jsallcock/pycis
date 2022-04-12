@@ -6,7 +6,7 @@ import yaml
 from datetime import datetime
 import numpy as np
 import xarray as xr
-from math import isclose, radians
+from math import isclose, radians, prod
 from numba import vectorize, f8
 from fnmatch import fnmatch
 import pycis
@@ -120,7 +120,11 @@ class Instrument:
         - 'mueller': Full Mueller calculation
         - 'single_delay_linear'
         - 'single_delay_pixelated'
-        - '2/3/4_delay_pixelated'
+        - 'double_delay_pixelated'
+        - 'triple_delay_pixelated'
+        - 'double_delay_linear'
+        - 'triple_delay_linear'
+        - 'quad_delay_linear'
 
         :return: type (str)
         """
@@ -128,60 +132,53 @@ class Instrument:
         if self.force_mueller:
             return 'mueller'
 
-        type = None
+        inst_type = None
         if self.camera.type == 'monochrome_polarised':
 
-            # single-delay polarised
             if len(self.interferometer) == 3:
-
-                # check for correct component types and relative orientations
                 types = [LinearPolariser, UniaxialCrystal, QuarterWaveplate, ]
-                relative_orientations = [0, 45, 90, ]
-
-                correct = self._check_interferometer_config(types, relative_orientations)
-                if correct:
-                    type = 'single_delay_pixelated'
+                if self._check_interferometer_config(types, [0, 45, 90, ]):
+                    inst_type = 'single_delay_pixelated'
 
             elif len(self.interferometer) == 4:
-
-                # check for correct component types and relative orientations
                 types = [LinearPolariser, UniaxialCrystal, UniaxialCrystal, QuarterWaveplate, ]
-                relative_orientations_2_delay = [[0, -45, 0, 45], '2_delay_pixelated']
-                relative_orientations_3_delay = [[0, -22.5, 22.5, 67.5], '3_delay_pixelated']
 
-                for rel_or in [relative_orientations_2_delay, relative_orientations_3_delay]:
-                    correct = self._check_interferometer_config(types, rel_or[0])
+                if self._check_interferometer_config(types, [0, -22.5, 22.5, 67.5]):
+                    inst_type = 'triple_delay_pixelated'
 
-                    if correct:
-                        type = rel_or[1]
+                elif self._check_interferometer_config(types, [0, -45, 0, 45]):
+                    inst_type = 'double_delay_pixelated'
 
-            # multi-delay polarised
-            elif len(self.interferometer) == 5:
+        elif self.camera.type == 'monochrome':
 
-                # check for correct component types and relative orientations
-                types = [LinearPolariser, UniaxialCrystal, LinearPolariser, UniaxialCrystal, QuarterWaveplate, ]
-                relative_orientations = [0, 45, 0, 45, 90, ]
+            if len(self.interferometer) == 4:
+                types = [LinearPolariser, UniaxialCrystal, UniaxialCrystal, LinearPolariser, ]
 
-                correct = self._check_interferometer_config(types, relative_orientations)
-                if correct:
-                    type = '4_delay_pixelated'
+                if self._check_interferometer_config(types, [0, -45, 0, -45]):
+                    inst_type = 'double_delay_linear'
 
-        # are there two polarisers, at the front and back of the interferometer?
-        elif len(self.polarisers) == 2 and (isinstance(self.interferometer[0], LinearPolariser) and
-                                            isinstance(self.interferometer[-1], LinearPolariser)):
+                elif self._check_interferometer_config(types, [0, -22.5, 22.5, -22.5]):
+                    inst_type = 'triple_delay_linear'
 
-            pol_1_orientation = self.interferometer[0].orientation
-            pol_2_orientation = self.interferometer[-1].orientation
+                elif self._check_interferometer_config(types, [0, -22.5, 22.5, 0]):
+                    inst_type = 'quad_delay_linear'
 
-            conditions_met = [pol_1_orientation == pol_2_orientation, ] + \
-                             [isclose(crys.orientation - pol_1_orientation, 45) for crys in self.retarders]
-            if all(conditions_met):
-                type = 'single_delay_linear'
+            # are there two polarisers, at the front and back of the interferometer?
+            elif len(self.polarisers) == 2 and (isinstance(self.interferometer[0], LinearPolariser) and
+                                                isinstance(self.interferometer[-1], LinearPolariser)):
 
-        if type is None:
-            type = 'mueller'
+                pol_1_orientation = self.interferometer[0].orientation
+                pol_2_orientation = self.interferometer[-1].orientation
 
-        return type
+                conditions_met = [pol_1_orientation == pol_2_orientation, ] + \
+                                 [isclose(crys.orientation - pol_1_orientation, 45) for crys in self.retarders]
+                if all(conditions_met):
+                    inst_type = 'single_delay_linear'
+
+        if inst_type is None:
+            inst_type = 'mueller'
+
+        return inst_type
 
     def get_inc_angle(self, x, y, component):
         """
@@ -258,38 +255,54 @@ class Instrument:
         :type y: float, xr.DataArray
         :return: (xr.DataArray) Interferometer delay(s) in radians.
         """
-
-        # not sure it would be possible to write a general function for this
+        # Would be nice to write a generalised method if possible
         assert self.type != 'mueller'
 
-        inc_angle = self.get_inc_angle(x, y, self.retarders[0])
-        azim_angle = self.get_azim_angle(x, y, self.retarders[0])
+        # get delay for each retarder
+        delay = []
+        for ret in self.retarders:
+            inc_angle = self.get_inc_angle(x, y, ret)
+            azim_angle = self.get_azim_angle(x, y, ret)
+            delay.append(ret.get_delay(wavelength, inc_angle, azim_angle))
 
         # calculation depends on instrument type
         if self.type == 'single_delay_linear':
-            # add delay contribution due to each crystal
-            delay = 0
-            for crystal in self.retarders:
-                delay += crystal.get_delay(wavelength, inc_angle, azim_angle, )
+            delay_out = sum(delay)
+
+        elif self.type == 'double_delay_linear':
+            delay_sum = delay[0] + delay[1]
+            delay_diff = abs(delay[0] - delay[1])
+            delay_out = delay_sum, delay_diff
+
+        elif self.type == 'triple_delay_linear':
+            delay_sum = delay[0] + delay[1]
+            delay_diff = abs(delay[0] - delay[1])
+            delay_out = delay[1], delay_sum, delay_diff
+
+        elif self.type == 'quad_delay_linear':
+            delay_sum = delay[0] + delay[1]
+            delay_diff = abs(delay[0] - delay[1])
+            delay_out = delay[0], delay[1], delay_sum, delay_diff
 
         elif self.type == 'single_delay_pixelated':
-            # generalise to arbitrary interferometer orientations
             orientation_delay = -2 * radians(self.polarisers[0].orientation)
-            delay = self.retarders[0].get_delay(wavelength, inc_angle, azim_angle, ) + orientation_delay
+            delay_out = delay[0] + orientation_delay
 
-        elif fnmatch(self.type, '?_delay_pixelated'):
-            # generalise to arbitrary interferometer orientations
-            orientation_delay = -2 * radians(self.polarisers[0].orientation)
-            delay_1 = self.retarders[0].get_delay(wavelength, inc_angle, azim_angle, )
-            delay_2 = self.retarders[1].get_delay(wavelength, inc_angle, azim_angle, ) + orientation_delay
-            delay_sum = delay_1 + delay_2
-            delay_diff = abs(delay_1 - delay_2)
+        elif self.type == 'double_delay_pixelated':
+            orientation_delay = -2 * radians(self.polarisers[0].orientation - 45)
+            delay_sum = delay[0] + delay[1]
+            delay_diff = abs(delay[0] - delay[1])
+            delay_out = delay_sum + orientation_delay, delay_diff + orientation_delay
 
-            delay = delay_1, delay_2, delay_sum, delay_diff
+        elif self.type == 'triple_delay_pixelated':
+            orientation_delay = -2 * radians(self.polarisers[0].orientation - 22.5)
+            delay_sum = delay[0] + delay[1]
+            delay_diff = abs(delay[0] - delay[1])
+            delay_out = delay[1] + orientation_delay, delay_sum + orientation_delay, delay_diff + orientation_delay
         else:
             raise NotImplementedError
 
-        return delay
+        return delay_out
 
     def capture(self, spectrum, clean=False):
         """
@@ -303,69 +316,96 @@ class Instrument:
         :param bool clean: False to add realistic image noise, passed to self.camera.capture()
         :return: (xr.DataArray) image in units of camera counts.
         """
-
         if 'x' in spectrum.dims:
             x = spectrum.x
         else:
             x = self.camera.x
-
         if 'y' in spectrum.dims:
             y = spectrum.y
         else:
             y = self.camera.y
 
-        if self.type == 'mueller':
-            # do the full Mueller matrix calculation
-
-            if 'stokes' not in spectrum.dims:
-                a0 = xr.zeros_like(spectrum)
-                spectrum = xr.combine_nested([spectrum, a0, a0, a0], concat_dim=('stokes',))
-
-            mueller_matrix_total = self.get_mueller_matrix(spectrum.wavelength, x, y)
-            spectrum = mueller_product(mueller_matrix_total, spectrum)
-            apply_polarisers = None
-
-        else:
+        failed = False
+        if self.type != 'mueller':
             try:
                 delay = self.get_delay(spectrum.wavelength, x, y)
                 apply_polarisers = False
+                phase_mask = self.camera.get_pixelated_phase_mask()
+                contrast_inst = [ret.contrast_inst for ret in self.retarders]
 
-                if self.type == 'single_delay_linear' and 'stokes' not in spectrum.dims:
-                    contrast = np.array([crystal.contrast for crystal in self.retarders]).prod()
-                    spectrum = spectrum / 4 * (1 + contrast * np.cos(delay))
+                if 'stokes' not in spectrum.dims:
+                    if self.type == 'single_delay_linear':
+                        spectrum = spectrum / 4 * (1 + prod(contrast_inst) * np.cos(delay))
 
-                elif self.type == 'single_delay_pixelated' and 'stokes' not in spectrum.dims:
-                    contrast = self.retarders[0].contrast
-                    phase_mask = self.camera.get_pixelated_phase_mask()
-                    spectrum = spectrum / 4 * (1 + contrast * np.cos(delay + phase_mask))
+                    elif self.type == 'double_delay_linear':
+                        contrast_inst_sum = contrast_inst_diff = prod(contrast_inst)
+                        delay_sum, delay_diff = delay
+                        spectrum = spectrum / 4 * (
+                                1
+                                + 0.5 * contrast_inst_diff * np.cos(delay_diff)
+                                - 0.5 * contrast_inst_sum * np.cos(delay_sum)
+                        )
 
-                elif self.type == 'multi_delay_pixelated' and 'stokes' not in spectrum.dims:
+                    elif self.type == 'triple_delay_linear':
+                        contrast_inst_sum = contrast_inst_diff = prod(contrast_inst)
+                        delay_2, delay_sum, delay_diff = delay
+                        root2 = np.sqrt(2)
+                        spectrum = spectrum / 4 * (
+                                1
+                                + root2 / 2 * contrast_inst[1] * np.cos(delay_2)
+                                + root2 / 4 * contrast_inst_diff * np.cos(delay_diff)
+                                - root2 / 4 * contrast_inst_sum * np.cos(delay_sum)
+                        )
 
-                    phase_mask = self.camera.get_pixelated_phase_mask()
+                    elif self.type == 'quad_delay_linear':
+                        contrast_inst_sum = contrast_inst_diff = prod(contrast_inst)
+                        delay_1, delay_2, delay_sum, delay_diff = delay
+                        spectrum = spectrum / 4 * (
+                                1
+                                + 0.5 * contrast_inst[0] * np.cos(delay_1)
+                                + 0.5 * contrast_inst[1] * np.cos(delay_2)
+                                + 0.25 * contrast_inst_diff * np.cos(delay_diff)
+                                - 0.25 * contrast_inst_sum * np.cos(delay_sum)
+                        )
 
-                    delay_1, delay_2, delay_sum, delay_diff = delay
-                    contrast_1 = self.retarders[0].contrast
-                    contrast_2 = self.retarders[0].contrast
-                    contrast_sum = contrast_diff = contrast_1 * contrast_2
+                    elif self.type == 'single_delay_pixelated':
+                        spectrum = spectrum / 4 * (1 + contrast_inst[0] * np.cos(delay + phase_mask))
 
-                    spectrum = spectrum / 8 * (1 +
-                                               contrast_1 * np.cos(delay_1) +
-                                               contrast_2 * np.cos(delay_2 + phase_mask) +
-                                               1 / 2 * contrast_sum * np.cos(delay_sum + phase_mask) +
-                                               1 / 2 * contrast_diff * np.cos(delay_diff + phase_mask)
-                                               )
+                    elif self.type == 'double_delay_pixelated':
+                        contrast_inst_sum = contrast_inst_diff = prod(contrast_inst)
+                        delay_sum, delay_diff = delay
+                        spectrum = spectrum / 4 * (
+                                1
+                                + 0.5 * contrast_inst_diff * np.cos(delay_diff + phase_mask)
+                                - 0.5 * contrast_inst_sum * np.cos(delay_sum + phase_mask)
+                        )
+
+                    elif self.type == 'triple_delay_pixelated':
+                        contrast_inst_sum = contrast_inst_diff = prod(contrast_inst)
+                        delay_2, delay_sum, delay_diff = delay
+                        root2 = np.sqrt(2)
+                        spectrum = spectrum / 4 * (
+                                1
+                                + root2 / 2 * contrast_inst[1] * np.cos(delay_2 + phase_mask)
+                                + root2 / 4 * contrast_inst_diff * np.cos(delay_diff + phase_mask)
+                                - root2 / 4 * contrast_inst_sum * np.cos(delay_sum + phase_mask)
+                        )
+                    else:
+                        raise NotImplementedError
                 else:
                     raise NotImplementedError
             except NotImplementedError:
-                # else resort to full Mueller calculation.
-                # TODO this logic should be cleared up to avoid repeated code
-                if 'stokes' not in spectrum.dims:
-                    a0 = xr.zeros_like(spectrum)
-                    spectrum = xr.combine_nested([spectrum, a0, a0, a0], concat_dim=('stokes',))
+                failed = True
+                # TODO add warning here?
 
-                mueller_matrix_total = self.get_mueller_matrix(spectrum.wavelength, x, y)
-                spectrum = mueller_product(mueller_matrix_total, spectrum)
-                apply_polarisers = None
+        if self.type == 'mueller' or failed is True:
+            # full Mueller matrix calculation
+            if 'stokes' not in spectrum.dims:
+                a0 = xr.zeros_like(spectrum)
+                spectrum = xr.combine_nested([spectrum, a0, a0, a0], concat_dim=('stokes',))
+            mueller_matrix_total = self.get_mueller_matrix(spectrum.wavelength, x, y)
+            spectrum = mueller_product(mueller_matrix_total, spectrum)
+            apply_polarisers = None
 
         image = self.camera.capture(spectrum, apply_polarisers=apply_polarisers, clean=clean)
         return image
