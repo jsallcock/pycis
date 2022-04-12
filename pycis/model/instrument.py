@@ -184,11 +184,15 @@ class Instrument:
         """
         Calculate incidence angle(s) of ray(s) through the component
 
-        :param x: Pixel centre x position(s) in sensor plane in m.
+        :param x: x position(s) on sensor plane in m.
         :type x: float, xr.DataArray
-        :param y: Pixel centre y position(s) in sensor plane in m.
+
+        :param y: y position(s) on sensor plane in m.
         :type y: float, xr.DataArray
-        :param pycis.Component component: Interferometer component.
+
+        :param component: Interferometer component.
+        :type component: pycis.Component
+
         :return: (float, xr.DataArray) Incidence angle(s) in radians.
         """
         if isinstance(component, TiltableComponent):
@@ -203,11 +207,14 @@ class Instrument:
         """
         Calculate azimuthal angle(s) of ray(s) through the component
 
-        :param x: Pixel centre x position(s) in sensor plane in m.
+        :param x: x position(s) on sensor plane in m.
         :type x: float, xr.DataArray
-        :param y: Pixel centre y position(s) in sensor plane in m.
+
+        :param y: y position(s) on sensor plane in m.
         :type y: float, xr.DataArray
-        :param pycis.OrientableComponent component: Interferometer component.
+
+        :param component: Interferometer component.
+        :type component: pycis.OrientableComponent
 
         :return: (float, xr.DataArray) Azimuthal angle(s) in radians.
         """
@@ -226,10 +233,10 @@ class Instrument:
         :param wavelength: Wavelength in m.
         :type wavelength: float, xr.DataArray
 
-        :param x: Pixel centre x position(s) in sensor plane in m.
+        :param x: x position(s) on sensor plane in m.
         :type x: float, xr.DataArray
 
-        :param y: Pixel centre y position(s) in sensor plane in m.
+        :param y: y position(s) on sensor plane in m.
         :type y: float, xr.DataArray
 
         :return: (xr.DataArray) Mueller matrix.
@@ -249,10 +256,13 @@ class Instrument:
 
         :param wavelength: Wavelength in m. If xr.DataArray, must have dimension name 'wavelength'.
         :type wavelength: float, xr.DataArray
-        :param x: Pixel centre x position(s) in sensor plane in m.
+
+        :param x: x position(s) on sensor plane in m.
         :type x: float, xr.DataArray
-        :param y: Pixel centre y position(s) in sensor plane in m.
+
+        :param y: y position(s) on sensor plane in m.
         :type y: float, xr.DataArray
+
         :return: (xr.DataArray) Interferometer delay(s) in radians.
         """
         # Would be nice to write a generalised method if possible
