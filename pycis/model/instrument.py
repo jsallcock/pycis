@@ -279,17 +279,7 @@ class Instrument:
         if self.type == 'single_delay_linear':
             delay_out = sum(delay)
 
-        elif self.type == 'double_delay_linear':
-            delay_sum = delay[0] + delay[1]
-            delay_diff = abs(delay[0] - delay[1])
-            delay_out = delay_sum, delay_diff
-
-        elif self.type == 'triple_delay_linear':
-            delay_sum = delay[0] + delay[1]
-            delay_diff = abs(delay[0] - delay[1])
-            delay_out = delay[1], delay_sum, delay_diff
-
-        elif self.type == 'quad_delay_linear':
+        elif fnmatch(self.type, '*_delay_linear'):
             delay_sum = delay[0] + delay[1]
             delay_diff = abs(delay[0] - delay[1])
             delay_out = delay[0], delay[1], delay_sum, delay_diff
@@ -349,7 +339,7 @@ class Instrument:
 
                     elif self.type == 'double_delay_linear':
                         contrast_inst_sum = contrast_inst_diff = np.prod(contrast_inst)
-                        delay_sum, delay_diff = delay
+                        _, _, delay_sum, delay_diff = delay
                         spectrum = spectrum / 4 * (
                                 1
                                 + 0.5 * contrast_inst_diff * np.cos(delay_diff)
@@ -358,7 +348,7 @@ class Instrument:
 
                     elif self.type == 'triple_delay_linear':
                         contrast_inst_sum = contrast_inst_diff = np.prod(contrast_inst)
-                        delay_2, delay_sum, delay_diff = delay
+                        _, delay_2, delay_sum, delay_diff = delay
                         root2 = np.sqrt(2)
                         spectrum = spectrum / 4 * (
                                 1
