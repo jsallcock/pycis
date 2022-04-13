@@ -6,7 +6,7 @@ import yaml
 from datetime import datetime
 import numpy as np
 import xarray as xr
-from math import isclose, radians, prod
+from math import isclose, radians
 from numba import vectorize, f8
 from fnmatch import fnmatch
 import pycis
@@ -345,10 +345,10 @@ class Instrument:
 
                 if 'stokes' not in spectrum.dims:
                     if self.type == 'single_delay_linear':
-                        spectrum = spectrum / 4 * (1 + prod(contrast_inst) * np.cos(delay))
+                        spectrum = spectrum / 4 * (1 + np.prod(contrast_inst) * np.cos(delay))
 
                     elif self.type == 'double_delay_linear':
-                        contrast_inst_sum = contrast_inst_diff = prod(contrast_inst)
+                        contrast_inst_sum = contrast_inst_diff = np.prod(contrast_inst)
                         delay_sum, delay_diff = delay
                         spectrum = spectrum / 4 * (
                                 1
@@ -357,7 +357,7 @@ class Instrument:
                         )
 
                     elif self.type == 'triple_delay_linear':
-                        contrast_inst_sum = contrast_inst_diff = prod(contrast_inst)
+                        contrast_inst_sum = contrast_inst_diff = np.prod(contrast_inst)
                         delay_2, delay_sum, delay_diff = delay
                         root2 = np.sqrt(2)
                         spectrum = spectrum / 4 * (
@@ -368,7 +368,7 @@ class Instrument:
                         )
 
                     elif self.type == 'quad_delay_linear':
-                        contrast_inst_sum = contrast_inst_diff = prod(contrast_inst)
+                        contrast_inst_sum = contrast_inst_diff = np.prod(contrast_inst)
                         delay_1, delay_2, delay_sum, delay_diff = delay
                         spectrum = spectrum / 4 * (
                                 1
@@ -382,7 +382,7 @@ class Instrument:
                         spectrum = spectrum / 4 * (1 + contrast_inst[0] * np.cos(delay + phase_mask))
 
                     elif self.type == 'double_delay_pixelated':
-                        contrast_inst_sum = contrast_inst_diff = prod(contrast_inst)
+                        contrast_inst_sum = contrast_inst_diff = np.prod(contrast_inst)
                         delay_sum, delay_diff = delay
                         spectrum = spectrum / 4 * (
                                 1
@@ -391,7 +391,7 @@ class Instrument:
                         )
 
                     elif self.type == 'triple_delay_pixelated':
-                        contrast_inst_sum = contrast_inst_diff = prod(contrast_inst)
+                        contrast_inst_sum = contrast_inst_diff = np.prod(contrast_inst)
                         delay_2, delay_sum, delay_diff = delay
                         root2 = np.sqrt(2)
                         spectrum = spectrum / 4 * (
