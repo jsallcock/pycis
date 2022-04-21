@@ -1,4 +1,6 @@
 import os
+
+import PIL.Image
 import numpy as np
 import yaml
 import string
@@ -488,7 +490,7 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
     # ------------------------------------------------------------------------------------------------------------------
     # INCIDENT LIGHT
     if pol_state is not None:
-        add_pol_state(pol_state, -edge_distance, RADIUS_LIGHT, renderer_main, show_label=show_label_pol_state)  # TODO ---------------
+        add_pol_state(pol_state, -edge_distance, RADIUS_LIGHT, renderer_main, show_label=show_label_pol_state)  # TODO
 
     p_camera = [X_CAMERA, Y_CAMERA, width_total / 2 - Z_CAMERA]
     p_focal = [0, 0, width_total / 2]
@@ -500,7 +502,7 @@ def render_schematic(fpath_config, fpath_out, show_axes=True, show_cut_angle=Tru
     # iren.Start()  # <-- UNCOMMENT LINE FOR LIVE RENDER
 
 
-def make_3panel_figure(fpath_config, fpath_out, label_subplots=True, pol_state=None, ):
+def make_3panel_figure(fpath_config, fpath_out, label_subplots=True, pol_state=None, delete_subfigures=True):
     """
     given instrument config file(s), make figure(s) showing schematic diagram + modelled interferogram + FFT.
 
@@ -621,7 +623,7 @@ def make_3panel_figure(fpath_config, fpath_out, label_subplots=True, pol_state=N
         im_schem.paste(im_schem_og, (int(width_new / 2 - im_schem_og.width / 2), 0))
         ims_all.insert(0, im_schem)
 
-        im_final = imsplice(ims_all, overlap=0)
+        im_final = imsplice(ims_all)
         im_final = borderfy(im_final, border=IMG_BORDER)
         im_final.save(fpath_out, dpi=(DPI_IGRAM, DPI_IGRAM))
         for fp_out_schem, fp_out_igram in zip(fpath_out_pol, fpath_out_igram):
@@ -647,7 +649,7 @@ def make_3panel_figure(fpath_config, fpath_out, label_subplots=True, pol_state=N
             fpath_out_schem.append(fp_out_schem)
             fpath_out_igram.append(fp_out_igram)
 
-        # ------------------------------------------------------------------------------------------------------------------
+        # --------------------------------------------------------------------------------------------------------------
         # PAD + RESIZE IMAGES FOR STITCHING
         ims_schem_og = [Image.open(x) for x in fpath_out_schem]
         ims_plot_og = [Image.open(x) for x in fpath_out_igram]
@@ -671,7 +673,7 @@ def make_3panel_figure(fpath_config, fpath_out, label_subplots=True, pol_state=N
             h_plot = int(HFRAC_IGRAM * h_schem_max)
             im_plot = im_plot_og.resize((w_plot, h_plot), Image.ANTIALIAS)
             ims_plot.append(im_plot)
-        # ------------------------------------------------------------------------------------------------------------------
+        # --------------------------------------------------------------------------------------------------------------
         # ADD LABELS + COMBINE
         labels = ['(' + lttr + ')' for lttr in string.ascii_lowercase[:3 * len(fpath_config)]]
         brdr_lab = 3
@@ -701,12 +703,14 @@ def make_3panel_figure(fpath_config, fpath_out, label_subplots=True, pol_state=N
                     draw.rectangle(xy=(w_lab - brdr_lab, h_lab - brdr_lab, w_lab + size[0] + brdr_lab, h_lab + size[1] + brdr_lab), fill=(255, 255, 255))
                     draw.text((w_lab, h_lab), lab, (0, 0, 0), font=font)
             ims_3p.append(im_3p)
-        im_final = imsplice(ims_3p, overlap=OVERLAP)
+        # im_final = imsplice(ims_3p, overlap=OVERLAP)
+        im_final = imsplice(ims_3p, border=4 * IMG_BORDER)
         im_final = borderfy(im_final, border=IMG_BORDER)
         im_final.save(fpath_out)
-        for fp_out_schem, fp_out_igram in zip(fpath_out_schem, fpath_out_igram):
-            os.remove(fp_out_schem)
-            os.remove(fp_out_igram)
+        if delete_subfigures:
+            for fp_out_schem, fp_out_igram in zip(fpath_out_schem, fpath_out_igram):
+                os.remove(fp_out_schem)
+                os.remove(fp_out_igram)
     else:
         raise NotImplementedError
 
@@ -1059,24 +1063,46 @@ def render_image(render_window, fpath_out, ):
 # MISC. OTHER FNS
 
 
-def imsplice(ims, overlap=30):
+def imsplice(ims, border=50):
     """
-    Splice two images together vertically, with specified overlap in pixels.
-    Assumes both images have a white background.
+    Splice two or more images together vertically, with the minimum vertical whitespace border specified in pixels.
+    Assumes images on a white background.
 
-    :param list ims: list of PIL.Images to splice together vertically
-    :param float overlap:
-    :return: im_spliced
+    :param list ims: list of PIL.Images to splice together vertically. Must all have the same width.
+    :param int border: minimum thickness of vertical whitespace between images in pixels.
+    :return: spliced image as a PIL.Image instance.
     """
     widths, heights = zip(*(i.size for i in ims))
     if len(widths) > 1:
-        assert widths[0] == widths[1]
-    total_height = int(np.array(heights).sum() - overlap * (len(heights) - 1))
-    new_im = Image.new('RGBA', (widths[0], total_height))
+        assert all(x == widths[0] for x in widths)
+
+    n_ims = len(ims)
+    sep_min = np.zeros(n_ims - 1)
+    for ii_im in range(n_ims - 1):
+        im1 = np.asarray(ims[ii_im])
+        im2 = np.asarray(ims[ii_im + 1])
+        sep = np.zeros(widths[0])
+        for ii_w in range(widths[0]):
+            col1 = im1[:, ii_w, :]
+            col2 = im2[:, ii_w, :]
+            for ii_h1 in range(heights[ii_im]):
+                if np.any(col1[-(ii_h1 + 1)] != np.array([255, 255, 255])):
+                    break
+            for ii_h2 in range(heights[ii_im + 1]):
+                if np.any(col2[ii_h2] != np.array([255, 255, 255])):
+                    break
+            sep[ii_w] = ii_h1 + ii_h2
+        sep_min[ii_im] = min(sep)
+
+    height_total = sum(heights)
+    for sm in sep_min:
+        height_total += border - sm
+
+    im_new = Image.new('RGBA', (widths[0], int(height_total)))
     y_offset = 0
-    for im in ims:
+    for ii_im, im in enumerate(ims):
         im = im.convert('RGBA')
-        im_blurred = im.filter(ImageFilter.GaussianBlur(10))
+        im_blurred = im.filter(ImageFilter.GaussianBlur(max(border // 10, 1)))
         data = im.getdata()
         data_blurred = im_blurred.getdata()
         newData = []
@@ -1086,10 +1112,11 @@ def imsplice(ims, overlap=30):
             else:
                 newData.append(item)
         im.putdata(newData)
-        new_im.paste(im, (0, y_offset), im)
-        y_offset += im.height - overlap
-    background = Image.new('RGBA', new_im.size, (255, 255, 255))
-    im_out = Image.alpha_composite(background, new_im).convert('RGB')
+        im_new.paste(im, (0, y_offset), im)
+        if ii_im < n_ims - 1:
+            y_offset += int(im.height + border - sep_min[ii_im])
+    background = Image.new('RGBA', im_new.size, (255, 255, 255))
+    im_out = Image.alpha_composite(background, im_new).convert('RGB')
     return im_out
 
 
@@ -1203,7 +1230,7 @@ def make_figures_multi_delay_paper():
 
     for args in args_all:
         print(args['fpath_out'])
-        make_3panel_figure(**args)
+        make_3panel_figure(**args, delete_subfigures=True)
 
     fpath_out_all = [a['fpath_out'] for a in args_all]
     ims_all = [Image.open(fp) for fp in fpath_out_all]
@@ -1212,4 +1239,5 @@ def make_figures_multi_delay_paper():
 
 
 if __name__ == '__main__':
+    # test_imsplice()
     make_figures_multi_delay_paper()
