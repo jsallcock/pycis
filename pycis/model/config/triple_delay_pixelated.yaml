@@ -28,7 +28,7 @@ lens_3_focal_length: 50.e-3
 # - component order is front-to-back, first component listed is the first the light hits.
 # - angles are in degrees.
 # - thicknesses are in metres.
- interferometer:
+interferometer:
 
   - LinearPolariser:
      orientation: 22.5
