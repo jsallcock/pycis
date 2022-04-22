@@ -66,7 +66,7 @@ def make_carrier_window(fft, fringe_freq, sign='p'):
     coord = np.cos(fringe_freq_angle) * fft.freq_x + np.sin(fringe_freq_angle) * fft.freq_y
     condition_1 = coord < fringe_freq_abs - fringe_freq_abs / 1.5
     condition_2 = coord > fringe_freq_abs + fringe_freq_abs / 1.5
-    window = xr.ufuncs.logical_not(condition_1 + condition_2).astype(float)
+    window = np.logical_not(condition_1 + condition_2).astype(float)
 
     window = xr.where(window == 0, np.nan, window)
     coord = window * coord
@@ -79,7 +79,7 @@ def make_carrier_window(fft, fringe_freq, sign='p'):
     a_1 = 0.5
     a_2 = alpha / 2
     window = a_0 - a_1 * np.cos(2 * np.pi * coord) + a_2 * np.cos(4 * np.pi * coord)
-    window = xr.where(xr.ufuncs.isnan(window), 0, window, )
+    window = xr.where(np.isnan(window), 0, window, )
     window = xr.where(window < 0, 0, window, )
 
     if sign == 'p':
