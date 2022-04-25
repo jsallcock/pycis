@@ -106,3 +106,36 @@ def demod_multi_delay_pixelated(image, fringe_freq, ):
     plt.show()
 
     return dc, phase, contrast
+
+def demod_triple_delay_pixelated(image, fringe_freq, ):
+
+    fft = fft2_im(image)
+    window_pm = make_carrier_window(fft, fringe_freq, sign='pm')
+    window_p = make_carrier_window(fft, fringe_freq, sign='p')
+    window_m = make_carrier_window(fft, fringe_freq, sign='m')
+    window_lowpass = make_lowpass_window(fft, fringe_freq)
+
+    fft_dc = fft * window_lowpass
+
+    dc = xr.DataArray(ifft2(ifftshift(fft_dc.data)), coords=image.coords, dims=image.dims).real
+
+    pm = get_pixelated_phase_mask(image.shape)
+    sp = image * np.exp(1j * pm)
+
+    fft_sp = fft2_im(sp)
+    c, d = image.coords, image.dims
+    carrier_sum = xr.DataArray(ifft2(ifftshift((fft_sp * window_p * window_lowpass).data)), coords=c, dims=d)
+    carrier_diff = xr.DataArray(ifft2(ifftshift((fft_sp * window_m * window_lowpass).data)), coords=c, dims=d)
+    carrier_2 = xr.DataArray(ifft2(ifftshift((fft_sp * window_lowpass).data)), coords=c, dims=d) - carrier_sum - carrier_diff
+
+    carrier_sum *= -8 / np.sqrt(2)
+    carrier_diff *= 8 / np.sqrt(2)
+    carrier_2 *= 2 / np.sqrt(2)
+
+    phase = []
+    contrast = []
+    for carrier in [carrier_2, carrier_sum, carrier_diff]:
+        phase.append(-xr.ufuncs.angle(carrier))
+        contrast.append(np.abs(carrier) / dc)
+
+    return dc, phase, contrast
