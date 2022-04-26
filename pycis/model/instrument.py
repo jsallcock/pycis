@@ -428,7 +428,7 @@ class Instrument:
                 spatial_freq_x += sp_f_x
                 spatial_freq_y += sp_f_y
 
-        elif self.type == 'multi_delay_pixelated':
+        elif self.type == 'triple_delay_pixelated':
             crystal = self.retarders[0]
             spatial_freq_x, spatial_freq_y = crystal.get_fringe_frequency(wavelength, self.optics[2], )
             # TODO and also the sum and difference terms?
