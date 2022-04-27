@@ -1,6 +1,4 @@
 import os
-
-import PIL.Image
 import numpy as np
 import yaml
 import string
@@ -69,8 +67,8 @@ LABELS = {
 }
 # ----------------------------------------------------------------------------------------------------------------------
 # Settings you probably don't want to change
-RADIUS = 2  # radius of interferometer components
-RADIUS_LIGHT = 0.4 * RADIUS
+RADIUS = 1.6  # radius of interferometer components
+RADIUS_LIGHT = 0.8
 WIDTH_POL = 0.5
 WIDTH_RET = 1.5
 PIX_HEIGHT = 300
@@ -96,7 +94,7 @@ WIDTHS = {
     'UniaxialCrystal': 1.,
     'QuarterWaveplate': 0.1,
 }
-WIDTH_SPACING = 2.3
+WIDTH_SPACING = 2.
 X_CAMERA = -4.7
 Z_CAMERA = -X_CAMERA * np.tan(45 * np.pi / 180)
 Y_CAMERA = np.sqrt(X_CAMERA ** 2 + Z_CAMERA ** 2) * np.tan(30 * np.pi / 180)
@@ -114,7 +112,7 @@ DPI_IGRAM = 350
 BFRAC_IGRAM = 0.13  # border width as fraction of single plot
 DIM_IGRAM_INCHES = 1.5
 figsize = (DIM_IGRAM_INCHES * (2 + BFRAC_IGRAM), DIM_IGRAM_INCHES)  # inches
-HFRAC_IGRAM = 0.5  # fractional height of row taken up by the plot
+HFRAC_IGRAM = 0.6  # fractional height of row taken up by the plot
 HFRAC_IGRAM_SCAN_POL = 0.5  # fractional height of row taken up by the plot
 # ----------------------------------------------------------------------------------------------------------------------
 # POLARISED SENSOR DISPLAY SETTINGS
@@ -518,6 +516,7 @@ def make_3panel_figure(fpath_config, fpath_out, label_subplots=True, pol_state=N
     :param dict or list of dicts pol_state: \
         Specify polarisation state of the incident light. The default value None does not render any incident light.
     """
+
     # PARSE INPUTS
     if type(fpath_config) is str:
         fpath_config = [fpath_config, ]
@@ -546,9 +545,6 @@ def make_3panel_figure(fpath_config, fpath_out, label_subplots=True, pol_state=N
         for ii, p_state in enumerate(pol_state):
             fp_out_pol = os.path.join(FPATH_TEMP, 'polarisation_state_' + str(ii).zfill(2) + FILE_EXT_IMG)
             fp_out_igram = os.path.join(FPATH_TEMP, 'interferogram_' + str(ii).zfill(2) + FILE_EXT_IMG)
-            # if ii == 0:
-            #     show_label_pol_state = True
-            # else:
             show_label_pol_state = False
             render_pol_state(p_state, fp_out_pol, show_label_pol_state=show_label_pol_state, border=0)
             render_igram(fp_config, fp_out_igram, pol_state=p_state)
@@ -703,7 +699,7 @@ def make_3panel_figure(fpath_config, fpath_out, label_subplots=True, pol_state=N
                     draw.rectangle(xy=(w_lab - brdr_lab, h_lab - brdr_lab, w_lab + size[0] + brdr_lab, h_lab + size[1] + brdr_lab), fill=(255, 255, 255))
                     draw.text((w_lab, h_lab), lab, (0, 0, 0), font=font)
             ims_3p.append(im_3p)
-        # im_final = imsplice(ims_3p, overlap=OVERLAP)
+
         im_final = imsplice(ims_3p, border=4 * IMG_BORDER)
         im_final = borderfy(im_final, border=IMG_BORDER)
         im_final.save(fpath_out)
@@ -779,7 +775,6 @@ def render_pol_state(pol_state, fpath_out, show_label_pol_state=True, border=IMG
     add_text_3d('x', [RADIUS, 0.28 * RADIUS, 0], **kwargs)
     add_text_3d('y', [0, 1.33 * RADIUS, 0], **kwargs)
     add_text_3d('z', [0, 0.3 * RADIUS, RADIUS], **kwargs)
-
     add_pol_state(
         pol_state=pol_state,
         z=0,
@@ -787,7 +782,6 @@ def render_pol_state(pol_state, fpath_out, show_label_pol_state=True, border=IMG
         renderer=renderer_fg,
         show_label=show_label_pol_state,
     )
-
     render_image(render_window, fpath_out)
     borderfy(Image.open(fpath_out), border=border).save(fpath_out)
 
@@ -1239,5 +1233,4 @@ def make_figures_multi_delay_paper():
 
 
 if __name__ == '__main__':
-    # test_imsplice()
     make_figures_multi_delay_paper()
