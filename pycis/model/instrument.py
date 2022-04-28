@@ -6,7 +6,7 @@ import yaml
 from datetime import datetime
 import numpy as np
 import xarray as xr
-from math import isclose, radians, prod
+from math import isclose, radians
 from numba import vectorize, f8
 from fnmatch import fnmatch
 import pycis
@@ -184,11 +184,15 @@ class Instrument:
         """
         Calculate incidence angle(s) of ray(s) through the component
 
-        :param x: Pixel centre x position(s) in sensor plane in m.
+        :param x: x position(s) on sensor plane in m.
         :type x: float, xr.DataArray
-        :param y: Pixel centre y position(s) in sensor plane in m.
+
+        :param y: y position(s) on sensor plane in m.
         :type y: float, xr.DataArray
-        :param pycis.Component component: Interferometer component.
+
+        :param component: Interferometer component.
+        :type component: pycis.Component
+
         :return: (float, xr.DataArray) Incidence angle(s) in radians.
         """
         if isinstance(component, TiltableComponent):
@@ -203,11 +207,14 @@ class Instrument:
         """
         Calculate azimuthal angle(s) of ray(s) through the component
 
-        :param x: Pixel centre x position(s) in sensor plane in m.
+        :param x: x position(s) on sensor plane in m.
         :type x: float, xr.DataArray
-        :param y: Pixel centre y position(s) in sensor plane in m.
+
+        :param y: y position(s) on sensor plane in m.
         :type y: float, xr.DataArray
-        :param pycis.OrientableComponent component: Interferometer component.
+
+        :param component: Interferometer component.
+        :type component: pycis.OrientableComponent
 
         :return: (float, xr.DataArray) Azimuthal angle(s) in radians.
         """
@@ -226,10 +233,10 @@ class Instrument:
         :param wavelength: Wavelength in m.
         :type wavelength: float, xr.DataArray
 
-        :param x: Pixel centre x position(s) in sensor plane in m.
+        :param x: x position(s) on sensor plane in m.
         :type x: float, xr.DataArray
 
-        :param y: Pixel centre y position(s) in sensor plane in m.
+        :param y: y position(s) on sensor plane in m.
         :type y: float, xr.DataArray
 
         :return: (xr.DataArray) Mueller matrix.
@@ -249,10 +256,13 @@ class Instrument:
 
         :param wavelength: Wavelength in m. If xr.DataArray, must have dimension name 'wavelength'.
         :type wavelength: float, xr.DataArray
-        :param x: Pixel centre x position(s) in sensor plane in m.
+
+        :param x: x position(s) on sensor plane in m.
         :type x: float, xr.DataArray
-        :param y: Pixel centre y position(s) in sensor plane in m.
+
+        :param y: y position(s) on sensor plane in m.
         :type y: float, xr.DataArray
+
         :return: (xr.DataArray) Interferometer delay(s) in radians.
         """
         # Would be nice to write a generalised method if possible
@@ -269,17 +279,7 @@ class Instrument:
         if self.type == 'single_delay_linear':
             delay_out = sum(delay)
 
-        elif self.type == 'double_delay_linear':
-            delay_sum = delay[0] + delay[1]
-            delay_diff = abs(delay[0] - delay[1])
-            delay_out = delay_sum, delay_diff
-
-        elif self.type == 'triple_delay_linear':
-            delay_sum = delay[0] + delay[1]
-            delay_diff = abs(delay[0] - delay[1])
-            delay_out = delay[1], delay_sum, delay_diff
-
-        elif self.type == 'quad_delay_linear':
+        elif fnmatch(self.type, '*_delay_linear'):
             delay_sum = delay[0] + delay[1]
             delay_diff = abs(delay[0] - delay[1])
             delay_out = delay[0], delay[1], delay_sum, delay_diff
@@ -335,11 +335,11 @@ class Instrument:
 
                 if 'stokes' not in spectrum.dims:
                     if self.type == 'single_delay_linear':
-                        spectrum = spectrum / 4 * (1 + prod(contrast_inst) * np.cos(delay))
+                        spectrum = spectrum / 4 * (1 + np.prod(contrast_inst) * np.cos(delay))
 
                     elif self.type == 'double_delay_linear':
-                        contrast_inst_sum = contrast_inst_diff = prod(contrast_inst)
-                        delay_sum, delay_diff = delay
+                        contrast_inst_sum = contrast_inst_diff = np.prod(contrast_inst)
+                        _, _, delay_sum, delay_diff = delay
                         spectrum = spectrum / 4 * (
                                 1
                                 + 0.5 * contrast_inst_diff * np.cos(delay_diff)
@@ -347,8 +347,8 @@ class Instrument:
                         )
 
                     elif self.type == 'triple_delay_linear':
-                        contrast_inst_sum = contrast_inst_diff = prod(contrast_inst)
-                        delay_2, delay_sum, delay_diff = delay
+                        contrast_inst_sum = contrast_inst_diff = np.prod(contrast_inst)
+                        _, delay_2, delay_sum, delay_diff = delay
                         root2 = np.sqrt(2)
                         spectrum = spectrum / 4 * (
                                 1
@@ -358,7 +358,7 @@ class Instrument:
                         )
 
                     elif self.type == 'quad_delay_linear':
-                        contrast_inst_sum = contrast_inst_diff = prod(contrast_inst)
+                        contrast_inst_sum = contrast_inst_diff = np.prod(contrast_inst)
                         delay_1, delay_2, delay_sum, delay_diff = delay
                         spectrum = spectrum / 4 * (
                                 1
@@ -372,7 +372,7 @@ class Instrument:
                         spectrum = spectrum / 4 * (1 + contrast_inst[0] * np.cos(delay + phase_mask))
 
                     elif self.type == 'double_delay_pixelated':
-                        contrast_inst_sum = contrast_inst_diff = prod(contrast_inst)
+                        contrast_inst_sum = contrast_inst_diff = np.prod(contrast_inst)
                         delay_sum, delay_diff = delay
                         spectrum = spectrum / 4 * (
                                 1
@@ -381,7 +381,7 @@ class Instrument:
                         )
 
                     elif self.type == 'triple_delay_pixelated':
-                        contrast_inst_sum = contrast_inst_diff = prod(contrast_inst)
+                        contrast_inst_sum = contrast_inst_diff = np.prod(contrast_inst)
                         delay_2, delay_sum, delay_diff = delay
                         root2 = np.sqrt(2)
                         spectrum = spectrum / 4 * (
@@ -428,7 +428,7 @@ class Instrument:
                 spatial_freq_x += sp_f_x
                 spatial_freq_y += sp_f_y
 
-        elif self.type == 'multi_delay_pixelated':
+        elif self.type == 'triple_delay_pixelated':
             crystal = self.retarders[0]
             spatial_freq_x, spatial_freq_y = crystal.get_fringe_frequency(wavelength, self.optics[2], )
             # TODO and also the sum and difference terms?
