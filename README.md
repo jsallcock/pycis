@@ -6,8 +6,10 @@ Analysis and modelling tools for the Coherence Imaging Spectroscopy (CIS) plasma
 
 Codebase beginning to stabilise. Contact me at joseph.allcock@ukaea.uk.
 
-Issues
-------
+Contributors
+------------
 
-- sort out bandpass filter class
-- check + explicitly state conventions used for phase delay. 
+- Joseph Allcock
+- Rhys Doyle
+- Scott Silburn
+- Jamie Dunsmore
