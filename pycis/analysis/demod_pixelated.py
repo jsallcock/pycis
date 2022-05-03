@@ -108,10 +108,10 @@ def demod_multi_delay_pixelated(image, fringe_freq, ):
 
     return dc, phase, contrast
 
+
 def demod_triple_delay_pixelated(image, fringe_freq, ):
 
     fft = fft2_im(image)
-    window_pm = make_carrier_window(fft, fringe_freq, sign='pm')
     window_p = make_carrier_window(fft, fringe_freq, sign='p')
     window_m = make_carrier_window(fft, fringe_freq, sign='m')
     window_lowpass = make_lowpass_window(fft, fringe_freq)
