@@ -87,7 +87,7 @@ def get_doppler_broadened_singlet(temperature, wl, mass, v, domain='frequency', 
         """
         return 1 / (sigma * np.sqrt(2 * np.pi)) * np.exp(- 1 / 2 * ((f - f_0) / sigma) ** 2)
 
-    spectrum = gaussian(freq_axis, c / wl_shifted, sigma_freq)
+    spectrum = gaussian(freq_axis, freq, sigma_freq)
 
     if domain == 'frequency':
         return spectrum
