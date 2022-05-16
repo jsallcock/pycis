@@ -46,14 +46,15 @@ def window(rfft_length, nfringes, window_width=None, fn='tukey', width_factor=1.
     return np.concatenate((pre_zeros, window_fn, post_zeros))[:rfft_length]
 
 
-def make_carrier_window(fft, fringe_freq, sign='p'):
+def make_carrier_window(fft, fringe_freq, wfactor=0.67, sign='p'):
     """
     Generates Fourier-domain window to isolate a carrier term at the given spatial frequency.
 
     Window extends outwards in the orthogonal direction to the fringe frequency.
 
-    :param fft: (xr.DataArray) Fourier-trasformed image with dimensions 'freq_x' and 'freq_y'
+    :param fft: (xr.DataArray) Fourier-transformed image with dimensions 'freq_x' and 'freq_y'
     :param fringe_freq:
+    :param wfactor: (float) Multiplicative factor which decided the width of the window
     :param sign: (str) 'p' to window the positive frequency carrier term. 'm' to window the negative frequency carrier,
     'pm' to window both.
     :return: window (xr.DataArray) with same dims and coords as fft.
@@ -65,8 +66,8 @@ def make_carrier_window(fft, fringe_freq, sign='p'):
 
     # define projected coordinate along direction of fringes
     coord = np.cos(fringe_freq_angle) * fft.freq_x + np.sin(fringe_freq_angle) * fft.freq_y
-    condition_1 = coord < fringe_freq_abs - fringe_freq_abs / 1.5
-    condition_2 = coord > fringe_freq_abs + fringe_freq_abs / 1.5
+    condition_1 = coord < fringe_freq_abs - fringe_freq_abs * wfactor
+    condition_2 = coord > fringe_freq_abs + fringe_freq_abs * wfactor
     window = np.logical_not(condition_1 + condition_2).astype(float)
 
     window = xr.where(window == 0, np.nan, window)
