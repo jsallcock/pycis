@@ -109,11 +109,17 @@ def demod_multi_delay_pixelated(image, fringe_freq, ):
     return dc, phase, contrast
 
 
-def demod_triple_delay_pixelated(image, fringe_freq, ):
+def demod_triple_delay_pixelated(image, fringe_freq, **kwargs):
+    """
 
+    :param image: (xr.DataArray) CIS Image to demodulate
+    :param fringe_freq: (tuple) Tuple containing xy-coord of fringe location in Fourier space
+    :param kwargs: Additional kwargs - namely wfactor passed to make_carrier_window()
+    :return:
+    """
     fft = fft2_im(image)
-    window_p = make_carrier_window(fft, fringe_freq, sign='p')
-    window_m = make_carrier_window(fft, fringe_freq, sign='m')
+    window_p = make_carrier_window(fft, fringe_freq, sign='p', **kwargs)
+    window_m = make_carrier_window(fft, fringe_freq, sign='m', **kwargs)
     window_lowpass = make_lowpass_window(fft, fringe_freq)
 
     fft_dc = fft * window_lowpass
