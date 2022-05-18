@@ -129,7 +129,7 @@ def get_spectrum_ciii_triplet(temperature, bfield=0, view=0, domain='frequency',
         rel_ints = s_vectors[:,0]
 
     # otherwise, check that a magnetic field is present before accounting for zeeman splitting:
-    elif bfield != 0 or bfield ==0:
+    elif bfield != 0:
         wls, rel_ints = zeeman(bfield=bfield, view=view, )
         wls = np.array(wls)
         rel_ints = np.array(rel_ints)
