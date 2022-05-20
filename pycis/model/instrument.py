@@ -444,7 +444,7 @@ class Instrument:
         for idx, (typ, rel_or) in enumerate(zip(types, relative_orientations)):
             component = self.interferometer[idx]
             conditions_met.append(isinstance(component, typ))
-            conditions_met.append(isclose(component.orientation - self.polarisers[0].orientation, rel_or))
+            conditions_met.append(isclose(component.orientation - self.interferometer[0].orientation, rel_or))
 
         return all(conditions_met)
 

@@ -1215,11 +1215,23 @@ def make_figures_multi_delay_paper():
         ]
     }
 
+    args_2retarder_specpol_pixelated = {
+        'fpath_config': os.path.join(FPATH_CONFIG, 'specpol', 'pycis_config_2retarder_specpol_pixelated.yaml'),
+        'fpath_out': '3panel_2retarder_specpol_pixelated.png',
+        'pol_state': [
+            POL_STATE_UNPOLARISED,
+            POL_STATE_LINEAR0,
+            POL_STATE_LINEAR45,
+            POL_STATE_RHC,
+        ]
+    }
+
     args_all = [
         args_1retarder,
-        args_2retarder_linear,
-        args_2retarder_pixelated,
-        args_2retarder_specpol
+        # args_2retarder_linear,
+        # args_2retarder_pixelated,
+        # args_2retarder_specpol,
+        # args_2retarder_specpol_pixelated,
     ]
 
     for args in args_all:

@@ -87,11 +87,13 @@ def qwp(rho):
 # ----------------------------------------------------------------------------------------------------------------------
 # EXAMPLES - SPECTROSCOPY
 def spec_1retarder_linear():
-    phi = symbols('phi')
-    mueller = polariser(0) * retarder(pi / 4, phi) * polariser(0)
+    phi, rho = symbols('phi rho', real=True, nonnegative=True)
+    mueller = polariser(rho) * retarder(rho + pi / 4, phi) * polariser(rho)
     i_out = trigsimp((mueller * S_UNPOLARISED)[0])
+    i_out_gen = trigsimp((mueller * S_GENERAL)[0])
     print('spec_1retarder_linear:')
-    print(simplify(trigsimp(i_out)))
+    print(i_out)
+    print(i_out_gen)
     print(' ')
 
 
@@ -155,8 +157,8 @@ def specpol_2retarder_linear():
 
 
 if __name__ == '__main__':
-    # spec_1retarder_linear()
+    spec_1retarder_linear()
     # spec_1retarder_pixelated()
-    spec_2retarder_pixelated()
+    # spec_2retarder_pixelated()
     # spec_2retarder_linear()
     # specpol_2retarder_linear()
