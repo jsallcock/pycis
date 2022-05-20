@@ -1,7 +1,8 @@
 import numpy as np
-from scipy.ndimage import gaussian_filter
+from scipy.ndimage import gaussian_filter, convolve
 import xarray as xr
 import matplotlib.pyplot as plt
+from scipy.signal.windows import tukey
 import scipy.signal
 
 # dictionary containing the window functions available, add your own.
@@ -66,7 +67,7 @@ def make_carrier_window(fft, fringe_freq, sign='p'):
     coord = np.cos(fringe_freq_angle) * fft.freq_x + np.sin(fringe_freq_angle) * fft.freq_y
     condition_1 = coord < fringe_freq_abs - fringe_freq_abs / 1.5
     condition_2 = coord > fringe_freq_abs + fringe_freq_abs / 1.5
-    window = xr.ufuncs.logical_not(condition_1 + condition_2).astype(float)
+    window = np.logical_not(condition_1 + condition_2).astype(float)
 
     window = xr.where(window == 0, np.nan, window)
     coord = window * coord
@@ -79,7 +80,7 @@ def make_carrier_window(fft, fringe_freq, sign='p'):
     a_1 = 0.5
     a_2 = alpha / 2
     window = a_0 - a_1 * np.cos(2 * np.pi * coord) + a_2 * np.cos(4 * np.pi * coord)
-    window = xr.where(xr.ufuncs.isnan(window), 0, window, )
+    window = xr.where(np.isnan(window), 0, window, )
     window = xr.where(window < 0, 0, window, )
 
     if sign == 'p':
@@ -105,16 +106,14 @@ def make_lowpass_window(fft, fringe_freq):
     :return:
     """
 
-    window = xr.ones_like(fft.real)
-    freq_x_lim, freq_y_lim = float(fft.freq_x.max() / 2), float(fft.freq_y.max() / 2)
+    image_x, image_y = fft.shape
+    pad_x = int(image_x/4)
+    pad_y = int(image_y/4)
 
-    window = window.where((-freq_x_lim < window.freq_x) & (window.freq_x < freq_x_lim), 0)
-    window = window.where((-freq_y_lim < window.freq_y) & (window.freq_y < freq_y_lim), 0)
+    tukey_winx = np.tile(np.pad(tukey(image_x-2*pad_x), pad_x).reshape(image_x,1), image_y)
+    tukey_winy = np.tile(np.pad(tukey(image_y - 2*pad_y), pad_y).reshape(image_y,1), image_x)
 
-    # sigma = 0.00005 * np.array(fft.shape) * (abs(np.array(fringe_freq)) ** 0.7 / (4 * np.array([fft.freq_x.max(), fft.freq_y.max()]))) ** -1
-    sigma = fringe_freq
-    print(sigma)
-    window.values = gaussian_filter(window.values, sigma)
+    window = tukey_winx * tukey_winy.T
 
     return window
 

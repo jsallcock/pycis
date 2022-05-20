@@ -5,6 +5,6 @@ pycis/demo/*.png
 pycis/model/config/*
 !pycis/model/config/single_delay_linear.yaml
 !pycis/model/config/single_delay_pixelated.yaml
-!pycis/model/config/multi_delay_pixelated.yaml
+!pycis/model/config/triple_delay_pixelated.yaml
 pycis/vis/*.png
 pycis/vis/*.jpg
