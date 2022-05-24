@@ -6,7 +6,7 @@ from scipy.constants import c
 import pycis
 
 
-def calculate_coherence(spectrum, delay, material=None, freq_com=None):
+def calculate_coherence(spectrum, delay, material=None, freq_ref=None):
     """
     Calculates the (temporal) coherence of a given intensity spectrum for a given interferometer delay(s).
 
@@ -36,8 +36,9 @@ def calculate_coherence(spectrum, delay, material=None, freq_com=None):
         delay argument. To do a none-dispersive calculation, you should leave material=None and use a delay argument
         that will trigger the group delay approx.
 
-    :param freq_com: \
-        centre of mass frequency of spectrum, if it has already been calculated.
+    :param freq_ref: \
+        reference frequency of spectrum about which the group delay approximation of dispersion is made, if it has
+        already been calculated.
 
     :return: coherence (temporal). Units are those of the spectrum argument, but integrated over the spectral dimension e.g. if spectrum has units ( W / m^2 / m ) then coherence has units ( W / m^2 ).
 
@@ -51,8 +52,8 @@ def calculate_coherence(spectrum, delay, material=None, freq_com=None):
         spectrum /= spectrum.integrate(coord='frequency')
 
     # calculate centre of mass (c.o.m.) frequency if not supplied
-    if freq_com is None:
-        freq_com = (spectrum * spectrum['frequency']).integrate(coord='frequency') / \
+    if freq_ref is None:
+        freq_ref = (spectrum * spectrum['frequency']).integrate(coord='frequency') / \
                    spectrum.integrate(coord='frequency')
 
     # determine calculation mode
@@ -73,11 +74,11 @@ def calculate_coherence(spectrum, delay, material=None, freq_com=None):
 
     elif mode == 'group_delay':
         if material is not None:
-            kappa_0 = pycis.get_kappa(c / freq_com, material=material, )
+            kappa_0 = pycis.get_kappa(c / freq_ref, material=material, )
         else:
             kappa_0 = 1
 
-        freq_shift_norm = (spectrum['frequency'] - freq_com) / freq_com
+        freq_shift_norm = (spectrum['frequency'] - freq_ref) / freq_ref
         integrand = spectrum * complexp_ufunc(delay * (1 + kappa_0 * freq_shift_norm))
     else:
         raise NotImplementedError

@@ -56,7 +56,7 @@ def get_spectrum_delta_pol(wl0, ph, p, psi, xi):
     return out
 
 
-def get_doppler_broadened_singlet(temperature, wl, mass, domain='frequency', nbins=1000,):
+def get_doppler_broadened_singlet(temperature, wl, mass, v, domain='frequency', nbins=1000, n_sigma=5):
     """
     return area-normalised spectrum of the Doppler-broadened C III triplet at 464.9 nm.
 
@@ -65,14 +65,15 @@ def get_doppler_broadened_singlet(temperature, wl, mass, domain='frequency', nbi
     :param temperature: (float) in eV
     :param wavelength: (float) wavelength of the singlet peak in m
     :param mass: (float) ion mass in atomic mass units.
+    :param v: (float) flow velocity in km/s
     :param domain: (str) 'frequency' or 'wavelength'
     :return: (xr.DataArray) spectrum
     """
 
-    freq = c / wl
-    sigma_freq = freq / c * np.sqrt(temperature * e / (mass * atomic_mass))  # line Doppler-width st. dev. in Hz
-
-    n_sigma = 30  # extent of coordinate grid
+    delta_lambda = wl * v / (c/1e3)
+    wl_shifted = wl + delta_lambda
+    freq = c / wl_shifted
+    sigma_freq = (2* freq * np.sqrt(temperature * e / (mass * atomic_mass))) / c  # line Doppler-width st. dev. in Hz
 
     freq_axis = np.linspace(freq - n_sigma * sigma_freq, freq + n_sigma * sigma_freq, nbins)
     wavelength = c / freq_axis
@@ -86,7 +87,7 @@ def get_doppler_broadened_singlet(temperature, wl, mass, domain='frequency', nbi
         """
         return 1 / (sigma * np.sqrt(2 * np.pi)) * np.exp(- 1 / 2 * ((f - f_0) / sigma) ** 2)
 
-    spectrum = gaussian(freq_axis, c / wl, sigma_freq)
+    spectrum = gaussian(freq_axis, freq, sigma_freq)
 
     if domain == 'frequency':
         return spectrum
@@ -128,7 +129,7 @@ def get_spectrum_ciii_triplet(temperature, bfield=0, view=0, domain='frequency',
         rel_ints = s_vectors[:,0]
 
     # otherwise, check that a magnetic field is present before accounting for zeeman splitting:
-    elif bfield != 0 or bfield ==0:
+    elif bfield != 0:
         wls, rel_ints = zeeman(bfield=bfield, view=view, )
         wls = np.array(wls)
         rel_ints = np.array(rel_ints)
