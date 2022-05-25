@@ -1,7 +1,6 @@
 import numpy as np
-from . import despeckle as apply_despeckle
-from scipy.constants import pi
-import pycis
+from pycis.pycis.old import despeckle as apply_despeckle
+
 
 def polcam_demod(im, pixel_order=np.array([[0,45],[135,90]]), despeckle=False, components_out=False):
     '''
