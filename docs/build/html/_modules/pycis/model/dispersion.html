@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/doctools.js"></script>
@@ -60,10 +63,6 @@
           
             
             
-              <div class="version">
-                0.1
-              </div>
-            
           
 
           
@@ -86,7 +85,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Table of Contents</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Table of Contents</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../model.html">Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../analysis.html">Analysis</a></li>
@@ -158,6 +157,11 @@
             
   <h1>Source code for pycis.model.dispersion</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">pycis</span>
+<span class="kn">from</span> <span class="nn">matplotlib.gridspec</span> <span class="kn">import</span> <span class="n">GridSpec</span>
+<span class="kn">from</span> <span class="nn">scipy.constants</span> <span class="kn">import</span> <span class="n">c</span>
 
 <span class="n">DWL</span> <span class="o">=</span> <span class="mf">1.e-10</span>
 <span class="n">sellmeier_coefs_source_defaults</span> <span class="o">=</span> <span class="p">{</span>
@@ -168,7 +172,8 @@
     <span class="s1">&#39;lithium_niobate&#39;</span><span class="p">:</span> <span class="s1">&#39;zelmon&#39;</span><span class="p">,</span>
 <span class="p">}</span>
 
-<div class="viewcode-block" id="get_refractive_indices"><a class="viewcode-back" href="../../../dispersion.html#pycis.model.dispersion.get_refractive_indices">[docs]</a><span class="k">def</span> <span class="nf">get_refractive_indices</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="n">sellmeier_coefs_source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sellmeier_coefs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="p">):</span>
+
+<div class="viewcode-block" id="get_refractive_indices"><a class="viewcode-back" href="../../../dispersion.html#pycis.model.dispersion.get_refractive_indices">[docs]</a><span class="k">def</span> <span class="nf">get_refractive_indices</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">material</span><span class="o">=</span><span class="s1">&#39;a-BBO&#39;</span><span class="p">,</span> <span class="n">sellmeier_coefs_source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sellmeier_coefs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate the extraordinary and ordinary refractive indices as a function of wavelength</span>
 
@@ -200,7 +205,7 @@
     <span class="k">return</span> <span class="n">sellmeier_eqn</span><span class="p">(</span><span class="n">wavelength</span> <span class="o">*</span> <span class="mf">1e6</span><span class="p">,</span> <span class="n">sellmeier_coefs</span><span class="p">,</span> <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="get_kappa"><a class="viewcode-back" href="../../../dispersion.html#pycis.model.dispersion.get_kappa">[docs]</a><span class="k">def</span> <span class="nf">get_kappa</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="get_kappa"><a class="viewcode-back" href="../../../dispersion.html#pycis.model.dispersion.get_kappa">[docs]</a><span class="k">def</span> <span class="nf">get_kappa</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate kappa, the dimensionless parameter that gives a first-order account of material dispersion, as a function</span>
 <span class="sd">    of wavelength</span>
@@ -222,9 +227,9 @@
 <span class="sd">    :return: kappa. type(kappa) = type(wavelength)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">ne</span><span class="p">,</span> <span class="n">no</span> <span class="o">=</span> <span class="n">get_refractive_indices</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="n">ne_p1</span><span class="p">,</span> <span class="n">no_p1</span> <span class="o">=</span> <span class="n">get_refractive_indices</span><span class="p">(</span><span class="n">wavelength</span> <span class="o">+</span> <span class="n">DWL</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="n">ne_m1</span><span class="p">,</span> <span class="n">no_m1</span> <span class="o">=</span> <span class="n">get_refractive_indices</span><span class="p">(</span><span class="n">wavelength</span> <span class="o">-</span> <span class="n">DWL</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">ne</span><span class="p">,</span> <span class="n">no</span> <span class="o">=</span> <span class="n">get_refractive_indices</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">ne_p1</span><span class="p">,</span> <span class="n">no_p1</span> <span class="o">=</span> <span class="n">get_refractive_indices</span><span class="p">(</span><span class="n">wavelength</span> <span class="o">+</span> <span class="n">DWL</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">ne_m1</span><span class="p">,</span> <span class="n">no_m1</span> <span class="o">=</span> <span class="n">get_refractive_indices</span><span class="p">(</span><span class="n">wavelength</span> <span class="o">-</span> <span class="n">DWL</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="n">biref</span> <span class="o">=</span> <span class="n">ne</span> <span class="o">-</span> <span class="n">no</span>
     <span class="n">biref_p1</span> <span class="o">=</span> <span class="n">ne_p1</span> <span class="o">-</span> <span class="n">no_p1</span>
@@ -340,6 +345,34 @@
               <span class="p">},</span>
          <span class="p">},</span>
 
+    <span class="s1">&#39;appel&#39;</span><span class="p">:</span>
+            <span class="p">{</span><span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;a-BBO&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span>
+                 <span class="p">{</span><span class="s1">&#39;Ae&#39;</span><span class="p">:</span> <span class="mf">2.3174</span><span class="p">,</span>
+                  <span class="s1">&#39;Be&#39;</span><span class="p">:</span> <span class="mf">0.01224</span><span class="p">,</span>
+                  <span class="s1">&#39;Ce&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.01667</span><span class="p">,</span>
+                  <span class="s1">&#39;De&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.01516</span><span class="p">,</span>
+                  <span class="s1">&#39;Ao&#39;</span><span class="p">:</span> <span class="mf">2.7471</span><span class="p">,</span>
+                  <span class="s1">&#39;Bo&#39;</span><span class="p">:</span> <span class="mf">0.01878</span><span class="p">,</span>
+                  <span class="s1">&#39;Co&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.01822</span><span class="p">,</span>
+                  <span class="s1">&#39;Do&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.01354</span><span class="p">,</span>
+                  <span class="p">},</span>
+             <span class="p">},</span>
+
+    <span class="s1">&#39;shi&#39;</span><span class="p">:</span>
+        <span class="p">{</span><span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;a-BBO&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span>
+             <span class="p">{</span><span class="s1">&#39;Ae&#39;</span><span class="p">:</span> <span class="mf">2.37153</span><span class="p">,</span>
+              <span class="s1">&#39;Be&#39;</span><span class="p">:</span> <span class="mf">0.01224</span><span class="p">,</span>
+              <span class="s1">&#39;Ce&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.01667</span><span class="p">,</span>
+              <span class="s1">&#39;De&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.01516</span><span class="p">,</span>
+              <span class="s1">&#39;Ao&#39;</span><span class="p">:</span> <span class="mf">2.7471</span><span class="p">,</span>
+              <span class="s1">&#39;Bo&#39;</span><span class="p">:</span> <span class="mf">0.01878</span><span class="p">,</span>
+              <span class="s1">&#39;Co&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.01822</span><span class="p">,</span>
+              <span class="s1">&#39;Do&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.01354</span><span class="p">,</span>
+              <span class="p">},</span>
+         <span class="p">},</span>
+
     <span class="s1">&#39;agoptics&#39;</span><span class="p">:</span>
         <span class="p">{</span><span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;a-BBO&#39;</span><span class="p">,</span>
          <span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span>
@@ -383,19 +416,19 @@
               <span class="s1">&#39;Eo&#39;</span><span class="p">:</span> <span class="mi">120</span><span class="p">,</span>
               <span class="p">}</span>
          <span class="p">},</span>
-    <span class="s1">&#39;shi&#39;</span><span class="p">:</span>
-        <span class="p">{</span><span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;YVO&#39;</span><span class="p">,</span>
-         <span class="s1">&#39;sellmeier_coefs&#39;</span><span class="p">:</span>
-             <span class="p">{</span><span class="s1">&#39;Ae&#39;</span><span class="p">:</span> <span class="mf">4.607200</span><span class="p">,</span>
-              <span class="s1">&#39;Be&#39;</span><span class="p">:</span> <span class="mf">0.108087</span><span class="p">,</span>
-              <span class="s1">&#39;Ce&#39;</span><span class="p">:</span> <span class="mf">0.052495</span><span class="p">,</span>
-              <span class="s1">&#39;De&#39;</span><span class="p">:</span> <span class="mf">0.014305</span><span class="p">,</span>
-              <span class="s1">&#39;Ao&#39;</span><span class="p">:</span> <span class="mf">3.778790</span><span class="p">,</span>
-              <span class="s1">&#39;Bo&#39;</span><span class="p">:</span> <span class="mf">0.070479</span><span class="p">,</span>
-              <span class="s1">&#39;Co&#39;</span><span class="p">:</span> <span class="mf">0.045731</span><span class="p">,</span>
-              <span class="s1">&#39;Do&#39;</span><span class="p">:</span> <span class="mf">0.009701</span><span class="p">,</span>
-              <span class="p">},</span>
-         <span class="p">},</span>
+    <span class="c1"># &#39;shi&#39;:</span>
+    <span class="c1">#     {&#39;material&#39;: &#39;YVO&#39;,</span>
+    <span class="c1">#      &#39;sellmeier_coefs&#39;:</span>
+    <span class="c1">#          {&#39;Ae&#39;: 4.607200,</span>
+    <span class="c1">#           &#39;Be&#39;: 0.108087,</span>
+    <span class="c1">#           &#39;Ce&#39;: 0.052495,</span>
+    <span class="c1">#           &#39;De&#39;: 0.014305,</span>
+    <span class="c1">#           &#39;Ao&#39;: 3.778790,</span>
+    <span class="c1">#           &#39;Bo&#39;: 0.070479,</span>
+    <span class="c1">#           &#39;Co&#39;: 0.045731,</span>
+    <span class="c1">#           &#39;Do&#39;: 0.009701,</span>
+    <span class="c1">#           },</span>
+    <span class="c1">#      },</span>
 
     <span class="s1">&#39;zelmon&#39;</span><span class="p">:</span>  <span class="c1"># D.E. Zelmon, D. L. Small, J. Opt. Soc. Am. B/Vol. 14, No. 12/December 1997</span>
         <span class="p">{</span><span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;lithium_niobate&#39;</span><span class="p">,</span>
@@ -415,6 +448,102 @@
               <span class="p">},</span>
          <span class="p">},</span>
 <span class="p">}</span>
+
+
+<span class="k">def</span> <span class="nf">plot_dispersion</span><span class="p">():</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.104</span><span class="p">,</span> <span class="mf">6.9</span><span class="p">))</span>
+    <span class="n">gs</span> <span class="o">=</span> <span class="n">GridSpec</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figure</span><span class="o">=</span><span class="n">fig</span><span class="p">,</span> <span class="n">wspace</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
+    <span class="n">axes</span> <span class="o">=</span> <span class="p">[</span><span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">gs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]</span>
+    <span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">,</span> <span class="n">ax3</span> <span class="o">=</span> <span class="n">axes</span>
+    <span class="n">wl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">400e-9</span><span class="p">,</span> <span class="mf">700e-9</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+    <span class="n">wl_nm</span> <span class="o">=</span> <span class="n">wl</span> <span class="o">*</span> <span class="mf">1e9</span>
+
+    <span class="n">materials</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;a-BBO&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;a-BBO&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;a-BBO&#39;</span><span class="p">,</span>
+                 <span class="c1"># &#39;a-BBO&#39;,</span>
+                 <span class="s1">&#39;a-BBO&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;b-BBO&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;b-BBO&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;b-BBO&#39;</span><span class="p">,</span>
+                 <span class="p">]</span>
+    <span class="n">sources</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;agoptics&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;kim&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;newlightphotonics&#39;</span><span class="p">,</span>
+               <span class="c1"># &#39;appel&#39;,</span>
+               <span class="s1">&#39;shi&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;eimerl&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;kato1986&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;kato2010&#39;</span><span class="p">,</span>
+               <span class="p">]</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">alpha$/1&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">alpha$/2&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">alpha$/3&#39;</span><span class="p">,</span>
+              <span class="c1"># &#39;$\\alpha$/4&#39;,</span>
+              <span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">alpha$/5&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">beta$/1&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">beta$/2&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">beta$/3&#39;</span><span class="p">,</span>
+              <span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="p">(</span><span class="n">material</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">materials</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">labels</span><span class="p">)):</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;C&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span>
+        <span class="n">ne</span><span class="p">,</span> <span class="n">no</span> <span class="o">=</span> <span class="n">pycis</span><span class="o">.</span><span class="n">get_refractive_indices</span><span class="p">(</span><span class="n">wl</span><span class="p">,</span> <span class="n">material</span><span class="o">=</span><span class="n">material</span><span class="p">,</span> <span class="n">sellmeier_coefs_source</span><span class="o">=</span><span class="n">source</span><span class="p">)</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">ne</span> <span class="o">-</span> <span class="n">no</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">wl_nm</span><span class="p">,</span> <span class="n">no</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">wl_nm</span><span class="p">,</span> <span class="n">ne</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+        <span class="n">ax3</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">wl_nm</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ii</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">no_l</span><span class="p">,</span> <span class="n">no_u</span> <span class="o">=</span> <span class="n">no</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">no</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">ne_l</span><span class="p">,</span> <span class="n">ne_u</span> <span class="o">=</span> <span class="n">ne</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">ne</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">b_l</span><span class="p">,</span> <span class="n">b_u</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">b</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">no</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">no_l</span><span class="p">:</span>
+                <span class="n">no_l</span> <span class="o">=</span> <span class="n">no</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">no</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">no_u</span><span class="p">:</span>
+                <span class="n">no_u</span> <span class="o">=</span> <span class="n">no</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">ne</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">ne_l</span><span class="p">:</span>
+                <span class="n">ne_l</span> <span class="o">=</span> <span class="n">ne</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">ne</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">ne_u</span><span class="p">:</span>
+                <span class="n">ne_u</span> <span class="o">=</span> <span class="n">ne</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">b</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">b_l</span><span class="p">:</span>
+                <span class="n">b_l</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">b</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">b_u</span><span class="p">:</span>
+                <span class="n">b_u</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+    <span class="n">lims</span> <span class="o">=</span> <span class="p">[[</span><span class="n">no_l</span><span class="p">,</span> <span class="n">no_u</span><span class="p">],</span>
+            <span class="p">[</span><span class="n">ne_l</span><span class="p">,</span> <span class="n">ne_u</span><span class="p">],</span>
+            <span class="p">[</span><span class="n">b_l</span><span class="p">,</span> <span class="n">b_u</span><span class="p">],</span>
+            <span class="p">]</span>
+    <span class="n">titles</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;(a) $n_</span><span class="se">\\</span><span class="s1">mathrm</span><span class="si">{O}</span><span class="s1">(</span><span class="se">\\</span><span class="s1">lambda)$&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;(b) $n_</span><span class="se">\\</span><span class="s1">mathrm</span><span class="si">{E}</span><span class="s1">(</span><span class="se">\\</span><span class="s1">lambda)$&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;(c) $B(</span><span class="se">\\</span><span class="s1">lambda)</span><span class="se">\\</span><span class="s1">equiv</span><span class="si">{}</span><span class="s1">n_</span><span class="se">\\</span><span class="s1">mathrm</span><span class="si">{E}</span><span class="s1">(</span><span class="se">\\</span><span class="s1">lambda)-n_</span><span class="se">\\</span><span class="s1">mathrm</span><span class="si">{O}</span><span class="s1">(</span><span class="se">\\</span><span class="s1">lambda)$&#39;</span><span class="p">,</span> <span class="p">]</span>
+    <span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">lim</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">titles</span><span class="p">,</span> <span class="n">lims</span><span class="p">):</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">wl_nm</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">wl_nm</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;top&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">lambda$ (nm)&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">lim</span><span class="p">)</span>
+
+    <span class="n">txts</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">alpha$-BBO&#39;</span><span class="p">,</span> <span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">beta$-BBO&#39;</span><span class="p">]</span>
+    <span class="n">xys</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">550</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1216</span><span class="p">],</span> <span class="p">[</span><span class="mi">500</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.119</span><span class="p">]]</span>
+    <span class="n">rots</span> <span class="o">=</span> <span class="p">[</span><span class="mi">55</span><span class="p">,</span> <span class="mi">60</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">txt</span><span class="p">,</span> <span class="n">xy</span><span class="p">,</span> <span class="n">rot</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">txts</span><span class="p">,</span> <span class="n">xys</span><span class="p">,</span> <span class="n">rots</span><span class="p">):</span>
+        <span class="n">ax3</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">txt</span><span class="p">,</span> <span class="n">xy</span><span class="p">,</span> <span class="n">xycoords</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="n">rot</span><span class="p">,</span> <span class="n">rotation_mode</span><span class="o">=</span><span class="s1">&#39;default&#39;</span><span class="p">)</span>
+
+    <span class="c1"># ax3.set_ylabel(&#39;Birefringence&#39;)</span>
+    <span class="n">leg1</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">ncol</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Sellmeier</span><span class="se">\n</span><span class="s1">coefficients:&#39;</span><span class="p">)</span>
+    <span class="c1"># fpath_fig = os.path.join(dir, &#39;sellmeier_dispersion.pdf&#39;)</span>
+    <span class="c1"># fig.savefig(fpath_fig, bbox_inches=&#39;tight&#39;)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">plot_dispersion</span><span class="p">()</span>
 </pre></div>
 
            </div>
@@ -426,7 +555,7 @@
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright 2021, Joseph Allcock.
+        &#169; Copyright 2022, J. Allcock.
 
     </p>
   </div>

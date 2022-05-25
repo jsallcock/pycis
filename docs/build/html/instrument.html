@@ -4,7 +4,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Instrument &mdash; pycis 0.1 documentation</title>
@@ -13,6 +14,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +32,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -62,10 +66,6 @@
           
             
             
-              <div class="version">
-                0.1
-              </div>
-            
           
 
           
@@ -88,7 +88,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Table of Contents</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Table of Contents</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="model.html">Model</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="interferometer.html">Interferometer</a></li>
@@ -170,11 +170,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-pycis.model.instrument">
+  <section id="module-pycis.model.instrument">
 <span id="instrument"></span><h1>Instrument<a class="headerlink" href="#module-pycis.model.instrument" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt id="pycis.model.instrument.Instrument">
-<em class="property">class </em><code class="sig-prename descclassname">pycis.model.instrument.</code><code class="sig-name descname">Instrument</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">config</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">camera</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">optics</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">interferometer</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">force_mueller</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.instrument.Instrument">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pycis.model.instrument.</span></span><span class="sig-name descname"><span class="pre">Instrument</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interferometer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_mueller</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.instrument.Instrument" title="Permalink to this definition">¶</a></dt>
 <dd><p>Coherence imaging instrument</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -191,16 +191,16 @@ analytical shortcut is available.</p></li>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="pycis.model.instrument.Instrument.read_config">
-<code class="sig-name descname">read_config</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">config</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.read_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.read_config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.instrument.Instrument.read_config">
+<span class="sig-name descname"><span class="pre">read_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.read_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.read_config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Tries loading config as an absolute path to a .yaml file. Failing that, try it as a relative path to a .yaml file
 from the current working directory. Finally, try looking for config as a .yaml file saved in
 pycis/model/config/.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pycis.model.instrument.Instrument.write_config">
-<code class="sig-name descname">write_config</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fpath</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.write_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.write_config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.instrument.Instrument.write_config">
+<span class="sig-name descname"><span class="pre">write_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fpath</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.write_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.write_config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the current instrument config to a .yaml config file that can then be reloaded at a later date.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -210,14 +210,18 @@ pycis/model/config/.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pycis.model.instrument.Instrument.get_type">
-<code class="sig-name descname">get_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_type" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.instrument.Instrument.get_type">
+<span class="sig-name descname"><span class="pre">get_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Instrument type determines how the interferogram is calculated</p>
 <p>Valid instrument types:
 - ‘mueller’: Full Mueller calculation
 - ‘single_delay_linear’
 - ‘single_delay_pixelated’
-- ‘multi_delay_pixelated’</p>
+- ‘double_delay_pixelated’
+- ‘triple_delay_pixelated’
+- ‘double_delay_linear’
+- ‘triple_delay_linear’
+- ‘quad_delay_linear’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>type (str)</p>
@@ -226,14 +230,14 @@ pycis/model/config/.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pycis.model.instrument.Instrument.get_inc_angle">
-<code class="sig-name descname">get_inc_angle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">component</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_inc_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_inc_angle" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.instrument.Instrument.get_inc_angle">
+<span class="sig-name descname"><span class="pre">get_inc_angle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_inc_angle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_inc_angle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate incidence angle(s) of ray(s) through the component</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre x position(s) in sensor plane in m.</p></li>
-<li><p><strong>y</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre y position(s) in sensor plane in m.</p></li>
+<li><p><strong>x</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – x position(s) on sensor plane in m.</p></li>
+<li><p><strong>y</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – y position(s) on sensor plane in m.</p></li>
 <li><p><strong>component</strong> (<em>pycis.Component</em>) – Interferometer component.</p></li>
 </ul>
 </dd>
@@ -244,14 +248,14 @@ pycis/model/config/.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pycis.model.instrument.Instrument.get_azim_angle">
-<code class="sig-name descname">get_azim_angle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">component</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_azim_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_azim_angle" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.instrument.Instrument.get_azim_angle">
+<span class="sig-name descname"><span class="pre">get_azim_angle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_azim_angle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_azim_angle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate azimuthal angle(s) of ray(s) through the component</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre x position(s) in sensor plane in m.</p></li>
-<li><p><strong>y</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre y position(s) in sensor plane in m.</p></li>
+<li><p><strong>x</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – x position(s) on sensor plane in m.</p></li>
+<li><p><strong>y</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – y position(s) on sensor plane in m.</p></li>
 <li><p><strong>component</strong> (<em>pycis.OrientableComponent</em>) – Interferometer component.</p></li>
 </ul>
 </dd>
@@ -262,15 +266,15 @@ pycis/model/config/.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pycis.model.instrument.Instrument.get_mueller_matrix">
-<code class="sig-name descname">get_mueller_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wavelength</span></em>, <em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_mueller_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_mueller_matrix" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.instrument.Instrument.get_mueller_matrix">
+<span class="sig-name descname"><span class="pre">get_mueller_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wavelength</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_mueller_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_mueller_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate total Mueller matrix for the interferometer</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>wavelength</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Wavelength in m.</p></li>
-<li><p><strong>x</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre x position(s) in sensor plane in m.</p></li>
-<li><p><strong>y</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre y position(s) in sensor plane in m.</p></li>
+<li><p><strong>x</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – x position(s) on sensor plane in m.</p></li>
+<li><p><strong>y</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – y position(s) on sensor plane in m.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -280,15 +284,15 @@ pycis/model/config/.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pycis.model.instrument.Instrument.get_delay">
-<code class="sig-name descname">get_delay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wavelength</span></em>, <em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_delay" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.instrument.Instrument.get_delay">
+<span class="sig-name descname"><span class="pre">get_delay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wavelength</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_delay"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_delay" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the interferometer delay(s) at the given wavelength(s)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>wavelength</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Wavelength in m. If xr.DataArray, must have dimension name ‘wavelength’.</p></li>
-<li><p><strong>x</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre x position(s) in sensor plane in m.</p></li>
-<li><p><strong>y</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – Pixel centre y position(s) in sensor plane in m.</p></li>
+<li><p><strong>x</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – x position(s) on sensor plane in m.</p></li>
+<li><p><strong>y</strong> (<em>float</em><em>, </em><em>xr.DataArray</em>) – y position(s) on sensor plane in m.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -298,8 +302,8 @@ pycis/model/config/.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pycis.model.instrument.Instrument.capture">
-<code class="sig-name descname">capture</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spectrum</span></em>, <em class="sig-param"><span class="n">clean</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.capture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.capture" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.instrument.Instrument.capture">
+<span class="sig-name descname"><span class="pre">capture</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spectrum</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.capture"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.capture" title="Permalink to this definition">¶</a></dt>
 <dd><p>Capture image of given spectrum.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -319,8 +323,8 @@ that light is unpolarised (i.e. the spectrum supplied is the S_0 Stokes paramete
 </dd></dl>
 
 <dl class="py method">
-<dt id="pycis.model.instrument.Instrument.get_fringe_frequency">
-<code class="sig-name descname">get_fringe_frequency</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wavelength</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_fringe_frequency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_fringe_frequency" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.instrument.Instrument.get_fringe_frequency">
+<span class="sig-name descname"><span class="pre">get_fringe_frequency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wavelength</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/instrument.html#Instrument.get_fringe_frequency"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.instrument.Instrument.get_fringe_frequency" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the interference fringe frequency at the sensor plane for the given wavelength.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -334,7 +338,7 @@ that light is unpolarised (i.e. the spectrum supplied is the S_0 Stokes paramete
 
 </dd></dl>
 
-</div>
+</section>
 
 
            </div>
@@ -350,7 +354,7 @@ that light is unpolarised (i.e. the spectrum supplied is the S_0 Stokes paramete
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright 2021, Joseph Allcock.
+        &#169; Copyright 2022, J. Allcock.
 
     </p>
   </div>

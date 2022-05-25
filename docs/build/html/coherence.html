@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -62,10 +65,6 @@
           
             
             
-              <div class="version">
-                0.1
-              </div>
-            
           
 
           
@@ -88,7 +87,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Table of Contents</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Table of Contents</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="model.html">Model</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="interferometer.html">Interferometer</a></li>
@@ -173,51 +172,50 @@
   <div class="section" id="module-pycis.model.coherence">
 <span id="coherence"></span><h1>Coherence<a class="headerlink" href="#module-pycis.model.coherence" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
-<dt id="pycis.model.coherence.calculate_coherence">
-<code class="sig-prename descclassname">pycis.model.coherence.</code><code class="sig-name descname">calculate_coherence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spectrum</span></em>, <em class="sig-param"><span class="n">delay</span></em>, <em class="sig-param"><span class="n">material</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">freq_com</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/coherence.html#calculate_coherence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.coherence.calculate_coherence" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculates the (temporal) coherence of a given intensity spectrum for a given interferometer delay(s).</p>
+<dt class="sig sig-object py" id="pycis.model.coherence.calculate_coherence">
+<span class="sig-prename descclassname"><span class="pre">pycis.model.coherence.</span></span><span class="sig-name descname"><span class="pre">calculate_coherence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spectrum</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">material</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq_ref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/coherence.html#calculate_coherence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.coherence.calculate_coherence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the temporal coherence of an intensity spectrum, as measured by a 2-beam interferometer with given delay(s).</p>
 <p>Temporal coherence <img class="math" src="_images/math/d0af7c2c7c249c40d4e67b4f55a12b65a44f5d6d.png" alt="\Gamma(\tau)"/> is the Fourier transform of the frequency spectrum <img class="math" src="_images/math/e3e429fc442545f7a3a1a62ca4466e517d575c01.png" alt="I(\nu)"/>:</p>
 <blockquote>
 <div><div class="math">
 <p><img src="_images/math/5c307bb77fff8c56ed96f608573349bb4bb7a2a4.png" alt="\Gamma(\tau)=\int_{-\infty}^{\infty}I(\nu)\exp(2\pi{}i\nu\tau)d\nu,"/></p>
 </div></div></blockquote>
-<p>with interferometer delay time <img class="math" src="_images/math/914b2d4b6659b86d3153d5510839dfb254dfc8a3.png" alt="\tau"/> and frequency <img class="math" src="_images/math/14eb89266154200b9c81dcfc3bd058638fa221bf.png" alt="\nu"/> as the conjugate variables.
-Generally, dispersion means that <img class="math" src="_images/math/81ce292887db1396c4df31b6043a1640f930a060.png" alt="\tau\rightarrow\tau(\nu)"/>  but a first-order (linear) approx. for dispersion maintains it in a modified form (the ‘group delay’ approximation).</p>
+<p>with interferometer delay time <img class="math" src="_images/math/914b2d4b6659b86d3153d5510839dfb254dfc8a3.png" alt="\tau"/> and frequency <img class="math" src="_images/math/14eb89266154200b9c81dcfc3bd058638fa221bf.png" alt="\nu"/> as the conjugate variables. It is measured
+using a 2-beam interferometer. In practice, instrument dispersion is present: <img class="math" src="_images/math/81ce292887db1396c4df31b6043a1640f930a060.png" alt="\tau\rightarrow\tau(\nu)"/>.
+How this dispersive integral is evaluated by this function depends on the arguments given. For a full explanation of
+how dispersion affects the coherence measured by an interferometer, see Section 2.2.2 of J. Allcock’s PhD thesis.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>spectrum</strong> (<em>xr.DataArray</em>) – Intensity spectrum. Dim. ‘wavelength’ has coords with units m or else dim.
-‘frequency’ has coords with units Hz. Spectrum units are then either ( arb. / m ) or (arb. / Hz ) respectively.</p></li>
-<li><p><strong>delay</strong> (<em>xr.DataArray</em>) – Interferometer delay in units radians. If delay is a float or is a DataArray without a
-‘wavelength’ or a ‘frequency’ dimension, then the group delay approx. is used. In this case, it is assumed that
-the delay value(s) correspond to the centre-of-mass (COM) frequency of the given spectrum and the coherence is
-calculated for each delay value. If delay has either a ‘wavelength’ dim. or a ‘frequency’ dim. – with
-coordinates that match the corresponding dim. of spectrum – then the full dispersive integral is evaluated.</p></li>
-<li><p><strong>material</strong> – string specifying the interferometer crystal material. See pycis.model.dispersion for valid inputs.
-This is not needed in the full dispersive treatment as the dispersion info has already been provided in the
-delay argument. To do a none-dispersive calculation, you should leave material=None and use a delay argument
-that will trigger the group delay approx.</p></li>
-<li><p><strong>freq_com</strong> – centre of mass frequency of spectrum, if it has already been calculated.</p></li>
+<li><p><strong>spectrum</strong> (<em>xr.DataArray</em>) – Intensity spectrum as a DataArray. Dimension ‘wavelength’ has coordinates with units m or else dimension
+‘frequency’ has coordinates with units Hz. Units of spectrum are then ( arb. / m ) or (arb. / Hz )
+respectively. This function broadcasts across xr.DataArray dimensions, so spectrum can represent e.g. a
+‘spectral cube’ with dimensions ‘x’ and ‘y’.</p></li>
+<li><p><strong>delay</strong> (<em>Union</em><em>[</em><em>float</em><em>, </em><em>xr.DataArray</em><em>]</em>) – <p>Interferometer delay in radians. Type determines how the calculation is performed :</p>
+<ul>
+<li><p>Mode 1: No dispersion. If delay is a scalar, or a DataArray without a spectral dimension (‘wavelength’ /
+‘frequency’), and material = None then the calculation assumes no dispersion. Delay(s) correspond to
+the reference frequency.</p></li>
+<li><p>Mode 2: Group delay approximation. If delay is a scalar, or a DataArray without a spectral dimension,
+and material != None then the ‘group delay approximation’ for dispersion is used. This is a first-order
+Taylor expansion of delay about the reference frequency. Delay(s) correspond to the reference frequency.</p></li>
+<li><p>Mode 3: Full dispersive integral. If delay is a DataArray with a spectral dimension whose coordinates match
+those of spectrum, then the full dispersive integral can be evaluated. Mostly here for testing.</p></li>
+</ul>
+</p></li>
+<li><p><strong>material</strong> (<em>str</em>) – String specifying the interferometer crystal material, which determines the dispersion.
+See pycis.model.dispersion for valid strings. Only used in ‘Mode 2’ (see above). Defaults to material = None,
+giving either a non-dispersive calculation or a full dispersive calculation, depending on the delay argument.</p></li>
+<li><p><strong>freq_ref</strong> (<em>Union</em><em>[</em><em>float</em><em>, </em><em>xr.DataArray</em><em>]</em>) – Reference frequency to which the delay argument corresponds (if it is scalar or a DataArray without a
+spectral dimension). Only used for modes 1 &amp; 2. The rest-frame centre-of-mass
+frequency of the spectral feature being studied is typically a sensible choice. Defaults to the centre-of-mass
+frequency of the given spectrum.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>coherence (temporal). Units are those of the spectrum argument, but integrated over the spectral dimension e.g. if spectrum has units ( W / m^2 / m ) then coherence has units ( W / m^2 ).</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="pycis.model.coherence.test_with_gaussian_lineshape">
-<code class="sig-prename descclassname">pycis.model.coherence.</code><code class="sig-name descname">test_with_gaussian_lineshape</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/coherence.html#test_with_gaussian_lineshape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.coherence.test_with_gaussian_lineshape" title="Permalink to this definition">¶</a></dt>
-<dd><p>numerical / analytical test of calculate_coherence() using a modelled Gaussian spectral lineshape</p>
-<p>TODO move elsewhere</p>
-<p>old. abbreviations:
-doc = degree of coherence
-wl = wavelength
-biref = birefringence</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p></p>
+<dd class="field-even"><p>Temporal coherence. Units are those of the spectrum argument, but integrated over the spectral dimension
+e.g. if spectrum has units ( W / m^2 / m ) then coherence has units ( W / m^2 ). If spectrum is area normalised
+to one then the temporal coherence is the unitless ‘degree of temporal coherence’.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -238,7 +236,7 @@ biref = birefringence</p>
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright 2021, Joseph Allcock.
+        &#169; Copyright 2022, J. Allcock.
 
     </p>
   </div>

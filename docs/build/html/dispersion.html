@@ -4,7 +4,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Dispersion &mdash; pycis 0.1 documentation</title>
@@ -13,6 +14,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +32,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -62,10 +66,6 @@
           
             
             
-              <div class="version">
-                0.1
-              </div>
-            
           
 
           
@@ -88,7 +88,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Table of Contents</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Table of Contents</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="model.html">Model</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="interferometer.html">Interferometer</a></li>
@@ -170,11 +170,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-pycis.model.dispersion">
+  <section id="module-pycis.model.dispersion">
 <span id="dispersion"></span><h1>Dispersion<a class="headerlink" href="#module-pycis.model.dispersion" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
-<dt id="pycis.model.dispersion.get_refractive_indices">
-<code class="sig-prename descclassname">pycis.model.dispersion.</code><code class="sig-name descname">get_refractive_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wavelength</span></em>, <em class="sig-param"><span class="n">material</span></em>, <em class="sig-param"><span class="n">sellmeier_coefs_source</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sellmeier_coefs</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/dispersion.html#get_refractive_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.dispersion.get_refractive_indices" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.dispersion.get_refractive_indices">
+<span class="sig-prename descclassname"><span class="pre">pycis.model.dispersion.</span></span><span class="sig-name descname"><span class="pre">get_refractive_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wavelength</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">material</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'a-BBO'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sellmeier_coefs_source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sellmeier_coefs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/dispersion.html#get_refractive_indices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.dispersion.get_refractive_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the extraordinary and ordinary refractive indices as a function of wavelength</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -196,8 +196,8 @@ via the Sellmeier equation. Dictionary must have keys ‘Ae’, ‘Be’, ‘Ce�
 </dd></dl>
 
 <dl class="py function">
-<dt id="pycis.model.dispersion.get_kappa">
-<code class="sig-prename descclassname">pycis.model.dispersion.</code><code class="sig-name descname">get_kappa</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wavelength</span></em>, <em class="sig-param"><span class="n">material</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/dispersion.html#get_kappa"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.dispersion.get_kappa" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.dispersion.get_kappa">
+<span class="sig-prename descclassname"><span class="pre">pycis.model.dispersion.</span></span><span class="sig-name descname"><span class="pre">get_kappa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wavelength</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/dispersion.html#get_kappa"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.dispersion.get_kappa" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate kappa, the dimensionless parameter that gives a first-order account of material dispersion, as a function
 of wavelength</p>
 <dl class="field-list simple">
@@ -219,8 +219,8 @@ via the Sellmeier equation. Dictionary must have keys ‘Ae’, ‘Be’, ‘Ce�
 </dd></dl>
 
 <dl class="py function">
-<dt id="pycis.model.dispersion.sellmeier_eqn">
-<code class="sig-prename descclassname">pycis.model.dispersion.</code><code class="sig-name descname">sellmeier_eqn</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wl</span></em>, <em class="sig-param"><span class="n">c</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/dispersion.html#sellmeier_eqn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.dispersion.sellmeier_eqn" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.dispersion.sellmeier_eqn">
+<span class="sig-prename descclassname"><span class="pre">pycis.model.dispersion.</span></span><span class="sig-name descname"><span class="pre">sellmeier_eqn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/dispersion.html#sellmeier_eqn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.dispersion.sellmeier_eqn" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a set of Sellmeier coefficients, calculate the extraordinary and ordinary refractive indices as a function of
 wavelength</p>
 <dl class="field-list simple">
@@ -239,8 +239,8 @@ wavelength.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="pycis.model.dispersion.get_sellmeier_coefs">
-<code class="sig-prename descclassname">pycis.model.dispersion.</code><code class="sig-name descname">get_sellmeier_coefs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">material</span></em>, <em class="sig-param"><span class="n">sellmeier_coefs_source</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/dispersion.html#get_sellmeier_coefs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.dispersion.get_sellmeier_coefs" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.dispersion.get_sellmeier_coefs">
+<span class="sig-prename descclassname"><span class="pre">pycis.model.dispersion.</span></span><span class="sig-name descname"><span class="pre">get_sellmeier_coefs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">material</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sellmeier_coefs_source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/dispersion.html#get_sellmeier_coefs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.dispersion.get_sellmeier_coefs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the requested set of Sellmeier coefficients</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -257,7 +257,7 @@ pycis.model.dispersion.</p></li>
 </dl>
 </dd></dl>
 
-</div>
+</section>
 
 
            </div>
@@ -273,7 +273,7 @@ pycis.model.dispersion.</p></li>
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright 2021, Joseph Allcock.
+        &#169; Copyright 2022, J. Allcock.
 
     </p>
   </div>

@@ -1,3 +1,4 @@
+from typing import Union
 import numpy as np
 from numba import vectorize, float64, complex128
 import xarray as xr
@@ -18,51 +19,44 @@ def calculate_coherence(spectrum, delay, material=None, freq_ref=None):
     with interferometer delay time :math:`\\tau` and frequency :math:`\\nu` as the conjugate variables. It is measured
     using a 2-beam interferometer. In practice, instrument dispersion is present: :math:`\\tau\\rightarrow\\tau(\\nu)`.
     How this dispersive integral is evaluated by this function depends on the arguments given. For a full explanation of
-    how instrument dispersion affects the temporal coherence measured by an interferometer, see Section 2.2.2 of J.
-    Allcock's PhD thesis.
+    how dispersion affects the coherence measured by an interferometer, see Section 2.2.2 of J. Allcock's PhD thesis.
 
-
-    :param xr.DataArray spectrum: \
+    :param spectrum:\
         Intensity spectrum as a DataArray. Dimension 'wavelength' has coordinates with units m or else dimension
         'frequency' has coordinates with units Hz. Units of spectrum are then ( arb. / m ) or (arb. / Hz )
         respectively. This function broadcasts across xr.DataArray dimensions, so spectrum can represent e.g. a
         'spectral cube' with dimensions 'x' and 'y'.
+    :type spectrum: xr.DataArray
 
-    :param xr.DataArray delay: \
-        Interferometer delay with units of radians. The type of variable given determines how the calculation is
-        performed:
+    :param delay: Interferometer delay in radians. Type determines how the calculation is performed :
 
-        - Mode 1: No dispersion. If delay is scalar, or else is a DataArray without a spectral dimension ('wavelength' or
-        'frequency'), and material = None then the calculation assumes no dispersion. Delay(s) then correspond to the
-        reference frequency.
+           - Mode 1: No dispersion. If delay is a scalar, or a DataArray without a spectral dimension ('wavelength' /
+             'frequency'), and material = None then the calculation assumes no dispersion. Delay(s) correspond to
+             the reference frequency.
+           - Mode 2: Group delay approximation. If delay is a scalar, or a DataArray without a spectral dimension,
+             and material != None then the 'group delay approximation' for dispersion is used. This is a first-order
+             Taylor expansion of delay about the reference frequency. Delay(s) correspond to the reference frequency.
+           - Mode 3: Full dispersive integral. If delay is a DataArray with a spectral dimension whose coordinates match
+             those of spectrum, then the full dispersive integral can be evaluated. Mostly here for testing.
 
-        - Mode 2: Group delay approximation. If delay is scalar, or else is a DataArray without a spectral dimension
-        ('wavelength' or 'frequency'), and material != None then the 'group delay' approximation for dispersion is used.
-        This is a first-order Taylor expansion of delay about the reference frequency. Delay(s) then correspond to the
-        reference frequency.
-
-        - Mode 3: Full dispersive integral. If delay is a DataArray with a spectral dimension ('wavelength' or
-        'frequency') whose coordinates match those of spectrum, then the full dispersive integral can be evaluated.
-        Typically, the group delay approximation is sufficiently accurate, so this mode is mostly here for testing.
+    :type delay: Union[float, xr.DataArray]
 
     :param material: \
         String specifying the interferometer crystal material, which determines the dispersion.
-        See pycis.model.dispersion for valid strings. Only used in 'Mode 2' (see above). Defaults to material = None for
-        either a non-dispersive calculation or else a full dispersive calculation, depending on the delay argument.
+        See pycis.model.dispersion for valid strings. Only used in 'Mode 2' (see above). Defaults to material = None,
+        giving either a non-dispersive calculation or a full dispersive calculation, depending on the delay argument.
+    :type material: str
 
     :param freq_ref: \
-        Reference frequency to which the delay argument corresponds (if it is scalar or else is a DataArray without a
-        spectral dimension ('wavelength' or 'frequency'). Only required for modes 1 & 2. The rest-frame centre-of-mass
+        Reference frequency to which the delay argument corresponds (if it is scalar or a DataArray without a
+        spectral dimension). Only used for modes 1 & 2. The rest-frame centre-of-mass
         frequency of the spectral feature being studied is typically a sensible choice. Defaults to the centre-of-mass
         frequency of the given spectrum.
+    :type freq_ref: Union[float, xr.DataArray]
 
     :return: Temporal coherence. Units are those of the spectrum argument, but integrated over the spectral dimension
         e.g. if spectrum has units ( W / m^2 / m ) then coherence has units ( W / m^2 ). If spectrum is area normalised
         to one then the temporal coherence is the unitless 'degree of temporal coherence'.
-
-    TODO: function cannot handle an interferometer delay produced by two crystal components with different dispersive
-          properties. Perhaps it makes more sense to have this as a method of pycis.Instrument.
-    TODO: Write test for full dispersive mode.
     """
 
     # if necessary, convert spectrum's wavelength (m) dim + coordinate to frequency (Hz)

@@ -4,7 +4,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Interferometer &mdash; pycis 0.1 documentation</title>
@@ -13,6 +14,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +32,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -62,10 +66,6 @@
           
             
             
-              <div class="version">
-                0.1
-              </div>
-            
           
 
           
@@ -88,7 +88,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Table of Contents</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Table of Contents</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="model.html">Model</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Interferometer</a></li>
@@ -170,12 +170,12 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="interferometer">
+  <section id="interferometer">
 <h1>Interferometer<a class="headerlink" href="#interferometer" title="Permalink to this headline">¶</a></h1>
 <p>Interferometer components.</p>
 <span class="target" id="module-pycis.model.interferometer"></span><dl class="py function">
-<dt id="pycis.model.interferometer.mueller_product">
-<code class="sig-prename descclassname">pycis.model.interferometer.</code><code class="sig-name descname">mueller_product</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mat1</span></em>, <em class="sig-param"><span class="n">mat2</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#mueller_product"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.interferometer.mueller_product" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.interferometer.mueller_product">
+<span class="sig-prename descclassname"><span class="pre">pycis.model.interferometer.</span></span><span class="sig-name descname"><span class="pre">mueller_product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mat1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mat2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#mueller_product"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.interferometer.mueller_product" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the product of a Mueller matrix with a Mueller matrix / Stokes vector</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -191,8 +191,8 @@
 </dd></dl>
 
 <dl class="py function">
-<dt id="pycis.model.interferometer.rotation_matrix">
-<code class="sig-prename descclassname">pycis.model.interferometer.</code><code class="sig-name descname">rotation_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">angle</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#rotation_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.interferometer.rotation_matrix" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.interferometer.rotation_matrix">
+<span class="sig-prename descclassname"><span class="pre">pycis.model.interferometer.</span></span><span class="sig-name descname"><span class="pre">rotation_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#rotation_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.interferometer.rotation_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mueller matrix for frame rotation (anti-clockwise from x-axis)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -205,8 +205,8 @@
 </dd></dl>
 
 <dl class="py class">
-<dt id="pycis.model.interferometer.Filter">
-<em class="property">class </em><code class="sig-prename descclassname">pycis.model.interferometer.</code><code class="sig-name descname">Filter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tx</span></em>, <em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#Filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.interferometer.Filter" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.interferometer.Filter">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pycis.model.interferometer.</span></span><span class="sig-name descname"><span class="pre">Filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#Filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.interferometer.Filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Optical filter with no polarisation-dependent behaviour.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -219,8 +219,8 @@
 </dd></dl>
 
 <dl class="py class">
-<dt id="pycis.model.interferometer.LinearPolariser">
-<em class="property">class </em><code class="sig-prename descclassname">pycis.model.interferometer.</code><code class="sig-name descname">LinearPolariser</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tx_1</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">tx_2</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#LinearPolariser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.interferometer.LinearPolariser" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.interferometer.LinearPolariser">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pycis.model.interferometer.</span></span><span class="sig-name descname"><span class="pre">LinearPolariser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tx_1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tx_2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#LinearPolariser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.interferometer.LinearPolariser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Linear polariser</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -232,16 +232,16 @@
 </dd>
 </dl>
 <dl class="py method">
-<dt id="pycis.model.interferometer.LinearPolariser.get_mueller_matrix">
-<code class="sig-name descname">get_mueller_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#LinearPolariser.get_mueller_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.interferometer.LinearPolariser.get_mueller_matrix" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.interferometer.LinearPolariser.get_mueller_matrix">
+<span class="sig-name descname"><span class="pre">get_mueller_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#LinearPolariser.get_mueller_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.interferometer.LinearPolariser.get_mueller_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mueller matrix for a linear polariser</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
-<dt id="pycis.model.interferometer.UniaxialCrystal">
-<em class="property">class </em><code class="sig-prename descclassname">pycis.model.interferometer.</code><code class="sig-name descname">UniaxialCrystal</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">thickness</span></em>, <em class="sig-param"><span class="n">cut_angle</span></em>, <em class="sig-param"><span class="n">material</span><span class="o">=</span><span class="default_value">'a-BBO'</span></em>, <em class="sig-param"><span class="n">sellmeier_coefs_source</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sellmeier_coefs</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#UniaxialCrystal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.interferometer.UniaxialCrystal" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.interferometer.UniaxialCrystal">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pycis.model.interferometer.</span></span><span class="sig-name descname"><span class="pre">UniaxialCrystal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thickness</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut_angle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">material</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'a-BBO'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sellmeier_coefs_source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sellmeier_coefs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#UniaxialCrystal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.interferometer.UniaxialCrystal" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plane-parallel uniaxial birefringent crystal plate</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -260,8 +260,8 @@ between 0 and 1. Simulates real crystal imperfections.</p></li>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="pycis.model.interferometer.UniaxialCrystal.get_delay">
-<code class="sig-name descname">get_delay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wavelength</span></em>, <em class="sig-param"><span class="n">inc_angle</span></em>, <em class="sig-param"><span class="n">azim_angle</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#UniaxialCrystal.get_delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.interferometer.UniaxialCrystal.get_delay" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.interferometer.UniaxialCrystal.get_delay">
+<span class="sig-name descname"><span class="pre">get_delay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wavelength</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inc_angle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">azim_angle</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#UniaxialCrystal.get_delay"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.interferometer.UniaxialCrystal.get_delay" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate path delay (in radians) imparted by the retarder</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -278,8 +278,8 @@ between 0 and 1. Simulates real crystal imperfections.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="pycis.model.interferometer.UniaxialCrystal.get_fringe_frequency">
-<code class="sig-name descname">get_fringe_frequency</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wavelength</span></em>, <em class="sig-param"><span class="n">focal_length</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#UniaxialCrystal.get_fringe_frequency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.interferometer.UniaxialCrystal.get_fringe_frequency" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.interferometer.UniaxialCrystal.get_fringe_frequency">
+<span class="sig-name descname"><span class="pre">get_fringe_frequency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wavelength</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">focal_length</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#UniaxialCrystal.get_fringe_frequency"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.interferometer.UniaxialCrystal.get_fringe_frequency" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the (approx.) spatial frequency of the fringe pattern at the sensor plane.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -297,8 +297,66 @@ between 0 and 1. Simulates real crystal imperfections.</p></li>
 </dd></dl>
 
 <dl class="py class">
-<dt id="pycis.model.interferometer.SavartPlate">
-<em class="property">class </em><code class="sig-prename descclassname">pycis.model.interferometer.</code><code class="sig-name descname">SavartPlate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">thickness</span></em>, <em class="sig-param"><span class="n">material</span><span class="o">=</span><span class="default_value">'a-BBO'</span></em>, <em class="sig-param"><span class="n">material_source</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'francon'</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#SavartPlate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.interferometer.SavartPlate" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.interferometer.Waveplate">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pycis.model.interferometer.</span></span><span class="sig-name descname"><span class="pre">Waveplate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#Waveplate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.interferometer.Waveplate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Waveplate, a special case of the plane-parallel uniaxial birefringent crystal plate (cut_angle=0).</p>
+<p>I made this class to speed up the model when fitting to experimental data: the equation for phase delay due to a
+waveplate is simpler than the general uniaxial crystal case.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>thickness</strong> (<em>float</em>) – Crystal thickness in m.</p></li>
+<li><p><strong>orientation</strong> (<em>float</em>) – Orientation of component fast axis in degrees, from positive x-axis towards positive y-axis.</p></li>
+<li><p><strong>material</strong> (<em>str</em>) – Set crystal material.</p></li>
+<li><p><strong>sellmeier_coefs_source</strong> (<em>str</em>) – Specify which source to use for the Sellmeier coefficients that describe the dispersion. If not specified,
+defaults for each material are set by sellmeier_coefs_source_defaults in pycis.model.dispersion.</p></li>
+<li><p><strong>sellmeier_coefs</strong> (<em>dict</em>) – Manually set the coefficients that describe the material dispersion
+via the Sellmeier equation. Dictionary must have keys ‘Ae’, ‘Be’, ‘Ce’, ‘De’, ‘Ao’, ‘Bo’, ‘Co’, ‘Do’.</p></li>
+<li><p><strong>contrast</strong> (<em>float</em>) – An arbitrary contrast degradation factor for the retarder, independent of ray path. Value
+between 0 and 1. Simulates real crystal imperfections.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="pycis.model.interferometer.Waveplate.get_delay">
+<span class="sig-name descname"><span class="pre">get_delay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wavelength</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inc_angle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">azim_angle</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#Waveplate.get_delay"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.interferometer.Waveplate.get_delay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate path delay (in radians) imparted by the retarder</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>wavelength</strong> (<em>float</em><em>, </em><em>xarray.DataArray</em>) – Wavelength in m.</p></li>
+<li><p><strong>inc_angle</strong> (<em>float</em><em>, </em><em>xarray.DataArray</em>) – Ray incidence angle(s) in radians.</p></li>
+<li><p><strong>azim_angle</strong> (<em>float</em><em>, </em><em>xarray.DataArray</em>) – Ray azimuthal angle(s) in radians.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(float, xarray.DataArray) Imparted delay in radians.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pycis.model.interferometer.Waveplate.get_fringe_frequency">
+<span class="sig-name descname"><span class="pre">get_fringe_frequency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#Waveplate.get_fringe_frequency"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.interferometer.Waveplate.get_fringe_frequency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the (approx.) spatial frequency of the fringe pattern at the sensor plane.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>focal_length</strong> (<em>float</em>) – Focal length of imaging lens in m.</p></li>
+<li><p><strong>wavelength</strong> (<em>float</em>) – Wavelength in m.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(tuple) x and y components of the fringe frequency in units m^-1 and in order (f_x, f_y).</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pycis.model.interferometer.SavartPlate">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pycis.model.interferometer.</span></span><span class="sig-name descname"><span class="pre">SavartPlate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thickness</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">material</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'a-BBO'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sellmeier_coefs_source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sellmeier_coefs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'francon'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#SavartPlate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.interferometer.SavartPlate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Savart plate</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -315,8 +373,8 @@ between 0 and 1. Simulates the effect of real crystal imperfections.</p></li>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="pycis.model.interferometer.SavartPlate.get_delay">
-<code class="sig-name descname">get_delay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wavelength</span></em>, <em class="sig-param"><span class="n">inc_angle</span></em>, <em class="sig-param"><span class="n">azim_angle</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#SavartPlate.get_delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.interferometer.SavartPlate.get_delay" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.interferometer.SavartPlate.get_delay">
+<span class="sig-name descname"><span class="pre">get_delay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wavelength</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inc_angle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">azim_angle</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#SavartPlate.get_delay"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.interferometer.SavartPlate.get_delay" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate path delay (in radians) imparted by the retarder</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -335,8 +393,8 @@ between 0 and 1. Simulates the effect of real crystal imperfections.</p></li>
 </dd></dl>
 
 <dl class="py class">
-<dt id="pycis.model.interferometer.IdealWaveplate">
-<em class="property">class </em><code class="sig-prename descclassname">pycis.model.interferometer.</code><code class="sig-name descname">IdealWaveplate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">delay</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#IdealWaveplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.interferometer.IdealWaveplate" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.interferometer.IdealWaveplate">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pycis.model.interferometer.</span></span><span class="sig-name descname"><span class="pre">IdealWaveplate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delay</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#IdealWaveplate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.interferometer.IdealWaveplate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Ideal waveplate imparting a given delay to all rays.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -349,18 +407,18 @@ between 0 and 1. Simulates the effect of real crystal imperfections.</p></li>
 </dd></dl>
 
 <dl class="py class">
-<dt id="pycis.model.interferometer.QuarterWaveplate">
-<em class="property">class </em><code class="sig-prename descclassname">pycis.model.interferometer.</code><code class="sig-name descname">QuarterWaveplate</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#QuarterWaveplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.interferometer.QuarterWaveplate" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.interferometer.QuarterWaveplate">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pycis.model.interferometer.</span></span><span class="sig-name descname"><span class="pre">QuarterWaveplate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#QuarterWaveplate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.interferometer.QuarterWaveplate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Ideal quarter-wave plate.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="pycis.model.interferometer.HalfWaveplate">
-<em class="property">class </em><code class="sig-prename descclassname">pycis.model.interferometer.</code><code class="sig-name descname">HalfWaveplate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">orientation</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#HalfWaveplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycis.model.interferometer.HalfWaveplate" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pycis.model.interferometer.HalfWaveplate">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pycis.model.interferometer.</span></span><span class="sig-name descname"><span class="pre">HalfWaveplate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycis/model/interferometer.html#HalfWaveplate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pycis.model.interferometer.HalfWaveplate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Ideal half-wave plate.</p>
 </dd></dl>
 
-</div>
+</section>
 
 
            </div>
@@ -376,7 +434,7 @@ between 0 and 1. Simulates the effect of real crystal imperfections.</p></li>
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright 2021, Joseph Allcock.
+        &#169; Copyright 2022, J. Allcock.
 
     </p>
   </div>

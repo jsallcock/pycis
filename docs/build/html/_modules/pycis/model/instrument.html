@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/doctools.js"></script>
@@ -60,10 +63,6 @@
           
             
             
-              <div class="version">
-                0.1
-              </div>
-            
           
 
           
@@ -86,7 +85,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Table of Contents</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Table of Contents</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../model.html">Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../analysis.html">Analysis</a></li>
@@ -167,6 +166,7 @@
 <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">isclose</span><span class="p">,</span> <span class="n">radians</span>
 <span class="kn">from</span> <span class="nn">numba</span> <span class="kn">import</span> <span class="n">vectorize</span><span class="p">,</span> <span class="n">f8</span>
+<span class="kn">from</span> <span class="nn">fnmatch</span> <span class="kn">import</span> <span class="n">fnmatch</span>
 <span class="kn">import</span> <span class="nn">pycis</span>
 <span class="kn">from</span> <span class="nn">pycis.model</span> <span class="kn">import</span> <span class="n">mueller_product</span><span class="p">,</span> <span class="n">LinearPolariser</span><span class="p">,</span> <span class="n">Camera</span><span class="p">,</span> <span class="n">QuarterWaveplate</span><span class="p">,</span> <span class="n">Component</span><span class="p">,</span> <span class="n">LinearRetarder</span><span class="p">,</span> \
     <span class="n">UniaxialCrystal</span><span class="p">,</span> <span class="n">TiltableComponent</span>
@@ -227,6 +227,7 @@
                 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                     <span class="n">config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">yaml</span><span class="o">.</span><span class="n">FullLoader</span><span class="p">)</span>
                 <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">break</span>
             <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
                 <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
 
@@ -237,7 +238,7 @@
             <span class="n">camera</span> <span class="o">=</span> <span class="n">Camera</span><span class="p">(</span><span class="o">**</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;camera&#39;</span><span class="p">])</span>
             <span class="n">optics</span> <span class="o">=</span> <span class="p">[</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;lens_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;_focal_length&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]</span>
             <span class="n">ic</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;interferometer&#39;</span><span class="p">]</span>
-            <span class="n">interferometer</span> <span class="o">=</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">pycis</span><span class="p">,</span> <span class="p">[</span><span class="o">*</span><span class="n">ic</span><span class="p">[</span><span class="n">i</span><span class="p">]][</span><span class="mi">0</span><span class="p">])(</span><span class="o">**</span><span class="p">[</span><span class="o">*</span><span class="n">ic</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">()][</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]</span>
+            <span class="n">interferometer</span> <span class="o">=</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">pycis</span><span class="p">,</span> <span class="p">[</span><span class="o">*</span><span class="n">ic</span><span class="p">[</span><span class="n">i</span><span class="p">]][</span><span class="mi">0</span><span class="p">])(</span><span class="o">**</span><span class="p">[</span><span class="o">*</span><span class="n">ic</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">()][</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ic</span><span class="p">))]</span>
 
         <span class="k">except</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;pycis: could not interpret config file&#39;</span><span class="p">)</span>
@@ -277,7 +278,11 @@
 <span class="sd">        - &#39;mueller&#39;: Full Mueller calculation</span>
 <span class="sd">        - &#39;single_delay_linear&#39;</span>
 <span class="sd">        - &#39;single_delay_pixelated&#39;</span>
-<span class="sd">        - &#39;multi_delay_pixelated&#39;</span>
+<span class="sd">        - &#39;double_delay_pixelated&#39;</span>
+<span class="sd">        - &#39;triple_delay_pixelated&#39;</span>
+<span class="sd">        - &#39;double_delay_linear&#39;</span>
+<span class="sd">        - &#39;triple_delay_linear&#39;</span>
+<span class="sd">        - &#39;quad_delay_linear&#39;</span>
 
 <span class="sd">        :return: type (str)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -285,67 +290,67 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">force_mueller</span><span class="p">:</span>
             <span class="k">return</span> <span class="s1">&#39;mueller&#39;</span>
 
-        <span class="nb">type</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">inst_type</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;monochrome_polarised&#39;</span><span class="p">:</span>
 
-            <span class="c1"># single-delay polarised</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interferometer</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-
-                <span class="c1"># check for correct component types and relative orientations</span>
                 <span class="n">types</span> <span class="o">=</span> <span class="p">[</span><span class="n">LinearPolariser</span><span class="p">,</span> <span class="n">UniaxialCrystal</span><span class="p">,</span> <span class="n">QuarterWaveplate</span><span class="p">,</span> <span class="p">]</span>
-                <span class="n">relative_orientations</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="p">]</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_interferometer_config</span><span class="p">(</span><span class="n">types</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="p">]):</span>
+                    <span class="n">inst_type</span> <span class="o">=</span> <span class="s1">&#39;single_delay_pixelated&#39;</span>
 
-                <span class="n">conditions_met</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">typ</span><span class="p">,</span> <span class="n">rel_or</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">types</span><span class="p">,</span> <span class="n">relative_orientations</span><span class="p">)):</span>
-                    <span class="n">component</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interferometer</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
-                    <span class="n">conditions_met</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="n">typ</span><span class="p">))</span>
-                    <span class="n">conditions_met</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">isclose</span><span class="p">(</span><span class="n">component</span><span class="o">.</span><span class="n">orientation</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">polarisers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">orientation</span><span class="p">,</span> <span class="n">rel_or</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interferometer</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="n">types</span> <span class="o">=</span> <span class="p">[</span><span class="n">LinearPolariser</span><span class="p">,</span> <span class="n">UniaxialCrystal</span><span class="p">,</span> <span class="n">UniaxialCrystal</span><span class="p">,</span> <span class="n">QuarterWaveplate</span><span class="p">,</span> <span class="p">]</span>
 
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_interferometer_config</span><span class="p">(</span><span class="n">types</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">22.5</span><span class="p">,</span> <span class="mf">22.5</span><span class="p">,</span> <span class="mf">67.5</span><span class="p">]):</span>
+                    <span class="n">inst_type</span> <span class="o">=</span> <span class="s1">&#39;triple_delay_pixelated&#39;</span>
+
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_interferometer_config</span><span class="p">(</span><span class="n">types</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">45</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">45</span><span class="p">]):</span>
+                    <span class="n">inst_type</span> <span class="o">=</span> <span class="s1">&#39;double_delay_pixelated&#39;</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;monochrome&#39;</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interferometer</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="n">types</span> <span class="o">=</span> <span class="p">[</span><span class="n">LinearPolariser</span><span class="p">,</span> <span class="n">UniaxialCrystal</span><span class="p">,</span> <span class="n">UniaxialCrystal</span><span class="p">,</span> <span class="n">LinearPolariser</span><span class="p">,</span> <span class="p">]</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_interferometer_config</span><span class="p">(</span><span class="n">types</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">45</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">45</span><span class="p">]):</span>
+                    <span class="n">inst_type</span> <span class="o">=</span> <span class="s1">&#39;double_delay_linear&#39;</span>
+
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_interferometer_config</span><span class="p">(</span><span class="n">types</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">22.5</span><span class="p">,</span> <span class="mf">22.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">22.5</span><span class="p">]):</span>
+                    <span class="n">inst_type</span> <span class="o">=</span> <span class="s1">&#39;triple_delay_linear&#39;</span>
+
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_interferometer_config</span><span class="p">(</span><span class="n">types</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">22.5</span><span class="p">,</span> <span class="mf">22.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">]):</span>
+                    <span class="n">inst_type</span> <span class="o">=</span> <span class="s1">&#39;quad_delay_linear&#39;</span>
+
+            <span class="c1"># are there two polarisers, at the front and back of the interferometer?</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">polarisers</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interferometer</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">LinearPolariser</span><span class="p">)</span> <span class="ow">and</span>
+                                                <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interferometer</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">LinearPolariser</span><span class="p">)):</span>
+
+                <span class="n">pol_1_orientation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interferometer</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">orientation</span>
+                <span class="n">pol_2_orientation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interferometer</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">orientation</span>
+
+                <span class="n">conditions_met</span> <span class="o">=</span> <span class="p">[</span><span class="n">pol_1_orientation</span> <span class="o">==</span> <span class="n">pol_2_orientation</span><span class="p">,</span> <span class="p">]</span> <span class="o">+</span> \
+                                 <span class="p">[</span><span class="n">isclose</span><span class="p">(</span><span class="n">crys</span><span class="o">.</span><span class="n">orientation</span> <span class="o">-</span> <span class="n">pol_1_orientation</span><span class="p">,</span> <span class="mi">45</span><span class="p">)</span> <span class="k">for</span> <span class="n">crys</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">retarders</span><span class="p">]</span>
                 <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">conditions_met</span><span class="p">):</span>
-                    <span class="nb">type</span> <span class="o">=</span> <span class="s1">&#39;single_delay_pixelated&#39;</span>
+                    <span class="n">inst_type</span> <span class="o">=</span> <span class="s1">&#39;single_delay_linear&#39;</span>
 
-            <span class="c1"># multi-delay polarised</span>
-            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interferometer</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">inst_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">inst_type</span> <span class="o">=</span> <span class="s1">&#39;mueller&#39;</span>
 
-                <span class="c1"># check for correct component types and relative orientations</span>
-                <span class="n">types</span> <span class="o">=</span> <span class="p">[</span><span class="n">LinearPolariser</span><span class="p">,</span> <span class="n">UniaxialCrystal</span><span class="p">,</span> <span class="n">LinearPolariser</span><span class="p">,</span> <span class="n">UniaxialCrystal</span><span class="p">,</span> <span class="n">QuarterWaveplate</span><span class="p">,</span> <span class="p">]</span>
-                <span class="n">relative_orientations</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="p">]</span>
-
-                <span class="n">conditions_met</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">typ</span><span class="p">,</span> <span class="n">rel_or</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">types</span><span class="p">,</span> <span class="n">relative_orientations</span><span class="p">)):</span>
-                    <span class="n">component</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interferometer</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
-                    <span class="n">conditions_met</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="n">typ</span><span class="p">))</span>
-                    <span class="n">conditions_met</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">isclose</span><span class="p">(</span><span class="n">component</span><span class="o">.</span><span class="n">orientation</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">polarisers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">orientation</span><span class="p">,</span> <span class="n">rel_or</span><span class="p">))</span>
-
-                <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">conditions_met</span><span class="p">):</span>
-                    <span class="nb">type</span> <span class="o">=</span> <span class="s1">&#39;multi_delay_pixelated&#39;</span>
-
-        <span class="c1"># are there two polarisers, at the front and back of the interferometer?</span>
-        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">polarisers</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interferometer</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">LinearPolariser</span><span class="p">)</span> <span class="ow">and</span>
-                                            <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interferometer</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">LinearPolariser</span><span class="p">)):</span>
-
-            <span class="n">pol_1_orientation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interferometer</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">orientation</span>
-            <span class="n">pol_2_orientation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interferometer</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">orientation</span>
-
-            <span class="n">conditions_met</span> <span class="o">=</span> <span class="p">[</span><span class="n">pol_1_orientation</span> <span class="o">==</span> <span class="n">pol_2_orientation</span><span class="p">,</span> <span class="p">]</span> <span class="o">+</span> \
-                             <span class="p">[</span><span class="n">isclose</span><span class="p">(</span><span class="n">crys</span><span class="o">.</span><span class="n">orientation</span> <span class="o">-</span> <span class="n">pol_1_orientation</span><span class="p">,</span> <span class="mi">45</span><span class="p">)</span> <span class="k">for</span> <span class="n">crys</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">retarders</span><span class="p">]</span>
-            <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">conditions_met</span><span class="p">):</span>
-                <span class="nb">type</span> <span class="o">=</span> <span class="s1">&#39;single_delay_linear&#39;</span>
-
-        <span class="k">if</span> <span class="nb">type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="nb">type</span> <span class="o">=</span> <span class="s1">&#39;mueller&#39;</span>
-
-        <span class="k">return</span> <span class="nb">type</span></div>
+        <span class="k">return</span> <span class="n">inst_type</span></div>
 
 <div class="viewcode-block" id="Instrument.get_inc_angle"><a class="viewcode-back" href="../../../instrument.html#pycis.model.instrument.Instrument.get_inc_angle">[docs]</a>    <span class="k">def</span> <span class="nf">get_inc_angle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">component</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate incidence angle(s) of ray(s) through the component</span>
 
-<span class="sd">        :param x: Pixel centre x position(s) in sensor plane in m.</span>
+<span class="sd">        :param x: x position(s) on sensor plane in m.</span>
 <span class="sd">        :type x: float, xr.DataArray</span>
-<span class="sd">        :param y: Pixel centre y position(s) in sensor plane in m.</span>
+
+<span class="sd">        :param y: y position(s) on sensor plane in m.</span>
 <span class="sd">        :type y: float, xr.DataArray</span>
-<span class="sd">        :param pycis.Component component: Interferometer component.</span>
+
+<span class="sd">        :param component: Interferometer component.</span>
+<span class="sd">        :type component: pycis.Component</span>
+
 <span class="sd">        :return: (float, xr.DataArray) Incidence angle(s) in radians.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="n">TiltableComponent</span><span class="p">):</span>
@@ -360,11 +365,14 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate azimuthal angle(s) of ray(s) through the component</span>
 
-<span class="sd">        :param x: Pixel centre x position(s) in sensor plane in m.</span>
+<span class="sd">        :param x: x position(s) on sensor plane in m.</span>
 <span class="sd">        :type x: float, xr.DataArray</span>
-<span class="sd">        :param y: Pixel centre y position(s) in sensor plane in m.</span>
+
+<span class="sd">        :param y: y position(s) on sensor plane in m.</span>
 <span class="sd">        :type y: float, xr.DataArray</span>
-<span class="sd">        :param pycis.OrientableComponent component: Interferometer component.</span>
+
+<span class="sd">        :param component: Interferometer component.</span>
+<span class="sd">        :type component: pycis.OrientableComponent</span>
 
 <span class="sd">        :return: (float, xr.DataArray) Azimuthal angle(s) in radians.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -383,10 +391,10 @@
 <span class="sd">        :param wavelength: Wavelength in m.</span>
 <span class="sd">        :type wavelength: float, xr.DataArray</span>
 
-<span class="sd">        :param x: Pixel centre x position(s) in sensor plane in m.</span>
+<span class="sd">        :param x: x position(s) on sensor plane in m.</span>
 <span class="sd">        :type x: float, xr.DataArray</span>
 
-<span class="sd">        :param y: Pixel centre y position(s) in sensor plane in m.</span>
+<span class="sd">        :param y: y position(s) on sensor plane in m.</span>
 <span class="sd">        :type y: float, xr.DataArray</span>
 
 <span class="sd">        :return: (xr.DataArray) Mueller matrix.</span>
@@ -406,44 +414,53 @@
 
 <span class="sd">        :param wavelength: Wavelength in m. If xr.DataArray, must have dimension name &#39;wavelength&#39;.</span>
 <span class="sd">        :type wavelength: float, xr.DataArray</span>
-<span class="sd">        :param x: Pixel centre x position(s) in sensor plane in m.</span>
+
+<span class="sd">        :param x: x position(s) on sensor plane in m.</span>
 <span class="sd">        :type x: float, xr.DataArray</span>
-<span class="sd">        :param y: Pixel centre y position(s) in sensor plane in m.</span>
+
+<span class="sd">        :param y: y position(s) on sensor plane in m.</span>
 <span class="sd">        :type y: float, xr.DataArray</span>
+
 <span class="sd">        :return: (xr.DataArray) Interferometer delay(s) in radians.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="c1"># not sure it would be possible to write a general function for this</span>
+        <span class="c1"># Would be nice to write a generalised method if possible</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">!=</span> <span class="s1">&#39;mueller&#39;</span>
 
-        <span class="n">inc_angle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_inc_angle</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">retarders</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="n">azim_angle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_azim_angle</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">retarders</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="c1"># get delay for each retarder</span>
+        <span class="n">delay</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">ret</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">retarders</span><span class="p">:</span>
+            <span class="n">inc_angle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_inc_angle</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ret</span><span class="p">)</span>
+            <span class="n">azim_angle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_azim_angle</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ret</span><span class="p">)</span>
+            <span class="n">delay</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">get_delay</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">inc_angle</span><span class="p">,</span> <span class="n">azim_angle</span><span class="p">))</span>
 
         <span class="c1"># calculation depends on instrument type</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;single_delay_linear&#39;</span><span class="p">:</span>
-            <span class="c1"># add delay contribution due to each crystal</span>
-            <span class="n">delay</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">for</span> <span class="n">crystal</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">retarders</span><span class="p">:</span>
-                <span class="n">delay</span> <span class="o">+=</span> <span class="n">crystal</span><span class="o">.</span><span class="n">get_delay</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">inc_angle</span><span class="p">,</span> <span class="n">azim_angle</span><span class="p">,</span> <span class="p">)</span>
+            <span class="n">delay_out</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">delay</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">fnmatch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="s1">&#39;*_delay_linear&#39;</span><span class="p">):</span>
+            <span class="n">delay_sum</span> <span class="o">=</span> <span class="n">delay</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">delay</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">delay_diff</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">delay</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">delay</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">delay_out</span> <span class="o">=</span> <span class="n">delay</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">delay</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">delay_sum</span><span class="p">,</span> <span class="n">delay_diff</span>
 
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;single_delay_pixelated&#39;</span><span class="p">:</span>
-            <span class="c1"># generalise to arbitrary interferometer orientations</span>
             <span class="n">orientation_delay</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">radians</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">polarisers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">orientation</span><span class="p">)</span>
-            <span class="n">delay</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">retarders</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_delay</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">inc_angle</span><span class="p">,</span> <span class="n">azim_angle</span><span class="p">,</span> <span class="p">)</span> <span class="o">+</span> <span class="n">orientation_delay</span>
+            <span class="n">delay_out</span> <span class="o">=</span> <span class="n">delay</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">orientation_delay</span>
 
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;multi_delay_pixelated&#39;</span><span class="p">:</span>
-            <span class="c1"># generalise to arbitrary interferometer orientations</span>
-            <span class="n">orientation_delay</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">radians</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">polarisers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">orientation</span><span class="p">)</span>
-            <span class="n">delay_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">retarders</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_delay</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">inc_angle</span><span class="p">,</span> <span class="n">azim_angle</span><span class="p">,</span> <span class="p">)</span>
-            <span class="n">delay_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">retarders</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_delay</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">inc_angle</span><span class="p">,</span> <span class="n">azim_angle</span><span class="p">,</span> <span class="p">)</span> <span class="o">+</span> <span class="n">orientation_delay</span>
-            <span class="n">delay_sum</span> <span class="o">=</span> <span class="n">delay_1</span> <span class="o">+</span> <span class="n">delay_2</span>
-            <span class="n">delay_diff</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">delay_1</span> <span class="o">-</span> <span class="n">delay_2</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;double_delay_pixelated&#39;</span><span class="p">:</span>
+            <span class="n">orientation_delay</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">radians</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">polarisers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">orientation</span> <span class="o">-</span> <span class="mi">45</span><span class="p">)</span>
+            <span class="n">delay_sum</span> <span class="o">=</span> <span class="n">delay</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">delay</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">delay_diff</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">delay</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">delay</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">delay_out</span> <span class="o">=</span> <span class="n">delay_sum</span> <span class="o">+</span> <span class="n">orientation_delay</span><span class="p">,</span> <span class="n">delay_diff</span> <span class="o">+</span> <span class="n">orientation_delay</span>
 
-            <span class="n">delay</span> <span class="o">=</span> <span class="n">delay_1</span><span class="p">,</span> <span class="n">delay_2</span><span class="p">,</span> <span class="n">delay_sum</span><span class="p">,</span> <span class="n">delay_diff</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;triple_delay_pixelated&#39;</span><span class="p">:</span>
+            <span class="n">orientation_delay</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">radians</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">polarisers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">orientation</span> <span class="o">-</span> <span class="mf">22.5</span><span class="p">)</span>
+            <span class="n">delay_sum</span> <span class="o">=</span> <span class="n">delay</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">delay</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">delay_diff</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">delay</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">delay</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">delay_out</span> <span class="o">=</span> <span class="n">delay</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">orientation_delay</span><span class="p">,</span> <span class="n">delay_sum</span> <span class="o">+</span> <span class="n">orientation_delay</span><span class="p">,</span> <span class="n">delay_diff</span> <span class="o">+</span> <span class="n">orientation_delay</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
-        <span class="k">return</span> <span class="n">delay</span></div>
+        <span class="k">return</span> <span class="n">delay_out</span></div>
 
 <div class="viewcode-block" id="Instrument.capture"><a class="viewcode-back" href="../../../instrument.html#pycis.model.instrument.Instrument.capture">[docs]</a>    <span class="k">def</span> <span class="nf">capture</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">,</span> <span class="n">clean</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -457,58 +474,96 @@
 <span class="sd">        :param bool clean: False to add realistic image noise, passed to self.camera.capture()</span>
 <span class="sd">        :return: (xr.DataArray) image in units of camera counts.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="k">if</span> <span class="s1">&#39;x&#39;</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">x</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">x</span>
-
         <span class="k">if</span> <span class="s1">&#39;y&#39;</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
             <span class="n">y</span> <span class="o">=</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">y</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">y</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;mueller&#39;</span><span class="p">:</span>
-            <span class="c1"># do the full Mueller matrix calculation</span>
+        <span class="n">failed</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">!=</span> <span class="s1">&#39;mueller&#39;</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">delay</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_delay</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+                <span class="n">apply_polarisers</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">phase_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">get_pixelated_phase_mask</span><span class="p">()</span>
+                <span class="n">contrast_inst</span> <span class="o">=</span> <span class="p">[</span><span class="n">ret</span><span class="o">.</span><span class="n">contrast_inst</span> <span class="k">for</span> <span class="n">ret</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">retarders</span><span class="p">]</span>
 
+                <span class="k">if</span> <span class="s1">&#39;stokes&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;single_delay_linear&#39;</span><span class="p">:</span>
+                        <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectrum</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">contrast_inst</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delay</span><span class="p">))</span>
+
+                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;double_delay_linear&#39;</span><span class="p">:</span>
+                        <span class="n">contrast_inst_sum</span> <span class="o">=</span> <span class="n">contrast_inst_diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">contrast_inst</span><span class="p">)</span>
+                        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">delay_sum</span><span class="p">,</span> <span class="n">delay_diff</span> <span class="o">=</span> <span class="n">delay</span>
+                        <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectrum</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">*</span> <span class="p">(</span>
+                                <span class="mi">1</span>
+                                <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">contrast_inst_diff</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delay_diff</span><span class="p">)</span>
+                                <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">contrast_inst_sum</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delay_sum</span><span class="p">)</span>
+                        <span class="p">)</span>
+
+                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;triple_delay_linear&#39;</span><span class="p">:</span>
+                        <span class="n">contrast_inst_sum</span> <span class="o">=</span> <span class="n">contrast_inst_diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">contrast_inst</span><span class="p">)</span>
+                        <span class="n">_</span><span class="p">,</span> <span class="n">delay_2</span><span class="p">,</span> <span class="n">delay_sum</span><span class="p">,</span> <span class="n">delay_diff</span> <span class="o">=</span> <span class="n">delay</span>
+                        <span class="n">root2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+                        <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectrum</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">*</span> <span class="p">(</span>
+                                <span class="mi">1</span>
+                                <span class="o">+</span> <span class="n">root2</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">contrast_inst</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delay_2</span><span class="p">)</span>
+                                <span class="o">+</span> <span class="n">root2</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">contrast_inst_diff</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delay_diff</span><span class="p">)</span>
+                                <span class="o">-</span> <span class="n">root2</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">contrast_inst_sum</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delay_sum</span><span class="p">)</span>
+                        <span class="p">)</span>
+
+                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;quad_delay_linear&#39;</span><span class="p">:</span>
+                        <span class="n">contrast_inst_sum</span> <span class="o">=</span> <span class="n">contrast_inst_diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">contrast_inst</span><span class="p">)</span>
+                        <span class="n">delay_1</span><span class="p">,</span> <span class="n">delay_2</span><span class="p">,</span> <span class="n">delay_sum</span><span class="p">,</span> <span class="n">delay_diff</span> <span class="o">=</span> <span class="n">delay</span>
+                        <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectrum</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">*</span> <span class="p">(</span>
+                                <span class="mi">1</span>
+                                <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">contrast_inst</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delay_1</span><span class="p">)</span>
+                                <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">contrast_inst</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delay_2</span><span class="p">)</span>
+                                <span class="o">+</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="n">contrast_inst_diff</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delay_diff</span><span class="p">)</span>
+                                <span class="o">-</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="n">contrast_inst_sum</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delay_sum</span><span class="p">)</span>
+                        <span class="p">)</span>
+
+                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;single_delay_pixelated&#39;</span><span class="p">:</span>
+                        <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectrum</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">contrast_inst</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delay</span> <span class="o">+</span> <span class="n">phase_mask</span><span class="p">))</span>
+
+                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;double_delay_pixelated&#39;</span><span class="p">:</span>
+                        <span class="n">contrast_inst_sum</span> <span class="o">=</span> <span class="n">contrast_inst_diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">contrast_inst</span><span class="p">)</span>
+                        <span class="n">delay_sum</span><span class="p">,</span> <span class="n">delay_diff</span> <span class="o">=</span> <span class="n">delay</span>
+                        <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectrum</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">*</span> <span class="p">(</span>
+                                <span class="mi">1</span>
+                                <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">contrast_inst_diff</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delay_diff</span> <span class="o">+</span> <span class="n">phase_mask</span><span class="p">)</span>
+                                <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">contrast_inst_sum</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delay_sum</span> <span class="o">+</span> <span class="n">phase_mask</span><span class="p">)</span>
+                        <span class="p">)</span>
+
+                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;triple_delay_pixelated&#39;</span><span class="p">:</span>
+                        <span class="n">contrast_inst_sum</span> <span class="o">=</span> <span class="n">contrast_inst_diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">contrast_inst</span><span class="p">)</span>
+                        <span class="n">delay_2</span><span class="p">,</span> <span class="n">delay_sum</span><span class="p">,</span> <span class="n">delay_diff</span> <span class="o">=</span> <span class="n">delay</span>
+                        <span class="n">root2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+                        <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectrum</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">*</span> <span class="p">(</span>
+                                <span class="mi">1</span>
+                                <span class="o">+</span> <span class="n">root2</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">contrast_inst</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delay_2</span> <span class="o">+</span> <span class="n">phase_mask</span><span class="p">)</span>
+                                <span class="o">+</span> <span class="n">root2</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">contrast_inst_diff</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delay_diff</span> <span class="o">+</span> <span class="n">phase_mask</span><span class="p">)</span>
+                                <span class="o">-</span> <span class="n">root2</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">contrast_inst_sum</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delay_sum</span> <span class="o">+</span> <span class="n">phase_mask</span><span class="p">)</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            <span class="k">except</span> <span class="ne">NotImplementedError</span><span class="p">:</span>
+                <span class="n">failed</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="c1"># TODO add warning here?</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;mueller&#39;</span> <span class="ow">or</span> <span class="n">failed</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="c1"># full Mueller matrix calculation</span>
             <span class="k">if</span> <span class="s1">&#39;stokes&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
                 <span class="n">a0</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">spectrum</span><span class="p">)</span>
                 <span class="n">spectrum</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">combine_nested</span><span class="p">([</span><span class="n">spectrum</span><span class="p">,</span> <span class="n">a0</span><span class="p">,</span> <span class="n">a0</span><span class="p">,</span> <span class="n">a0</span><span class="p">],</span> <span class="n">concat_dim</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;stokes&#39;</span><span class="p">,))</span>
-
             <span class="n">mueller_matrix_total</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_mueller_matrix</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
             <span class="n">spectrum</span> <span class="o">=</span> <span class="n">mueller_product</span><span class="p">(</span><span class="n">mueller_matrix_total</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">)</span>
             <span class="n">apply_polarisers</span> <span class="o">=</span> <span class="kc">None</span>
-
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">delay</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_delay</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-            <span class="n">apply_polarisers</span> <span class="o">=</span> <span class="kc">False</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;single_delay_linear&#39;</span> <span class="ow">and</span> <span class="s1">&#39;stokes&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
-                <span class="n">contrast</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">crystal</span><span class="o">.</span><span class="n">contrast</span> <span class="k">for</span> <span class="n">crystal</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">retarders</span><span class="p">])</span><span class="o">.</span><span class="n">prod</span><span class="p">()</span>
-                <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectrum</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">contrast</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delay</span><span class="p">))</span>
-
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;single_delay_pixelated&#39;</span> <span class="ow">and</span> <span class="s1">&#39;stokes&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
-                <span class="n">contrast</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">retarders</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">contrast</span>
-                <span class="n">phase_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">get_pixelated_phase_mask</span><span class="p">()</span>
-                <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectrum</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">contrast</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delay</span> <span class="o">+</span> <span class="n">phase_mask</span><span class="p">))</span>
-
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;multi_delay_pixelated&#39;</span> <span class="ow">and</span> <span class="s1">&#39;stokes&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
-
-                <span class="n">phase_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">get_pixelated_phase_mask</span><span class="p">()</span>
-
-                <span class="n">delay_1</span><span class="p">,</span> <span class="n">delay_2</span><span class="p">,</span> <span class="n">delay_sum</span><span class="p">,</span> <span class="n">delay_diff</span> <span class="o">=</span> <span class="n">delay</span>
-                <span class="n">contrast_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">retarders</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">contrast</span>
-                <span class="n">contrast_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">retarders</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">contrast</span>
-                <span class="n">contrast_sum</span> <span class="o">=</span> <span class="n">contrast_diff</span> <span class="o">=</span> <span class="n">contrast_1</span> <span class="o">*</span> <span class="n">contrast_2</span>
-
-                <span class="n">spectrum</span> <span class="o">=</span> <span class="n">spectrum</span> <span class="o">/</span> <span class="mi">8</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span>
-                                           <span class="n">contrast_1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delay_1</span><span class="p">)</span> <span class="o">+</span>
-                                           <span class="n">contrast_2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delay_2</span> <span class="o">+</span> <span class="n">phase_mask</span><span class="p">)</span> <span class="o">+</span>
-                                           <span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">contrast_sum</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delay_sum</span> <span class="o">+</span> <span class="n">phase_mask</span><span class="p">)</span> <span class="o">+</span>
-                                           <span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">contrast_diff</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delay_diff</span> <span class="o">+</span> <span class="n">phase_mask</span><span class="p">)</span>
-                                           <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
         <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">capture</span><span class="p">(</span><span class="n">spectrum</span><span class="p">,</span> <span class="n">apply_polarisers</span><span class="o">=</span><span class="n">apply_polarisers</span><span class="p">,</span> <span class="n">clean</span><span class="o">=</span><span class="n">clean</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">image</span></div>
@@ -531,7 +586,7 @@
                 <span class="n">spatial_freq_x</span> <span class="o">+=</span> <span class="n">sp_f_x</span>
                 <span class="n">spatial_freq_y</span> <span class="o">+=</span> <span class="n">sp_f_y</span>
 
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;multi_delay_pixelated&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;triple_delay_pixelated&#39;</span><span class="p">:</span>
             <span class="n">crystal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">retarders</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">spatial_freq_x</span><span class="p">,</span> <span class="n">spatial_freq_y</span> <span class="o">=</span> <span class="n">crystal</span><span class="o">.</span><span class="n">get_fringe_frequency</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optics</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">)</span>
             <span class="c1"># TODO and also the sum and difference terms?</span>
@@ -540,6 +595,16 @@
             <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
         <span class="k">return</span> <span class="n">spatial_freq_x</span><span class="p">,</span> <span class="n">spatial_freq_y</span></div>
+
+    <span class="k">def</span> <span class="nf">_check_interferometer_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">relative_orientations</span><span class="p">):</span>
+
+        <span class="n">conditions_met</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">typ</span><span class="p">,</span> <span class="n">rel_or</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">types</span><span class="p">,</span> <span class="n">relative_orientations</span><span class="p">)):</span>
+            <span class="n">component</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interferometer</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+            <span class="n">conditions_met</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="n">typ</span><span class="p">))</span>
+            <span class="n">conditions_met</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">isclose</span><span class="p">(</span><span class="n">component</span><span class="o">.</span><span class="n">orientation</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">interferometer</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">orientation</span><span class="p">,</span> <span class="n">rel_or</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="n">conditions_met</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inst_other</span><span class="p">):</span>
         <span class="n">condition_1</span> <span class="o">=</span> <span class="nb">all</span><span class="p">([</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span> <span class="o">==</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">inst_other</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;camera&#39;</span><span class="p">,</span> <span class="s1">&#39;optics&#39;</span><span class="p">,</span> <span class="p">]])</span>
@@ -559,7 +624,7 @@
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright 2021, Joseph Allcock.
+        &#169; Copyright 2022, J. Allcock.
 
     </p>
   </div>
