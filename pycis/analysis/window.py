@@ -46,7 +46,7 @@ def window(rfft_length, nfringes, window_width=None, fn='tukey', width_factor=1.
     return np.concatenate((pre_zeros, window_fn, post_zeros))[:rfft_length]
 
 
-def make_carrier_window(fft, fringe_freq, wfactor=0.67, sign='p'):
+def make_carrier_window(fft, fringe_freq, type='tukey', alpha=0.5, wfactor=0.67, sign='p'):
     """
     Generates Fourier-domain window to isolate a carrier term at the given spatial frequency.
 
@@ -72,15 +72,30 @@ def make_carrier_window(fft, fringe_freq, wfactor=0.67, sign='p'):
 
     window = xr.where(window == 0, np.nan, window)
     coord = window * coord
-    coord = (coord - np.nanmin(coord)) / (np.nanmax(coord) - np.nanmin(coord))
 
-    # manually define Blackman window
-    # alpha = 0.16
-    alpha = 0.01
-    a_0 = (1 - alpha) / 2
-    a_1 = 0.5
-    a_2 = alpha / 2
-    window = a_0 - a_1 * np.cos(2 * np.pi * coord) + a_2 * np.cos(4 * np.pi * coord)
+    # Manually create Tukey window
+    if type == 'tukey':
+
+        coord -= np.nanmin(coord)
+        N  = np.nanmax(coord) - np.nanmin(coord)
+
+        window1 = np.logical_and(0 <= coord, coord < (alpha * N/2)) * 0.5 * (1 - np.cos((2 * np.pi * coord)/(alpha * N)))
+        window2 = np.logical_and(coord <= N, coord > N - (alpha * N/2)) * 0.5 * (1 - np.cos((2 * np.pi * (N - coord)/(alpha * N))))
+        window3 = np.logical_and((alpha * N/2) <= coord, coord <= N - (alpha * N/2)).astype(float)
+
+        window = window1 + window2 + window3
+
+    # Manually create Blackman-Harris window
+    elif type == 'blackmanharris':
+        Blackman-Harris
+        coord = (coord - np.nanmin(coord)) / (np.nanmax(coord) - np.nanmin(coord))
+
+        alpha = 0.01
+        a_0 = (1 - alpha) / 2
+        a_1 = 0.5
+        a_2 = alpha / 2
+        window = a_0 - a_1 * np.cos(2 * np.pi * coord) + a_2 * np.cos(4 * np.pi * coord)
+
     window = xr.where(np.isnan(window), 0, window, )
     window = xr.where(window < 0, 0, window, )
 
