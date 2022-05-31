@@ -34,8 +34,8 @@ except:
 
 
 # This will be for later use; get the EFIT vector B field
-def get_Bfield(pulse, time, device='MAST'):
-    eq = equilibrium.equilibrium(device=device, shot=pulse, time=time, with_bfield=True)
+def get_Bfield(pulse, time):
+    eq = equilibrium.equilibrium(device='MAST', shot=pulse, time=time, with_bfield=True)
     bt = interp2d(eq.R, eq.Z, eq.Bt)
     br = interp2d(eq.R, eq.Z, eq.BR)
     bz = interp2d(eq.R, eq.Z, eq.BZ)
