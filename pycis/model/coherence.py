@@ -5,7 +5,7 @@ from scipy.constants import c
 import pycis
 
 
-def calculate_coherence(spectrum, delay, material=None, freq_ref=None):
+def calculate_coherence(spec, delay, material=None, freq_ref=None):
     """
     Calculate the temporal coherence of an intensity spectrum, as measured by a 2-beam interferometer with given delay(s).
 
@@ -22,7 +22,7 @@ def calculate_coherence(spectrum, delay, material=None, freq_ref=None):
     Allcock's PhD thesis.
 
 
-    :param xr.DataArray spectrum: \
+    :param xr.DataArray spec: \
         Intensity spectrum as a DataArray. Dimension 'wavelength' has coordinates with units m or else dimension
         'frequency' has coordinates with units Hz. Units of spectrum are then ( arb. / m ) or (arb. / Hz )
         respectively. This function broadcasts across xr.DataArray dimensions, so spectrum can represent e.g. a
@@ -66,11 +66,11 @@ def calculate_coherence(spectrum, delay, material=None, freq_ref=None):
     """
 
     # if necessary, convert spectrum's wavelength (m) dim + coordinate to frequency (Hz)
-    if 'wavelength' in spectrum.dims:
-        spectrum = spectrum.rename({'wavelength': 'frequency'})
-        spectrum['frequency'] = c / spectrum['frequency']
-        spectrum = spectrum.sortby('frequency')
-        spectrum /= spectrum.integrate(coord='frequency')
+    if 'wavelength' in spec.dims:
+        spec = spec.rename({'wavelength': 'frequency'})
+        spec['frequency'] = c / spec['frequency']
+        spec = spec.sortby('frequency')
+        spec /= spec.integrate(coord='frequency')
 
     # determine calculation mode
     mode = None
@@ -88,20 +88,20 @@ def calculate_coherence(spectrum, delay, material=None, freq_ref=None):
         if 'wavelength' in delay.dims:
             delay = delay.rename({'wavelength': 'frequency'})
             delay['frequency'] = c / delay['frequency']
-        integrand = spectrum * complexp_ufunc(delay)
+        integrand = spec * complexp_ufunc(delay)
 
     else:
         if freq_ref is None:
-            freq_ref = (spectrum * spectrum['frequency']).integrate(coord='frequency') / \
-                       spectrum.integrate(coord='frequency')
+            freq_ref = (spec * spec['frequency']).integrate(coord='frequency') / \
+                       spec.integrate(coord='frequency')
 
         if mode == 'group_delay':
             kappa = pycis.model.get_kappa(c / freq_ref, material=material)
         elif mode == 'no_dispersion':
             kappa = 1
 
-        freq_shift_norm = (spectrum['frequency'] - freq_ref) / freq_ref
-        integrand = spectrum * complexp_ufunc(delay * (1 + kappa * freq_shift_norm))
+        freq_shift_norm = (spec['frequency'] - freq_ref) / freq_ref
+        integrand = spec * complexp_ufunc(delay * (1 + kappa * freq_shift_norm))
 
     integrand = integrand.sortby(integrand.frequency)  # ensures integration limits are from -ve to +ve frequency
     return integrand.integrate(coord='frequency')

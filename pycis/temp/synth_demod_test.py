@@ -24,7 +24,7 @@ def plot_demod_test():
 
     # FLIR BLACKFLY POLARISATION CAMERA
     bit_depth = 12
-    sensor_format = (200, 2000)
+    sensor_format = (2500, 500)
     # sensor_format = (200, 500)
     pix_size = 3.45e-6
     qe = 0.35
@@ -78,7 +78,7 @@ def plot_demod_test():
     # GENERATE SYNTHETIC CALIBRATION IMAGE
     temp_ev_cal = 0.0001
     x, y = cam.get_pixel_position()  # camera method returns the camera's pixel x and y positions as DataArrays
-    spectrum_cal = pycis.model.get_doppler_broadened_singlet(temp_ev_cal, wl0_cal, 2, 0, domain='wavelength', nbins=30)*i0_in
+    spectrum_cal = pycis.model.get_spectrum_doppler_singlet(temp_ev_cal, wl0_cal, 2, 0, domain='wavelength', nbins=30) * i0_in
     spectrum_cal = xr.broadcast(spectrum_cal, x, y, )[0]
 
     sta = time.time()
@@ -108,22 +108,24 @@ def plot_demod_test():
     windowed_fft = fft*window_pm*window_lowpass
     windowed_fft.plot(x='freq_x', y='freq_y')
 
-    plt.figure()
-    phase_cal[0].plot(x='x', y='y')
+    for i in range(3):
+        plt.figure()
+        plt.title('phase_cal ' + str(i))
+        phase_cal[i].plot(x='x', y='y')
 
     phase_c2_cal, phase_sum_cal, phase_diff_cal = phase_cal
     contrast_c2_cal, contrast_sum_cal, contrast_diff_cal = contrast_cal
 
     for iii, (temp_ev, flow_kms, col, ax, ) in enumerate(zip(temps_ev, flows_kms, cols, axes, )):
         temp_k = temp_ev * e / k
-        vth = np.sqrt(2 * k * temp_k / physical_constants['deuteron mass'][0]) #eq. 5.1.4
+        vth = np.sqrt(2 * k * temp_k / physical_constants['deuteron mass'][0])  # eq. 5.1.4
         std_nu = np.sqrt((2 * nu0 ** 2 * vth ** 2) / c ** 2)
         delta_lambda = wl0 * flow_kms / (c / 1e3)
         wl0_shifted = wl0 + delta_lambda
 
         kappa0 = pycis.model.get_kappa(wl0_shifted, material='a-BBO', sellmeier_coefs_source='agoptics', )
 
-        spectrum = pycis.model.get_doppler_broadened_singlet(temp_ev, wl0, 2, flow_kms, domain='wavelength', nbins=40)*i0_in
+        spectrum = pycis.model.get_spectrum_doppler_singlet(temp_ev, wl0, 2, flow_kms, domain='wavelength', nbins=40) * i0_in
         wl_delta_nm = (spectrum.wavelength - wl0) * 1e9
 
         if float(spectrum.max()) > spec_max:
@@ -165,8 +167,10 @@ def plot_demod_test():
         if iii == 0:
             i_max = img.max()
             print('IMG VAL MAX:', i_max)
-        ax.imshow(img[int(4.5 * sensor_format[0] / 6):, int(6. * sensor_format[1] / 10):], 'gray', vmin=0, vmax=i_max,
-                  rasterized=True)
+        # ax.imshow(img[int(4.5 * sensor_format[0] / 6):, int(6. * sensor_format[1] / 10):], 'gray', vmin=0, vmax=i_max,
+        #           rasterized=True)
+        # ax.imshow(img, 'gray', vmin=0, vmax=i_max, rasterized=True)
+        igram.plot(x='x', y='y', ax=ax, vmin=0, vmax=i_max, rasterized=True)
 
         # roi_dim = (int(sensor_dim[0] / 2), int(sensor_dim[0] / 2), )
         roi_dim = (100, 50)
@@ -202,6 +206,7 @@ def plot_demod_test():
         ax.set_xticklabels([])
         ax.set_yticks([])
         ax.set_yticklabels([])
+        ax.set_aspect('equal')
 
     # figure formatting:
     # legend

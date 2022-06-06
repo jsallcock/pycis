@@ -4,9 +4,47 @@ from scipy.constants import c,e, atomic_mass
 from pycis.temp.zeeman import zeeman
 
 """
-simple example spectra for testing
+example spectra for testing
 """
 D_WL = 1e-13
+
+
+def freq2wl(spec):
+    """
+    Convert intensity spectrum from frequency to wavelength domain, preserving integrated brightness
+
+    :param spec: Spectrum DataArray. Dimension 'frequency' has coordinates with units Hz. spec units are (arb. / Hz ).
+    :type spec: xr.DataArray
+    :return: Output spectrum DataArray. Dimension 'wavelength' has coordinates with units m. Output spectrum units are
+    (arb. / m ).
+    """
+    assert hasattr(spec, 'dims')
+    assert 'frequency' in spec.dims
+
+    freq = spec.frequency
+    wl = c / freq
+    spec_wl = (spec * c * wl ** -2).rename({'frequency': 'wavelength'})
+    spec_wl['wavelength'] = c / spec_wl['wavelength']
+    return spec_wl.sortby('wavelength')
+
+
+def wl2freq(spec):
+    """
+    Convert intensity spectrum from wavelength to frequency domain, preserving integrated brightness
+
+    :param spec: Spectrum DataArray. Dimension 'wavelength' has coordinates with units m. spec units are (arb. / m ).
+    :type spec: xr.DataArray
+    :return: Output spectrum DataArray. Dimension 'frequency' has coordinates with units Hz. Output spectrum units are
+    (arb. / Hz ).
+    """
+    assert hasattr(spec, 'dims')
+    assert 'wavelength' in spec.dims
+
+    wl = spec.wavelength
+    freq = c / wl
+    spec_freq = (spec * c * freq ** -2).rename({'wavelength': 'frequency'})
+    spec_freq['frequency'] = c / spec_freq['frequency']
+    return spec_freq.sortby('frequency')
 
 
 def get_spectrum_delta(wl0, ph, ):
@@ -56,26 +94,26 @@ def get_spectrum_delta_pol(wl0, ph, p, psi, xi):
     return out
 
 
-def get_doppler_broadened_singlet(temperature, wl, mass, v, domain='frequency', nbins=1000, n_sigma=5):
+def get_spectrum_doppler_singlet(temperature, wl0, mass, v, domain='frequency', nbins=1000, nsigma=5):
     """
     return area-normalised spectrum of the Doppler-broadened C III triplet at 464.9 nm.
 
     Used for testing.
 
     :param temperature: (float) in eV
-    :param wavelength: (float) wavelength of the singlet peak in m
+    :param wl0: (float) wavelength of the singlet peak in m
     :param mass: (float) ion mass in atomic mass units.
     :param v: (float) flow velocity in km/s
     :param domain: (str) 'frequency' or 'wavelength'
     :return: (xr.DataArray) spectrum
     """
 
-    delta_lambda = wl * v / (c/1e3)
-    wl_shifted = wl + delta_lambda
-    freq = c / wl_shifted
-    sigma_freq = (2* freq * np.sqrt(temperature * e / (mass * atomic_mass))) / c  # line Doppler-width st. dev. in Hz
+    delta_lambda = wl0 * v / (c / 1e3)
+    wld = wl0 + delta_lambda
+    freqd = c / wld
+    sigma_freq = (2 * freqd * np.sqrt(temperature * e / (mass * atomic_mass))) / c  # line Doppler-width st. dev. in Hz
 
-    freq_axis = np.linspace(freq - n_sigma * sigma_freq, freq + n_sigma * sigma_freq, nbins)
+    freq_axis = np.linspace(freqd - nsigma * sigma_freq, freqd + nsigma * sigma_freq, nbins)
     wavelength = c / freq_axis
 
     freq_axis = xr.DataArray(freq_axis, dims=('frequency',), coords=(freq_axis,), attrs={'units': 'Hz'})
@@ -87,16 +125,12 @@ def get_doppler_broadened_singlet(temperature, wl, mass, v, domain='frequency', 
         """
         return 1 / (sigma * np.sqrt(2 * np.pi)) * np.exp(- 1 / 2 * ((f - f_0) / sigma) ** 2)
 
-    spectrum = gaussian(freq_axis, freq, sigma_freq)
+    spectrum = gaussian(freq_axis, freqd, sigma_freq)
 
     if domain == 'frequency':
         return spectrum
     elif domain == 'wavelength':
-        # convert from frequency to wavelength
-        wlstr = 'wavelength'
-        spectrum = spectrum.rename({'frequency': wlstr}).assign_coords({wlstr: wavelength}).sortby(wlstr, )
-        spectrum /= spectrum.integrate(coord='wavelength')
-        return spectrum
+        return freq2wl(spectrum)
     else:
         raise Exception('input not understood')
 
