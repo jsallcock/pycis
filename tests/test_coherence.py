@@ -4,7 +4,6 @@ from numpy.testing import assert_almost_equal
 import xarray as xr
 from scipy.constants import c, atomic_mass, e
 from pycis.model import calculate_coherence, get_kappa, get_spectrum_ciii_triplet
-import matplotlib.pyplot as plt
 
 
 class TestCoherence(unittest.TestCase):
