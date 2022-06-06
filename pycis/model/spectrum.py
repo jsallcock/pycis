@@ -1,6 +1,6 @@
 import numpy as np
 import xarray as xr
-from scipy.constants import c,e, atomic_mass
+from scipy.constants import c, e, atomic_mass
 from pycis.temp.zeeman import zeeman
 
 """
@@ -114,8 +114,6 @@ def get_spectrum_doppler_singlet(temperature, wl0, mass, v, domain='frequency', 
     sigma_freq = (2 * freqd * np.sqrt(temperature * e / (mass * atomic_mass))) / c  # line Doppler-width st. dev. in Hz
 
     freq_axis = np.linspace(freqd - nsigma * sigma_freq, freqd + nsigma * sigma_freq, nbins)
-    wavelength = c / freq_axis
-
     freq_axis = xr.DataArray(freq_axis, dims=('frequency',), coords=(freq_axis,), attrs={'units': 'Hz'})
 
     # area-normalised Gaussian function for frequency f

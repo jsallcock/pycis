@@ -2,7 +2,7 @@ import numpy as np
 from numba import vectorize, float64, complex128
 import xarray as xr
 from scipy.constants import c
-import pycis
+from pycis.model import get_kappa, wl2freq
 
 
 def calculate_coherence(spec, delay, material=None, freq_ref=None):
@@ -65,16 +65,14 @@ def calculate_coherence(spec, delay, material=None, freq_ref=None):
     TODO: Write test for full dispersive mode.
     """
 
-    # if necessary, convert spectrum's wavelength (m) dim + coordinate to frequency (Hz)
+    # perform calculation in frequency domain
     if 'wavelength' in spec.dims:
-        spec = spec.rename({'wavelength': 'frequency'})
-        spec['frequency'] = c / spec['frequency']
-        spec = spec.sortby('frequency')
-        spec /= spec.integrate(coord='frequency')
+        assert 'frequency' not in spec.dims
+        spec = wl2freq(spec)
 
     # determine calculation mode
     mode = None
-    if hasattr(delay, 'dims'):
+    if isinstance(delay, xr.DataArray):
         if 'frequency' in delay.dims or 'wavelength' in delay.dims:
             mode = 'full_dispersive'
     if mode is None:
@@ -96,7 +94,7 @@ def calculate_coherence(spec, delay, material=None, freq_ref=None):
                        spec.integrate(coord='frequency')
 
         if mode == 'group_delay':
-            kappa = pycis.model.get_kappa(c / freq_ref, material=material)
+            kappa = get_kappa(c / freq_ref, material=material)
         elif mode == 'no_dispersion':
             kappa = 1
 
