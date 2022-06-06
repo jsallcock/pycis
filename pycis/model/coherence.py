@@ -21,7 +21,7 @@ def calculate_coherence(spectrum, delay, material=None, freq_ref=None):
     How this dispersive integral is evaluated by this function depends on the arguments given. For a full explanation of
     how dispersion affects the coherence measured by an interferometer, see Section 2.2.2 of J. Allcock's PhD thesis.
 
-    :param spectrum:\
+    :param spectrum: \
         Intensity spectrum as a DataArray. Dimension 'wavelength' has coordinates with units m or else dimension
         'frequency' has coordinates with units Hz. Units of spectrum are then ( arb. / m ) or (arb. / Hz )
         respectively. This function broadcasts across xr.DataArray dimensions, so spectrum can represent e.g. a
