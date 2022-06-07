@@ -118,16 +118,16 @@ def get_coherence_doppler_singlet(temperature, wl0, mass, v, delay=None, materia
     :return:
     """
 
-    freq0 = c / wl0
-    freq_shift_norm = (f_0 - freq_0) / freq_0
-
-    if mode == 'group_delay':
-        kappa = get_kappa(wl0, material=material)
-    elif mode == 'no_dispersion':
-        kappa = 1
-
-    phase = delay * (1 + kappa * freq_shift_norm)
-    contrast = np.exp(-2 * (np.pi * sigma * (d / (2 * np.pi * freq_0)) * kappa) ** 2)
+    # freq0 = c / wl0
+    # freq_shift_norm = (f_0 - freq_0) / freq_0
+    #
+    # if mode == 'group_delay':
+    #     kappa = get_kappa(wl0, material=material)
+    # elif mode == 'no_dispersion':
+    #     kappa = 1
+    #
+    # phase = delay * (1 + kappa * freq_shift_norm)
+    # contrast = np.exp(-2 * (np.pi * sigma * (d / (2 * np.pi * freq_0)) * kappa) ** 2)
 
     return
 

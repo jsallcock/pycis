@@ -109,7 +109,7 @@ def demod_multi_delay_pixelated(image, fringe_freq, ):
     return dc, phase, contrast
 
 
-def demod_triple_delay_pixelated(image, fringe_freq, **kwargs):
+def demod_triple_delay_pixelated(image, fringe_freq, camera=None, **kwargs):
     """
 
     :param image: (xr.DataArray) CIS Image to demodulate
@@ -126,7 +126,11 @@ def demod_triple_delay_pixelated(image, fringe_freq, **kwargs):
 
     dc = xr.DataArray(ifft2(ifftshift(fft_dc.data)), coords=image.coords, dims=image.dims).real
 
-    pm = get_pixelated_phase_mask(image.shape)
+    if camera is None:
+        pm = get_pixelated_phase_mask(image.shape)
+    else:
+        # information about camera is required to correctly demodulate a subsection of the image
+        pm = camera.get_pixelated_phase_mask().sel({'x': image.x, 'y': image.y})
     sp = image * np.exp(1j * pm)
 
     fft_sp = fft2_im(sp)
