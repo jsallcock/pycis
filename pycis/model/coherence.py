@@ -59,7 +59,7 @@ def calculate_coherence(spectrum, delay, material=None, freq_ref=None):
         to one then the temporal coherence is the unitless 'degree of temporal coherence'.
     """
 
-    # perform calculation in frequency domain
+    # calculate in frequency domain
     if 'wavelength' in spectrum.dims:
         assert 'frequency' not in spectrum.dims
         spectrum = wl2freq(spectrum)
@@ -106,4 +106,28 @@ def complexp(x):
 
 def complexp_ufunc(x):
     return xr.apply_ufunc(complexp, x, dask='allowed', )
+
+
+def get_coherence_doppler_singlet(temperature, wl0, mass, v, delay=None, material=None, nbins=500, nsigma=5):
+    """
+
+    :param temperature:
+    :param wl0: assumed
+    :param mass:
+    :param v:
+    :return:
+    """
+
+    freq0 = c / wl0
+    freq_shift_norm = (f_0 - freq_0) / freq_0
+
+    if mode == 'group_delay':
+        kappa = get_kappa(wl0, material=material)
+    elif mode == 'no_dispersion':
+        kappa = 1
+
+    phase = delay * (1 + kappa * freq_shift_norm)
+    contrast = np.exp(-2 * (np.pi * sigma * (d / (2 * np.pi * freq_0)) * kappa) ** 2)
+
+    return
 

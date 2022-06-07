@@ -48,6 +48,10 @@ class Camera(object):
         :return: (xr.DataArray) Captured image.
         """
 
+        # check pixel centre positions are compatible with camera
+        assert np.all(np.isin(spectrum.x, self.x))
+        assert np.all(np.isin(spectrum.y, self.y))
+
         if apply_polarisers is None:
             if self.type == 'monochrome_polarised':
                 apply_polarisers = True
@@ -130,7 +134,7 @@ class Camera(object):
 
     def get_pixelated_phase_mask(self, ):
         """
-        Calls the fn. camera.calc_pixelated_phase_mask and assigns the correct x, y coordinates.
+        Calls the fn. camera.get_pixelated_phase_mask and assigns the correct x, y coordinates.
 
         :return:
         """

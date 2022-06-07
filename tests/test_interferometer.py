@@ -9,7 +9,6 @@ class TestMueller(unittest.TestCase):
     def test_mueller_product(self, ):
         """
         Basic Mueller matrix multiplication test.
-
         """
         mdims = ('mueller_v', 'mueller_h')
         mm_1 = xr.DataArray(np.random.rand(4, 4, ), dims=mdims, )
@@ -21,6 +20,9 @@ class TestMueller(unittest.TestCase):
         assert_almost_equal(sv_1.values, mueller_product(mm_2, sv_1).data, )
 
     def test_waveplate(self, ):
+        """
+        test waveplate as a special case of a uniaxial crystal
+        """
         thickness = np.random.rand() * 1e-2
         orientation = np.random.rand() * 360
         uni_crystal = UniaxialCrystal(

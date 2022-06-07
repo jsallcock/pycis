@@ -4,45 +4,45 @@ from scipy.constants import c, e, atomic_mass
 from pycis.temp.zeeman import zeeman
 
 """
-example spectra for testing
+Simple example spectra useful for testing.
 """
-D_WL = 1e-13
+D_WL = 1e-13  # small wavelength spacing (m) used to approximate delta function width
 
 
-def freq2wl(spec):
+def freq2wl(spectrum):
     """
     Convert intensity spectrum from frequency to wavelength domain, preserving integrated brightness
 
-    :param spec: Spectrum DataArray. Dimension 'frequency' has coordinates with units Hz. spec units are (arb. / Hz ).
-    :type spec: xr.DataArray
+    :param spectrum: Spectrum DataArray. Dimension 'frequency' has coordinates with units Hz. spec units are (arb. / Hz ).
+    :type spectrum: xr.DataArray
     :return: Output spectrum DataArray. Dimension 'wavelength' has coordinates with units m. Output spectrum units are
     (arb. / m ).
     """
-    assert hasattr(spec, 'dims')
-    assert 'frequency' in spec.dims
+    assert isinstance(spectrum, xr.DataArray)
+    assert 'frequency' in spectrum.dims
 
-    freq = spec.frequency
+    freq = spectrum.frequency
     wl = c / freq
-    spec_wl = (spec * c * wl ** -2).rename({'frequency': 'wavelength'})
+    spec_wl = (spectrum * c * wl ** -2).rename({'frequency': 'wavelength'})
     spec_wl['wavelength'] = c / spec_wl['wavelength']
     return spec_wl.sortby('wavelength')
 
 
-def wl2freq(spec):
+def wl2freq(spectrum):
     """
     Convert intensity spectrum from wavelength to frequency domain, preserving integrated brightness
 
-    :param spec: Spectrum DataArray. Dimension 'wavelength' has coordinates with units m. spec units are (arb. / m ).
-    :type spec: xr.DataArray
+    :param spectrum: Spectrum DataArray. Dimension 'wavelength' has coordinates with units m. spec units are (arb. / m ).
+    :type spectrum: xr.DataArray
     :return: Output spectrum DataArray. Dimension 'frequency' has coordinates with units Hz. Output spectrum units are
     (arb. / Hz ).
     """
-    assert hasattr(spec, 'dims')
-    assert 'wavelength' in spec.dims
+    assert isinstance(spectrum, xr.DataArray)
+    assert 'wavelength' in spectrum.dims
 
-    wl = spec.wavelength
+    wl = spectrum.wavelength
     freq = c / wl
-    spec_freq = (spec * c * freq ** -2).rename({'wavelength': 'frequency'})
+    spec_freq = (spectrum * c * freq ** -2).rename({'wavelength': 'frequency'})
     spec_freq['frequency'] = c / spec_freq['frequency']
     return spec_freq.sortby('frequency')
 
@@ -96,15 +96,15 @@ def get_spectrum_delta_pol(wl0, ph, p, psi, xi):
 
 def get_spectrum_doppler_singlet(temperature, wl0, mass, v, domain='frequency', nbins=1000, nsigma=5):
     """
-    return area-normalised spectrum of the Doppler-broadened C III triplet at 464.9 nm.
-
-    Used for testing.
+    Area-normalised spectrum, Doppler-broadened + Doppler-shifted Gaussian singlet.
 
     :param temperature: (float) in eV
     :param wl0: (float) wavelength of the singlet peak in m
     :param mass: (float) ion mass in atomic mass units.
     :param v: (float) flow velocity in km/s
     :param domain: (str) 'frequency' or 'wavelength'
+    :param nbins: (int) number of frequency / wavelength bins.
+    :param nsigma: (float) extent of frequency / wavelength grid number of standard deviations from the mean
     :return: (xr.DataArray) spectrum
     """
 

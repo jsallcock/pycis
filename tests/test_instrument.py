@@ -27,9 +27,21 @@ wavelength = np.linspace(460e-9, 460.05e-9, 20)
 wavelength = xr.DataArray(wavelength, dims=('wavelength',), coords=(wavelength,), )
 x, y = camera.get_pixel_position()
 
-spectrum = xr.ones_like(wavelength * x * y, )
-spectrum /= spectrum.integrate(coord='wavelength')
-spectrum *= 1e3
+spectrum_test = xr.ones_like(wavelength * x * y, )
+spectrum_test /= spectrum_test.integrate(coord='wavelength')
+spectrum_test *= 1e3
+
+# test for off-centre image subsection too
+roi = {
+    'x': slice(0, max(x) / 4),
+    'y': slice(0, max(y) / 4),
+}
+spectrum_test_roi = spectrum_test.sel(roi)
+
+spectra = [
+    spectrum_test,
+    spectrum_test_roi
+]
 
 
 class TestInstrument(unittest.TestCase):
@@ -61,10 +73,10 @@ class TestInstrument(unittest.TestCase):
         self.assertEqual(inst.type, 'single_delay_linear')
         self.assertEqual(inst_fm.type, 'mueller')
 
-        igram = inst.capture(spectrum, clean=True, )
-        igram_fm = inst_fm.capture(spectrum, clean=True, )
-
-        assert_almost_equal(igram.values, igram_fm.values)
+        for spectrum in spectra:
+            igram = inst.capture(spectrum, clean=True, )
+            igram_fm = inst_fm.capture(spectrum, clean=True, )
+            assert_almost_equal(igram.values, igram_fm.values)
 
     def test_single_delay_pixelated_vs_mueller(self, ):
         """
@@ -94,9 +106,11 @@ class TestInstrument(unittest.TestCase):
         inst_fm = Instrument(**kwargs, force_mueller=True)
         self.assertEqual(inst.type, 'single_delay_pixelated')
         self.assertEqual(inst_fm.type, 'mueller')
-        igram = inst.capture(spectrum, clean=True, )
-        igram_fm = inst_fm.capture(spectrum, clean=True, )
-        assert_almost_equal(igram.values, igram_fm.values)
+
+        for spectrum in spectra:
+            igram = inst.capture(spectrum, clean=True, )
+            igram_fm = inst_fm.capture(spectrum, clean=True, )
+            assert_almost_equal(igram.values, igram_fm.values)
 
     def test_double_delay_linear_vs_mueller(self, ):
         """
@@ -126,9 +140,11 @@ class TestInstrument(unittest.TestCase):
         instrument_fm = Instrument(camera=camera, optics=optics, interferometer=interferometer, force_mueller=True)
         self.assertEqual(instrument.type, 'double_delay_linear')
         self.assertEqual(instrument_fm.type, 'mueller')
-        igram = instrument.capture(spectrum, clean=True, )
-        igram_fm = instrument_fm.capture(spectrum, clean=True, )
-        assert_almost_equal(igram.values, igram_fm.values)
+
+        for spectrum in spectra:
+            igram = instrument.capture(spectrum, clean=True, )
+            igram_fm = instrument_fm.capture(spectrum, clean=True, )
+            assert_almost_equal(igram.values, igram_fm.values)
 
     def test_triple_delay_linear_vs_mueller(self, ):
         """
@@ -158,9 +174,11 @@ class TestInstrument(unittest.TestCase):
         instrument_fm = Instrument(camera=camera, optics=optics, interferometer=interferometer, force_mueller=True)
         self.assertEqual(instrument.type, 'triple_delay_linear')
         self.assertEqual(instrument_fm.type, 'mueller')
-        igram = instrument.capture(spectrum, clean=True, )
-        igram_fm = instrument_fm.capture(spectrum, clean=True, )
-        assert_almost_equal(igram.values, igram_fm.values)
+
+        for spectrum in spectra:
+            igram = instrument.capture(spectrum, clean=True, )
+            igram_fm = instrument_fm.capture(spectrum, clean=True, )
+            assert_almost_equal(igram.values, igram_fm.values)
 
     def test_quad_delay_linear_vs_mueller(self, ):
         """
@@ -190,9 +208,11 @@ class TestInstrument(unittest.TestCase):
         instrument_fm = Instrument(camera=camera, optics=optics, interferometer=interferometer, force_mueller=True)
         self.assertEqual(instrument.type, 'quad_delay_linear')
         self.assertEqual(instrument_fm.type, 'mueller')
-        igram = instrument.capture(spectrum, clean=True, )
-        igram_fm = instrument_fm.capture(spectrum, clean=True, )
-        assert_almost_equal(igram.values, igram_fm.values)
+
+        for spectrum in spectra:
+            igram = instrument.capture(spectrum, clean=True, )
+            igram_fm = instrument_fm.capture(spectrum, clean=True, )
+            assert_almost_equal(igram.values, igram_fm.values)
 
     def test_double_delay_pixelated_vs_mueller(self, ):
         """
@@ -222,9 +242,11 @@ class TestInstrument(unittest.TestCase):
         instrument_fm = Instrument(camera=camera, optics=optics, interferometer=interferometer, force_mueller=True)
         self.assertEqual(instrument.type, 'double_delay_pixelated')
         self.assertEqual(instrument_fm.type, 'mueller')
-        igram = instrument.capture(spectrum, clean=True, )
-        igram_fm = instrument_fm.capture(spectrum, clean=True, )
-        assert_almost_equal(igram.values, igram_fm.values)
+
+        for spectrum in spectra:
+            igram = instrument.capture(spectrum, clean=True, )
+            igram_fm = instrument_fm.capture(spectrum, clean=True, )
+            assert_almost_equal(igram.values, igram_fm.values)
 
     def test_triple_delay_pixelated_vs_mueller(self, ):
         """
@@ -254,9 +276,11 @@ class TestInstrument(unittest.TestCase):
         instrument_fm = Instrument(camera=camera, optics=optics, interferometer=interferometer, force_mueller=True)
         self.assertEqual(instrument.type, 'triple_delay_pixelated')
         self.assertEqual(instrument_fm.type, 'mueller')
-        igram = instrument.capture(spectrum, clean=True, )
-        igram_fm = instrument_fm.capture(spectrum, clean=True, )
-        assert_almost_equal(igram.values, igram_fm.values)
+
+        for spectrum in spectra:
+            igram = instrument.capture(spectrum, clean=True, )
+            igram_fm = instrument_fm.capture(spectrum, clean=True, )
+            assert_almost_equal(igram.values, igram_fm.values)
 
     def test_read_config_write_config(self, ):
         inst_1 = pycis.Instrument('single_delay_pixelated.yaml')

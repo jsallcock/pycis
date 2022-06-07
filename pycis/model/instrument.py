@@ -317,10 +317,13 @@ class Instrument:
         :return: (xr.DataArray) image in units of camera counts.
         """
         if 'x' in spectrum.dims:
+            assert np.all(np.isin(spectrum.x, self.camera.x))  # check pixel centre positions compatible with camera
             x = spectrum.x
         else:
             x = self.camera.x
+
         if 'y' in spectrum.dims:
+            assert np.all(np.isin(spectrum.y, self.camera.y))  # check pixel centre positions compatible with camera
             y = spectrum.y
         else:
             y = self.camera.y
@@ -330,7 +333,7 @@ class Instrument:
             try:
                 delay = self.get_delay(spectrum.wavelength, x, y)
                 apply_polarisers = False
-                phase_mask = self.camera.get_pixelated_phase_mask()
+                phase_mask = self.camera.get_pixelated_phase_mask().sel({'x': x, 'y': y})
                 contrast_inst = [ret.contrast_inst for ret in self.retarders]
 
                 if 'stokes' not in spectrum.dims:
