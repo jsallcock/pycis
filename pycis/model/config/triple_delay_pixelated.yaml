@@ -6,8 +6,8 @@
 # example is FLIR BlackFly S polarised camera
 camera:
   sensor_format:
-    - 2448  # x
-    - 2048  # y
+    - 2450  # x
+    - 2050  # y
   pixel_size: 3.45e-6  # metres
   bit_depth: 12
   qe: 0.35

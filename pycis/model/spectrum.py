@@ -111,7 +111,7 @@ def get_spectrum_doppler_singlet(temperature, wl0, mass, v, domain='frequency', 
     delta_lambda = wl0 * v / (c / 1e3)
     wld = wl0 + delta_lambda
     freqd = c / wld
-    sigma_freq = (2 * freqd * np.sqrt(temperature * e / (mass * atomic_mass))) / c  # line Doppler-width st. dev. in Hz
+    sigma_freq = (freqd * np.sqrt(temperature * e / (mass * atomic_mass))) / c  # line Doppler-width st. dev. in Hz
 
     freq_axis = np.linspace(freqd - nsigma * sigma_freq, freqd + nsigma * sigma_freq, nbins)
     freq_axis = xr.DataArray(freq_axis, dims=('frequency',), coords=(freq_axis,), attrs={'units': 'Hz'})
