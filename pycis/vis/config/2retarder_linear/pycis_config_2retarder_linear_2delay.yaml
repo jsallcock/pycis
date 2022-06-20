@@ -9,17 +9,20 @@ interferometer:
   - UniaxialCrystal:
       orientation: 0
       cut_angle: 45
-      thickness: 15.e-3
+      thickness: 10.e-3
       material: 'a-BBO'
 
+  - HalfWaveplate:
+      orientation: 22.5
+
   - UniaxialCrystal:
-      orientation: 45
+      orientation: 90
       cut_angle: 45
-      thickness: 8.e-3
+      thickness: 10.e-3
       material: 'a-BBO'
 
   - LinearPolariser:
-      orientation: 0
+      orientation: 45
 
 # CAMERA
 # ------
@@ -40,4 +43,4 @@ camera:
 # ------
 lens_1_focal_length: 70.e-3
 lens_2_focal_length: 105.e-3
-lens_3_focal_length: 50.e-3
+lens_3_focal_length: 25.e-3

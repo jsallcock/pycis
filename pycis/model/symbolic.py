@@ -107,18 +107,62 @@ def spec_1retarder_pixelated():
 
 
 def spec_2retarder_linear():
-    phi_1, phi_2 = symbols('phi_1 phi_2')
+    phi_1, phi_2, rho_1, rho_2 = symbols('phi_1 phi_2 rho_1 rho_2')
     mueller = [
         polariser(0) * retarder(pi / 4, phi_2) * retarder(0, phi_1) * polariser(pi / 4),
         polariser(0) * retarder(pi / 4, phi_2) * retarder(0, phi_1) * polariser(pi / 8),
         polariser(pi / 8) * retarder(pi / 4, phi_2) * retarder(0, phi_1) * polariser(pi / 8),
+        # polariser(0) * retarder(rho_2, phi_2) * retarder(rho_1, phi_1) * polariser(0),
     ]
     labs = [
         '2-delay:',
         '3-delay:',
         '4-delay:',
+        # 'gen:'
     ]
     print('spec_2retarder_linear:')
+    for m, lab in zip(mueller, labs):
+        i_out = (m * S_UNPOLARISED)[0]
+        print(lab, simplify(trigsimp(i_out)))
+    print(' ')
+
+
+
+def spec_2retarder_linear_hwp():
+    phi_1, phi_2, rho_1, rho_2 = symbols('phi_1 phi_2 rho_1 rho_2')
+    mueller = [
+        # polariser(0) * retarder(3*pi / 4, phi_2) * retarder(pi / 8, pi) * retarder(pi / 4, phi_1) * polariser(0),
+        polariser(pi / 4) * retarder(pi / 2, phi_2) * retarder(pi / 8, pi) * retarder(0, phi_1) * polariser(pi / 4),
+        # polariser(0) * retarder(3 * pi / 4, phi_2) * retarder(pi / 8, pi) * retarder(pi / 4, phi_1) * polariser(pi / 8),
+        polariser(pi / 4) * retarder(pi / 2, phi_2) * retarder(pi / 8, pi) * retarder(0, phi_1) * polariser(pi / 8),
+        polariser(pi / 8) * retarder(3 * pi / 4, phi_2) * retarder(pi / 8, pi) * retarder(pi / 4, phi_1) * polariser(pi / 8),
+    ]
+    labs = [
+        '2-delay:',
+        '3-delay:',
+        '4-delay:',
+        # 'gen:'
+    ]
+    print('spec_2retarder_linear:')
+    for m, lab in zip(mueller, labs):
+        i_out = (m * S_UNPOLARISED)[0]
+        print(lab, simplify(trigsimp(i_out)))
+    print(' ')
+
+
+def spec_3retarder_linear():
+    phi_1, phi_2, phi_3 = symbols('phi_1 phi_2 phi_3')
+    mueller = [
+        polariser(0) * retarder(pi / 4, phi_2) * retarder(0, phi_1) * retarder(pi / 4, phi_3) * polariser(0),
+        # polariser(0) * retarder(pi / 4, phi_2) * retarder(0, phi_1) * polariser(pi / 8),
+        # polariser(pi / 8) * retarder(pi / 4, phi_2) * retarder(0, phi_1) * polariser(pi / 8),
+    ]
+    labs = [
+        'attempt:',
+        # '3-delay:',
+        # '4-delay:',
+    ]
+    print('spec_3retarder_linear:')
     for m, lab in zip(mueller, labs):
         i_out = (m * S_UNPOLARISED)[0]
         print(lab, simplify(trigsimp(i_out)))
@@ -142,6 +186,22 @@ def spec_2retarder_pixelated():
     print(' ')
 
 
+def spec_3retarder_pixelated():
+    phi_1, phi_2, phi_3, m = symbols('phi_1 phi_2 phi_3 m')
+    mueller = [
+        polariser(m * pi / 4) * qwp(pi / 2) * retarder(pi / 4, phi_3) * retarder(0, phi_2) * retarder(pi / 4, phi_1) * polariser(0),
+        polariser(m * pi / 4) * qwp(pi / 2) * retarder(pi / 4, phi_3) * retarder(0, phi_2) * retarder(pi / 4, phi_1) * polariser(pi / 2 ),
+    ]
+    labs = [
+        '6-delay:',
+        'testing',
+    ]
+    print('spec_3retarder_pixelated:')
+    for m, lab in zip(mueller, labs):
+        i_out = (m * S_UNPOLARISED)[0]
+        print(lab, simplify(trigsimp(i_out)))
+    print(' ')
+
 # ----------------------------------------------------------------------------------------------------------------------
 # EXAMPLES - SPECTRO-POLARIMETRY
 def specpol_2retarder_linear():
@@ -157,7 +217,11 @@ def specpol_2retarder_linear():
 
 
 if __name__ == '__main__':
-    spec_1retarder_linear()
+    spec_2retarder_linear()
+    spec_2retarder_linear_hwp()
+    # spec_3retarder_pixelated()
+    # spec_3retarder_linear()
+    # spec_1retarder_linear()
     # spec_1retarder_pixelated()
     # spec_2retarder_pixelated()
     # spec_2retarder_linear()

@@ -265,14 +265,13 @@ class UniaxialCrystal(LinearRetarder):
         ne, no = get_refractive_indices(wavelength, self.material, **kwargs)
 
         # from first-order approx. of the Veiras formula.
-        factor = (no ** 2 - ne ** 2) * np.sin(radians(self.cut_angle)) * np.cos(radians(self.cut_angle)) / \
-                 (ne ** 2 * np.sin(radians(self.cut_angle)) ** 2 + no ** 2 * np.cos(radians(self.cut_angle)) ** 2)
-        freq = self.thickness / (wavelength * focal_length) * factor
-
-        freq_x = freq * np.cos(self.orientation)
-        freq_y = freq * np.sin(self.orientation)
-
-        return freq_x, freq_y
+        cut_angle_rad = radians(self.cut_angle)
+        factor = (no ** 2 - ne ** 2) * np.sin(cut_angle_rad) * np.cos(cut_angle_rad) / \
+                 (ne ** 2 * np.sin(cut_angle_rad) ** 2 + no ** 2 * np.cos(cut_angle_rad) ** 2)
+        kmag = self.thickness / (wavelength * focal_length) * factor
+        kx = kmag * np.cos(radians(self.orientation))
+        ky = kmag * np.sin(radians(self.orientation))
+        return kx, ky
 
 
 class Waveplate(UniaxialCrystal):
