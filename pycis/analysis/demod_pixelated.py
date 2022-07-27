@@ -127,7 +127,7 @@ def demod_triple_delay_pixelated(image, fringe_freq, camera=None, **kwargs):
     fft = fft2_im(image)
     window_p = make_carrier_window(fft, fringe_freq, sign='p', **kwargs)
     window_m = make_carrier_window(fft, fringe_freq, sign='m', **kwargs)
-    window_lowpass = make_lowpass_window(fft, fringe_freq)
+    window_lowpass = make_lowpass_window(fft)
 
     fft_dc = fft * window_lowpass
 
