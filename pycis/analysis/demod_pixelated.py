@@ -3,7 +3,7 @@ from numpy.fft import ifft2, ifftshift
 import xarray as xr
 from pycis.analysis import make_carrier_window, make_lowpass_window, fft2_im
 from pycis.model import get_pixelated_phase_mask, get_pixel_idxs, get_superpixel_position
-
+import matplotlib.pyplot as plt
 
 def demod_single_delay_pixelated(im):
     """
@@ -26,7 +26,7 @@ def demod_single_delay_pixelated(im):
     return i0 / 4, phase, contrast
 
 
-def demod_single_delay_pixelated_mod(im):
+def demod_single_delay_pixelated_mod(im, fringe_freq, delay=None):
     """
     alternative to demod_single_delay_pixelated() using 'synchronous demodulation' instead of the 'four-bucket' algorithm.
     
@@ -38,21 +38,28 @@ def demod_single_delay_pixelated_mod(im):
     xs, ys = get_superpixel_position(im.x, im.y, )
 
     fft = fft2_im(im)
-    pm = get_pixelated_phase_mask(im.shape)
-    sp = im * np.exp(-1j * pm)
-    fft_sp = fft2_im(sp)
-    window_lowpass = make_lowpass_window(fft_sp, 100)
-    fft_dc = fft * window_lowpass
-    fft_carrier = fft_sp * window_lowpass
+    window_lowpass_dc = make_lowpass_window(fft)
+    fft_dc = fft * window_lowpass_dc
     dc = xr.DataArray(ifft2(ifftshift(fft_dc.data)), coords=im.coords, dims=im.dims).real
+
+    pm = get_pixelated_phase_mask(im.shape)
+    if delay is not None:
+        sp = im * np.exp(1j * (pm + delay))
+    else:
+        sp = im * np.exp(1j * pm)
+
+    fft_sp = fft2_im(sp)
+    window_carrier = make_lowpass_window(fft, fringe_freq=fringe_freq)
+    fft_carrier = fft_sp * window_carrier
+
     carrier = xr.DataArray(ifft2(ifftshift(fft_carrier.data)), coords=im.coords, dims=im.dims)
     carrier *= 2
     phase = xr.ufuncs.angle(carrier)
     contrast = np.abs(carrier) / dc
-
-    dc = dc.interp(x=xs, y=ys)
-    phase = phase.interp(x=xs, y=ys)
-    contrast = contrast.interp(x=xs, y=ys)
+    #
+    # dc = dc.interp(x=xs, y=ys)
+    # phase = phase.interp(x=im.x, y=im.y)
+    # contrast = contrast.interp(x=xs, y=ys)
     return dc, phase, contrast
 
 
