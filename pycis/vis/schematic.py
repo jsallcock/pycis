@@ -41,6 +41,8 @@ from vtkmodules.vtkRenderingCore import (
     vtkRenderer,
     vtkTextActor,
 )
+
+import pycis
 from pycis import Instrument, get_spectrum_delta, get_spectrum_delta_pol, fft2_im
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -678,7 +680,6 @@ def render_igram(fpath_config, fpath_out, pol_state, ):
     igram_roi = inst_roi.capture(spec, )
     igram_g = inst.capture(spec_g, )
 
-    # from pycis import get_pixelated_phase_mask
     # pm = get_pixelated_phase_mask(igram_g.shape)
     # sp = igram_g * np.exp(-1j * pm)
     # psd_sp = np.log(np.abs(fft2_im(sp)) ** 2)
@@ -699,17 +700,13 @@ def render_igram(fpath_config, fpath_out, pol_state, ):
              xincrease=False)
 
     # offset = float(psd.freq_x.max() / 10)
-    displacers = [r for r in inst.retarders if hasattr(r, 'cut_angle')]
-    displacers = [r for r in displacers if r.cut_angle > 0]
-    print('len(displacers) =', len(displacers))
-
-    for displacer in displacers:
-        kx, ky = displacer.get_fringe_frequency(wl0, inst.optics[2])
-        print('displacer.orientation', displacer.orientation)
-        print('kx=', kx)
-        print('ky=', ky)
-        axes[1].arrow(0, 0, kx, ky, color='r')
-
+    # displacers = [r for r in inst.retarders if hasattr(r, 'cut_angle')]
+    # displacers = [r for r in displacers if r.cut_angle > 0]
+    # print('len(displacers) =', len(displacers))
+    #
+    # for ii, displacer in enumerate(displacers):
+    #     kx, ky = displacer.get_fringe_frequency(wl0, inst.optics[2])
+    #     axes[1].arrow(0, 0, kx, ky, color='C' + str(ii))
     # axes[1].annotate(text='Intensity', xy=(offset, offset))
 
     for ax in axes:
@@ -1371,7 +1368,7 @@ def make_figures_multi_delay_paper():
 
     args_all = [
         args_1retarder,
-        # args_2retarder_linear,
+        args_2retarder_linear,
         # args_2retarder_pixelated,
         # args_3retarder_pixelated,
         # args_specpol_asdex,
@@ -1390,5 +1387,73 @@ def make_figures_multi_delay_paper():
     [im.save(fp) for im, fp in zip(ims_all, fpath_out_all)]
 
 
+def make_figure_synchronous_product_3d_comparison():
+    """
+    show the bandwidth difference between the linear and pixelated 3-delay CIS systems
+    :return:
+    """
+    from pycis import get_pixelated_phase_mask
+
+    fig_psd = plt.figure()
+    fig_sp = plt.figure()
+    axes_psd = [fig_psd.add_subplot(1, 2, i) for i in [1, 2]]
+    axes_sp = [fig_sp.add_subplot(1, 2, i) for i in [1, 2]]
+    fpath_out_psd = '3d_comp_psd.png'
+    fpath_out_sp = '3d_comp_sp.png'
+    fp_configs = [
+        os.path.join(FPATH_CONFIG, '2retarder_linear', 'pycis_config_2retarder_linear_3delay.yaml'),
+        os.path.join(FPATH_CONFIG, '2retarder_pixelated', 'pycis_config_2retarder_pixelated_3delay.yaml'),
+    ]
+
+    pol_state = POL_STATE_UNPOLARISED
+    wl0 = 465e-9
+    spec = get_spectrum_delta_pol(wl0, 5e3, pol_state['p'], pol_state['psi'], pol_state['xi'])
+
+    for iic, fp_config in enumerate(fp_configs):
+        inst = pycis.Instrument(fp_config)
+
+        sigma = 15 * inst.camera.pixel_size
+        spec = spec * np.exp(-1 / 2 * (inst.camera.x / sigma) ** 2)
+        spec = spec * np.exp(-1 / 2 * (inst.camera.y / sigma) ** 2)
+        igram = inst.capture(spec, )
+
+        psd = np.log(np.abs(fft2_im(igram)) ** 2)
+        psd.plot(x='freq_x', y='freq_y', ax=axes_psd[iic], add_colorbar=False, cmap=CMAP_PSD, rasterized=True,
+                 xincrease=False)
+
+        if iic == 0:
+            kx, ky = inst.retarders[2].get_fringe_frequency(wl0, inst.optics[2])
+            pm = 2 * np.pi * (kx * inst.camera.x + ky * inst.camera.y)
+            complex_carrier = 1 / 2 * (np.exp(-1j * pm) + np.exp(1j * pm))
+        elif iic == 1:
+            pm = get_pixelated_phase_mask(igram.shape)
+            complex_carrier = np.exp(-1j * pm)
+        else:
+            raise NotImplementedError
+
+        sp = igram * complex_carrier
+        psd_sp = np.log(np.abs(fft2_im(sp)) ** 2)
+
+        psd_sp.plot(x='freq_x', y='freq_y', ax=axes_sp[iic], add_colorbar=False, cmap=CMAP_PSD, rasterized=True,
+                    xincrease=False)
+
+    for ax in axes_psd + axes_sp:
+        ax.set_aspect('equal')
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_xlabel(None)
+        ax.set_ylabel(None)
+        for sp in ax.spines:
+            ax.spines[sp].set_visible(False)
+    fig_psd.savefig(fpath_out_psd, bbox_inches='tight', dpi=DPI_IGRAM, pad_inches=0., )
+    fig_sp.savefig(fpath_out_sp, bbox_inches='tight', dpi=DPI_IGRAM, pad_inches=0., )
+    plt.cla()
+    plt.clf()
+    plt.close('all')
+
+
+
+
 if __name__ == '__main__':
-    make_figures_multi_delay_paper()
+    make_figure_synchronous_product_3d_comparison()
+    # make_figures_multi_delay_paper()

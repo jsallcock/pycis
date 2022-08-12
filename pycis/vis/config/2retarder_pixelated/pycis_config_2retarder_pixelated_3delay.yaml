@@ -9,13 +9,13 @@ interferometer:
   - UniaxialCrystal:
       orientation: 0
       cut_angle: 45
-      thickness: 10.e-3
+      thickness: 8.e-3
       material: 'a-BBO'
 
   - UniaxialCrystal:
       orientation: 45
       cut_angle: 0
-      thickness: 10.e-3
+      thickness: 9.8.e-3
       material: 'a-BBO'
 
   - QuarterWaveplate:
@@ -39,4 +39,4 @@ camera:
 # ------
 lens_1_focal_length: 70.e-3
 lens_2_focal_length: 105.e-3
-lens_3_focal_length: 25.e-3
+lens_3_focal_length: 50.e-3

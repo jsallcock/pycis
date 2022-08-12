@@ -217,8 +217,8 @@ def specpol_2retarder_linear():
 
 
 if __name__ == '__main__':
-    spec_2retarder_linear()
-    spec_2retarder_linear_hwp()
+    # spec_2retarder_linear()
+    spec_2retarder_pixelated()
     # spec_3retarder_pixelated()
     # spec_3retarder_linear()
     # spec_1retarder_linear()
