@@ -111,25 +111,40 @@ def make_carrier_window(fft, fringe_freq, type='tukey', alpha=0.5, wfactor=0.67,
     window /= float(window.max())  # normalise
     return window
 
-def make_lowpass_window(fft, fringe_freq):
+def make_lowpass_window(fft, fringe_freq=(0,0), window_width=None):
     """
     extremely quick and dirty for now
 
     # TODO think about this more
 
     :param fft:
-    :param fringe_freq:
+    :param fringe_freq: centre-point in frequency space of window
     :return:
     """
 
     image_x, image_y = fft.shape
-    pad_x = int(image_x/4)
-    pad_y = int(image_y/4)
 
-    tukey_winx = np.tile(np.pad(tukey(image_x-2*pad_x), pad_x).reshape(image_x,1), image_y)
-    tukey_winy = np.tile(np.pad(tukey(image_y - 2*pad_y), pad_y).reshape(image_y,1), image_x)
+    centre_x, centre_y = int(fringe_freq[0]), int(fringe_freq[1])
+    freq_step_x = abs(fft['freq_x'][0] - fft['freq_x'][1])
+    freq_step_y = abs(fft['freq_y'][0] - fft['freq_y'][1])
 
-    window = tukey_winx * tukey_winy.T
+    centre_xind = int((image_x/2 + np.sign(centre_x) * centre_x/freq_step_x).round())
+    centre_yind = int((image_y/2 + np.sign(centre_y) * centre_y/freq_step_y).round())
+
+    if not window_width:
+        window_width = image_y//2
+
+    tukey_window = tukey(window_width)
+
+    window_x = xr.zeros_like(fft[:,0], dtype=float)
+    window_x[(centre_xind-window_width//2):(centre_xind+window_width//2)] = tukey_window
+    window_x = np.tile(window_x, image_y).reshape(fft.shape, order='F')
+
+    window_y = xr.zeros_like(fft[0], dtype=float)
+    window_y[(centre_yind-window_width//2):(centre_yind+window_width//2)] = tukey_window
+    window_y = np.tile(window_y, image_x).reshape(fft.shape)
+
+    window = window_x * window_y
 
     return window
 
